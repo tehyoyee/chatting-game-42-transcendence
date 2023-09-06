@@ -1,0 +1,203 @@
+
+html {
+	font-size:62.5%;
+}
+* {
+	margin: 0;
+	padding: 0;
+}
+ul, li {
+	list-style: none;
+}
+input {
+	border: none;
+}
+body {
+  width: 144rem;
+}.item--YmF {
+  box-sizing: border-box;
+  padding: 4rem 0.4rem 8.4rem 0.4rem;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  background-color: #202020;
+}
+.item--YmF .auto-group-tgsv-Q2m {
+  margin: 0rem 52.7rem 4.4rem 52.8rem;
+  width: calc(100% - 105.5rem);
+  height: 6.1rem;
+  position: relative;
+  flex-shrink: 0;
+}
+.item--YmF .auto-group-tgsv-Q2m .transcendence-hXf {
+  width: 37.6rem;
+  height: 6.1rem;
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 5rem;
+  font-weight: 600;
+  line-height: 1.2125;
+  font-style: italic;
+  color: #000000;
+  font-family: Inter, 'Source Sans Pro';
+  white-space: nowrap;
+}
+.item--YmF .auto-group-tgsv-Q2m .transcendence-n3K {
+  width: 37.6rem;
+  height: 6.1rem;
+  position: absolute;
+  left: 0.1rem;
+  top: 0;
+  font-size: 5rem;
+  font-weight: 600;
+  line-height: 1.2125;
+  font-style: italic;
+  color: #ff9900;
+  font-family: Inter, 'Source Sans Pro';
+  white-space: nowrap;
+}
+.item--YmF .item--FxV {
+  margin-bottom: 0.8rem;
+  width: 100%;
+  height: 5.6rem;
+  display: flex;
+  align-items: center;
+  border-radius: 1rem;
+  flex-shrink: 0;
+}
+.item--YmF .item--FxV .item--kuF {
+  margin-right: 0.9rem;
+  width: 47.1rem;
+  height: 100%;
+  font-size: 3.4rem;
+  font-weight: 600;
+  line-height: 1.2125;
+  font-style: italic;
+  color: #ffffff;
+  font-family: Inter, 'Source Sans Pro';
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ff9900;
+  border-radius: 1rem;
+  flex-shrink: 0;
+}
+.item--YmF .item--FxV .item--CmF {
+  margin-right: 0.8rem;
+  width: 47.2rem;
+  height: 100%;
+  font-size: 3.4rem;
+  font-weight: 600;
+  line-height: 1.2125;
+  font-style: italic;
+  color: #ffffff;
+  font-family: Inter, 'Source Sans Pro';
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #72aaff;
+  border-radius: 1rem;
+  flex-shrink: 0;
+}
+.item--YmF .item--FxV .item--q3X {
+  width: 47.2rem;
+  height: 100%;
+  font-size: 3.4rem;
+  font-weight: 600;
+  line-height: 1.2125;
+  font-style: italic;
+  color: #ffffff;
+  font-family: Inter, 'Source Sans Pro';
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ff9900;
+  border-radius: 1rem;
+  flex-shrink: 0;
+}
+.item--YmF .item--2th {
+  width: 100%;
+  height: 73.1rem;
+  display: flex;
+  column-gap: 0.6rem;
+  align-items: center;
+  background-color: #ffffff;
+  border-radius: 1rem;
+  flex-shrink: 0;
+}
+.item--YmF .item--2th .item--LuP {
+  width: 30rem;
+  height: 73.1rem;
+  background-color: #202020;
+  border-radius: 1rem 0 0 1rem;
+  flex-shrink: 0;
+}
+.item--YmF .item--2th .item--3oo {
+  margin: 0.6rem 0;
+  box-sizing: border-box;
+  padding: 3rem 1.6rem;
+  height: calc(100% - 1.2rem);
+  display: flex;
+  align-items: center;
+  background-color: #000000;
+  border-top: solid 0.1rem #ffffff;
+  flex-shrink: 0;
+}
+.item--YmF .item--2th .item--3oo .item-1-9rq {
+  margin: 0rem 14.2rem 12.9rem 0rem;
+  width: 1.2rem;
+  height: 12rem;
+  background-color: #52ff83;
+  flex-shrink: 0;
+}
+.item--YmF .item--2th .item--3oo .item--TMj {
+  margin: 0rem 11rem 25.5rem 0rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  background-color: #53ff83;
+  border-radius: 0.8rem;
+  flex-shrink: 0;
+}
+.item--YmF .item--2th .item--3oo .item-1-8yf {
+  margin: 0rem 6rem 56.2rem 0rem;
+  font-size: 8rem;
+  font-weight: 600;
+  line-height: 1.2125;
+  font-style: italic;
+  color: #ffffff;
+  font-family: Inter, 'Source Sans Pro';
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.item--YmF .item--2th .item--3oo .item-2-3aq {
+  margin: 0rem 27.2rem 56.2rem 0rem;
+  font-size: 8rem;
+  font-weight: 600;
+  line-height: 1.2125;
+  font-style: italic;
+  color: #ffffff;
+  font-family: Inter, 'Source Sans Pro';
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.item--YmF .item--2th .item--3oo .item-2-9tm {
+  margin-top: 17.9rem;
+  width: 1.2rem;
+  height: 12rem;
+  background-color: #52ff83;
+  flex-shrink: 0;
+}
+.item--YmF .item--2th .item--ead {
+  width: 30rem;
+  height: 73.1rem;
+  background-color: #202020;
+  border-radius: 0 1rem 1rem 0;
+  flex-shrink: 0;
+}
