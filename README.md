@@ -1,3 +1,3 @@
-# 42-transcendence
+# Transcendence
 
 ## 42 Seoul Final Subject
