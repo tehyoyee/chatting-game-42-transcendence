@@ -1,12 +1,12 @@
-'use client'
-
-import Image from 'next/image';
-import { useState } from 'react';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  const ([login, setLogin]) = useState([false]);
+  let login = false;
 
-  return (
-  	<Login />
-  );
+  if (login === false) {
+    redirect("/login");
+  }
+  else {
+    redirect("/content");
+  }
 }

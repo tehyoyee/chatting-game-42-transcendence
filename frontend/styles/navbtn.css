@@ -1,0 +1,11 @@
+#chatNavBtn {
+  grid-column: 1 / 2;
+}
+
+#gameNavBtn {
+  grid-column: 2 / 3;
+}
+
+#profileNavBtn {
+  grid-column: 3 / 4;
+}

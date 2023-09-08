@@ -1,6 +1,6 @@
-import './globals.css'
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import './globals.css';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,7 +16,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <head>
+	<link rel="icon" href="favicon.ico" />
+	<meta
+	  name="transcendence"
+	  content="transcendencetranscendencetranscendence"
+	/>
+      </head>
+      <body className={inter.className}>
+	<section>
+	  {children}
+	</section>
+      </body>
     </html>
   )
 }
+// if NavBar has textContent(the text between opening tag and closing tag) the text is considered as child node
+// and it requires for NavBar component to include chlidNode in its props.
