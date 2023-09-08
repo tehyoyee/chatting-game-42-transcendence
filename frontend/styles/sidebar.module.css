@@ -1,2 +1,14 @@
-.sidebar {
+.sideBar {
+  width: 200px;
+  height: 100%;
+  background-color: lightgray;
+  position: absolute;
+}
+
+.sideBarLeft {
+  left: 0;
+}
+
+.sideBarRight {
+  right: 0;
 }

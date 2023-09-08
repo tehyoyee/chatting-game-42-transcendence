@@ -1,7 +1,7 @@
 import React from 'react';
 import NavBar from '../../components/navbar';
 // object outside bracket is export default one and objects inside bracket are declared with just export keyword
-import SideBar from '../../components/sidebar';
+import titleStyles from '/styles/title.module.css';
 
 export default function Layout({
   children,
@@ -10,12 +10,11 @@ export default function Layout({
 }) {
   return (
     <>
+      <h1 className={titleStyles.mainTitle}>Transcendence</h1>
       <NavBar></NavBar>
-      <SideBar state={{ pos: 0 }}> </SideBar>
-      <SideBar state={{ pos: 1 }}> </SideBar>
-      <section>
+      <div className="contentBox">
 	{children}
-      </section>
+      </div>
     </>
   );
 }

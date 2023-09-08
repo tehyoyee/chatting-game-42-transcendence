@@ -1,0 +1,24 @@
+.profile {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr;
+}
+
+.profileImage {
+  grid-row: 1 / 2;
+  grid-column: 1 / 2;
+}
+
+.profileUpdateBtn {
+  margin-top: 8px;
+  background-color: lightgray;
+  border-radius: 0.3rem;
+  border: solid 1.5px gray;
+  width: 7.2rem;
+  height: 1.6rem;
+  margin: 2px;
+}
+
+.profileImageUpload:hover {
+  filter: contrast(0.8);
+}

@@ -5,6 +5,7 @@
   grid-template-rows: 3rem;
   justify-content: center; /* Horizontal centering */
   align-items: center;     /* Vertical centering */
+  margin-bottom: 4px;
 }
 
 .button {
@@ -21,7 +22,7 @@
 }
 
 .current {
-  background-color: skyblue;
+  background-color: deepskyblue;
 }
 
 .rest {

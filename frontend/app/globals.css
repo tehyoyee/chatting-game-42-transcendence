@@ -18,6 +18,11 @@
 */
 }
 
+html {
+  min-height: 100vh;
+  min-width: 70vh;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   /*
@@ -28,4 +33,35 @@ body {
     )
     rgb(var(--background-start-rgb));
   */
+  background-color: black;
+
+}
+
+text-center {
+  background-color: red;
+}
+
+.contentBox {
+  display: flex;
+  min-height: 100vh;
+  width: auto;
+  background-color: lightgray;
+  justify-content: center;
+}
+
+.centerContentBox {
+  min-height: 100vh;
+  min-width: 70vh;
+  background-color: white;
+}
+
+.centerItemFlex {
+  display: flex;
+  justify-content: center; /* Horizontal centering */
+  align-items: center;     /* Vertical centering */
+}
+
+.centerItemBlock {
+  display: block;
+  margin: auto;
 }

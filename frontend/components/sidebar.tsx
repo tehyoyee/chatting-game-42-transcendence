@@ -1,6 +1,7 @@
 'use client'
 
 import React, { ReactNode } from 'react';
+import styles from '/styles/sidebar.module.css';
 
 export enum SideBarPos {
   left = 0,
@@ -12,9 +13,9 @@ export interface SideBarState {
 };
 
 export default function SideBar({ state, children }: { state: SideBarState, children: ReactNode }) {
-  const sideBarPosName = ["sideBarLeft", "sideBarRight"];
+  const sideBarPosName = [styles.sideBarLeft, styles.sideBarRight];
   return (
-    <div className={`sideBar ${sideBarPosName[state.pos]}`}>
+    <div className={`${styles.sideBar} ${sideBarPosName[state.pos]}`}>
       <p>sidebar{state.pos}</p>
       {children}
     </div>
