@@ -5,13 +5,14 @@ import { UpdateDescription } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserStatus } from './enum/user-status.enum';
 import { UserAchievement } from './enum/user-achievements.enum';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UserService {
     constructor(private userRepository: userRepository) {}
 
-    async createUser(username: string): Promise<User> {
-        return await this.userRepository.createUser(username);
+    async createUser(createUserDto: CreateUserDto): Promise<User> {
+        return await this.userRepository.createUser(createUserDto);
     }
 
     async getMyProfile(id: number): Promise<User> {

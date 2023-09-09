@@ -1,10 +1,10 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryColumn } from "typeorm";
 import { UserStatus } from "./enum/user-status.enum";
 import { UserAchievement } from "./enum/user-achievements.enum";
 
 @Entity()
 export class User extends BaseEntity {
-    @PrimaryGeneratedColumn()
+    @PrimaryColumn()
     user_id: number;
     
     @Column({ default: false })
@@ -15,6 +15,9 @@ export class User extends BaseEntity {
     
     @Column()
     nickname: string;
+
+    @Column()
+    email: string;
 
     @Column({ default: UserStatus.OFFLINE })
     status: UserStatus;

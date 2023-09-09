@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/user.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -12,12 +13,13 @@ import { User } from './user/user.entity';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'postgres',
+      password: '1234',
       database: 'chat-app',
       entities: [User],
       synchronize: true,
     }),
-    UserModule],
+    UserModule, AuthModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -4,6 +4,7 @@ import { ConflictException, ForbiddenException, Injectable, InternalServerErrorE
 import { NotFoundError } from "rxjs";
 import { UserStatus } from "./enum/user-status.enum";
 import { UserAchievement } from "./enum/user-achievements.enum";
+import { CreateUserDto } from "./dto/create-user.dto";
 
 @Injectable()
 export class userRepository extends Repository<User> {
@@ -11,17 +12,32 @@ export class userRepository extends Repository<User> {
         super(User, dataSource.createEntityManager());
     }
 
-    async createUser(username: string): Promise<User> {
-        console.log('username: ', username);
-        
-        const newUser = await this.create({
-            username,
-            nickname: username,
-        });
+    async createUser(createUserDto: CreateUserDto): Promise<User> {
 
+        const newUser = await this.create({
+            user_id: createUserDto.user_id,
+            username: createUserDto.username,
+            nickname: createUserDto.nickname,
+            email: createUserDto.email,
+            avatar: createUserDto.avatar,
+        });
         await this.save(newUser);
+        
         return newUser;
     }
+
+
+    // async createUser(username: string): Promise<User> {
+    //     console.log('username: ', username);
+        
+    //     const newUser = await this.create({
+    //         username,
+    //         nickname: username,
+    //     });
+
+    //     await this.save(newUser);
+    //     return newUser;
+    // }
 
     async getMyProfile(id: number): Promise<User> {
 

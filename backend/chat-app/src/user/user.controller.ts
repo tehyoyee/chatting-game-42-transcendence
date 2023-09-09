@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.entity';
-import { getUser } from './decorator/get-user.decorator';
+// import { getUser } from './decorator/get-user.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiOperation } from '@nestjs/swagger';
 
@@ -9,16 +9,17 @@ import { ApiOperation } from '@nestjs/swagger';
 export class UserController {
     constructor(private userService: UserService) {}
 
-    @ApiOperation({ summary: '신규계정생성' })
-    @Post()
-    async createUser(@Body('username') username: string): Promise<User> {
-        const found = await this.userService.getProfileByUserName(username);
-        if (found)
-            return found;
+    // 없어도 될듯? to jiwkwon
+    // @ApiOperation({ summary: '신규계정생성' })
+    // @Post()
+    // async createUser(@Body('username') username: string): Promise<User> {
+    //     const found = await this.userService.getProfileByUserName(username);
+    //     if (found)
+    //         return found;
         
-        console.log('username: ', username);
-        return await this.userService.createUser(username);
-    }
+    //     console.log('username: ', username);
+    //     return await this.userService.createUser(username);
+    // }
 
     @ApiOperation({ summary: '내 프로필 보기' })
     @Get('/profile')
