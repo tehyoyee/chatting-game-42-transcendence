@@ -2,10 +2,14 @@
   grid-column: 1 / 2;
 }
 
-#gameNavBtn {
+#socicalNavBtn {
   grid-column: 2 / 3;
 }
 
-#profileNavBtn {
+#gameNavBtn {
   grid-column: 3 / 4;
+}
+
+#profileNavBtn {
+  grid-column: 4 / 5;
 }

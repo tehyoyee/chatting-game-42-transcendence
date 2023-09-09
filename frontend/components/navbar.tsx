@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { useState } from 'react';
 import styles from '../styles/navbar.module.css';
 
-export enum NavBarPos {
+enum NavBarPos {
   chat,
+  social,
   game,
   profile,
 }
@@ -14,7 +15,7 @@ export enum NavBarPos {
 // export default function NavBar({ status }: { status: NavBarPos }) {
 export default function NavBar() {
   const [state, setState] = useState(NavBarPos.profile);
-  const navBtn: string[] = ["chat", "game", "profile"];
+  const navBtn: string[] = ["chat", "social", "game", "profile"];
 
   function updateState(e: any) {
     // other option instead of indexOf and textContent?

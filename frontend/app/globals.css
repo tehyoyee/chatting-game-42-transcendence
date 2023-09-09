@@ -19,6 +19,9 @@
 }
 
 html {
+}
+
+.full-background {
   min-height: 100vh;
   min-width: 70vh;
 }

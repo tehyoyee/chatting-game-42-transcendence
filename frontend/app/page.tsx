@@ -1,12 +1,17 @@
-import { redirect } from 'next/navigation';
+'use client'
+
+import { useRouter } from 'next/navigation';
+import Login from '../components/login';
+import Profile from '../components/profile';
+import useToken from './useToken';
 
 export default function Home() {
-  let login = false;
+  const router = useRouter();
+  const {token, setToken} = useToken();
 
-  if (login === false) {
-    redirect("/login");
+  if (!token) {
+    return <Login setToken={setToken}></Login>;
   }
-  else {
-    redirect("/content");
-  }
+  router.push('/content/game');
+  return <Profile></Profile>;
 }

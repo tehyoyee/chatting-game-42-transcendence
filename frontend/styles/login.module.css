@@ -1,45 +1,10 @@
-.container {	
-	background-color: black;
-	display: flex;
-	justify-content: center; /* Horizontal centering */
-	align-items: center;     /* Vertical centering */
-	height: 100vh;           /* Set the container height to the viewport height for vertical centering */
-}
-
-.form {
-	background-color: #888888;
-	margin: 0 auto;
-	padding: 1.5em;
-	border-radius: 0.5em;
-}
-
-.loginBox {
-	display: grid;
-	gap: 2px;
-	grid-template-columns: 1fr 1fr 1fr;
-	grid-template-rows: 30px 30px;
-}
-
-.field {
-}
-
-.field:focus {
-	border-color: #000;
-}
-
-#idField {
-	grid-row: 1 / 2;
-	grid-column: 1 / 3;
-}
-
-#pwField {
-	grid-row: 2 / 3;
-	grid-column: 1 / 3;
-}
-
 .loginButton {
-	grid-row: 1 / 3;
-	grid-column: 3 / 4;
-	background-color: red;
-	text-align: center;
+  padding: 10px;
+  background-color: red;
+  text-align: center;
+  border-radius: 0.3rem;
+}
+
+.loginButton:hover {
+  filter: contrast(0.8);
 }

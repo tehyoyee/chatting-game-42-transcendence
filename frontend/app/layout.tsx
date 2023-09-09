@@ -24,10 +24,8 @@ export default function RootLayout({
 	  content="transcendencetranscendencetranscendence"
 	/>
       </Head>
-      <body className={inter.className}>
-	<section>
-	  {children}
-	</section>
+      <body className={`${inter.className} full-background`}>
+	{children}
       </body>
     </html>
   )

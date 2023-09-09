@@ -3,25 +3,31 @@
 import React, { useState } from 'react';
 import styles from '/styles/login.module.css';
 
-type updateLoginType = React.Dispatch<React.SetStateAction<boolean>>;
-
-function updateLogin(setLogin: updateLoginType) {
-  setLogin(true);
-  return undefined;
+async function request() {
+  return fetch("http://localhost:3000/login", {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(res => res.json())
+  .catch((reason) => {
+      console.log(`token request for login fail: ${reason}`);
+    });
 }
 
-export default function Login() {
-  const [login, setLogin] = useState(false);
+export default function Login({ setToken }: { setToken: Function }) {
+  const handleRequest = async () => {
+//    const token = await request();
+//    setToken(token);
+    setToken("test123");
+  };
 
   return (
-    <form onSubmit={updateLogin(setLogin)}>
-      <div className={styles.loginBox}>
-      	<input type='text' id={styles.idField} placeholder="ID" className={styles.field}
-      	  required-pattern="[a-zA-Z}" required />
-      	<input type='text' id={styles.pwField} placeholder="Password" className={styles.field}
-      	  required-pattern="[a-zA-Z0-9]" required />
-      	<button type='submit' className={styles.loginButton}>Login</button>
-      </div>
-    </form>
+    <div className="full-background centerItemFlex">
+      <form onSubmit={handleRequest}>
+       <button type='submit' className={styles.loginButton}>Login</button>
+      </form>
+    </div>
   );
 }
