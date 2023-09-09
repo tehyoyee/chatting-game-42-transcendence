@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useState } from 'react';
 import styles from '/styles/login.module.css';
 
 async function request() {

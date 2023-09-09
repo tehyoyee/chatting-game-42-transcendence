@@ -24,11 +24,12 @@ html {
 .full-background {
   min-height: 100vh;
   min-width: 70vh;
+  background-color: rgb(32, 36, 48);
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
   /*
+  color: rgb(var(--foreground-rgb));
   background: linear-gradient(
       to bottom,
       transparent,
@@ -36,8 +37,6 @@ body {
     )
     rgb(var(--background-start-rgb));
   */
-  background-color: black;
-
 }
 
 text-center {
