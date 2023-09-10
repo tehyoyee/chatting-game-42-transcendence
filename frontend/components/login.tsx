@@ -4,7 +4,7 @@ import styles from '/styles/login.module.css';
 
 async function request() {
   return fetch("http://localhost:3000/login", {
-    method: 'post',
+    method: 'GET',
     headers: {
       'Content-Type': 'application/json',
     },
