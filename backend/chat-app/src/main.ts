@@ -5,6 +5,12 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: 'http://localhost:3001',
+    credentials: true,
+    methods: ['GET', 'POST', 'DELETE', 'PATCH', 'PUT']
+  })
+  
   const config = new DocumentBuilder()
     .setTitle('jiwkwon')
     .setDescription('user API description')
