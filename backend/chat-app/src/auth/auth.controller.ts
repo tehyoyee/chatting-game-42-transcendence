@@ -1,4 +1,4 @@
-import { Param, Request, Get, Body, Controller, Post, Req, UseGuards, ValidationPipe, Response } from '@nestjs/common';
+import { Param, Request, Get, Body, Controller, Post, Req, UseGuards, ValidationPipe, Res, Response } from '@nestjs/common';
 // import { AuthCredentialsDto } from './dto/auth-credetial.dto';
 import { AuthService } from './auth.service';
 // import { AuthGuard } from '@nestjs/passport';
@@ -23,8 +23,13 @@ export class AuthController {
 	// }
 	
 	@Get('/signup')
-	signUp(@Query('code') code, @Req() req) {
-		return this.authService.signUp(code);
+	signUp(@Query('code') code, @Req() req, @Res() res) {
+		return this.authService.signUp(code, res);
+	}
+
+	@Get('/state')
+	checkLoginState(@Request() req: Request) {
+		return this.authService.checkLoginState(req);
 	}
 
 

@@ -1,3 +1,4 @@
+import { Response, Res } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { Injectable, NestInterceptor, UnauthorizedException } from '@nestjs/common';
 // import * as bcrypt from 'bcryptjs';
@@ -6,6 +7,7 @@ import { UserService } from 'src/user/user.service';
 // import { userRepository } from 'src/user/user.repository';
 import { Observable, firstValueFrom } from 'rxjs';
 import * as config from 'config';
+import { AxiosRequestConfig } from 'axios';
 
 const dbconfig = config.get('intra');
 const grant_type = dbconfig.get('grant_type');
@@ -26,22 +28,25 @@ export class AuthService {
 		return req;
 	}
 
-	async signUp(code: string) {
-	
+	async signUp(code: string, res: any) {
 		const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
 
-		const headers = {
+		const axiosConfig: AxiosRequestConfig = {
+			headers: {
 			Authorization: `Bearer ${accessToken.data.access_token}`
-		};
-		const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', {headers}).pipe());
+			},
+			withCredentials: true,
+		}
+		const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
 		const userA = user.data.email;
 		const newAccessToken = this.jwtService.sign({userA});
-		console.log(newAccessToken);
-		// res.cookie = newAccessToken;
-		// res.cookie('jwt', newAccessToken,{
-		// 	httpOnly: true,
-		// 	maxAge: 60 * 60
-		// });
-		return;
+		res.cookie('token', newAccessToken,{
+			httpOnly: true,
+		 	maxAge: 60 * 60
+		});
+		return ;
+	}
+
+	checkLoginState(req: Request) {
 	}
 }

@@ -2,7 +2,7 @@
 
 import { useContext, useEffect, useState, useCallback, ReactNode, createContext } from 'react';
 
-const loggedInUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/login_state`;
+const loggedInUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/state`;
 
 interface IAuthContext {
   loggedIn: boolean,
@@ -27,6 +27,7 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
   const updateLoginState = useCallback(async () => {
     fetch(loggedInUrl, {
       method: 'GET',
+      credentials: 'include',
     })
     .then(res => res.json())
     .then(data => {

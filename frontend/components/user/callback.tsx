@@ -1,11 +1,11 @@
 'use client'
 
-import { useRef, useContext, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthContext, useAuthContext } from '@/components/user/auth';
+import { useAuthContext } from '@/components/user/auth';
 
-const serverUrl = process.env.APP_SERVER_URL;
-const tokenUrl = `${serverUrl}/auth/generate`;
+const serverUrl = process.env.NEXT_PUBLIC_APP_SERVER_URL;
+const tokenUrl = `${serverUrl}/auth/signup`;
 
 export default function Callback() {
   const called = useRef(false);
@@ -23,7 +23,8 @@ export default function Callback() {
 
     called.current = true;
     fetch(`${tokenUrl}${window.location.search}`, {
-      method: 'POST'
+      method: 'GET',
+      credentials: 'include',
     })
     .then(res => res.json())
     .then(data => { // debuggin log
