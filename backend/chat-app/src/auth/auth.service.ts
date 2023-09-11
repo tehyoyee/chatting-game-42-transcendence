@@ -1,4 +1,4 @@
-import { Response, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { HttpService } from '@nestjs/axios';
 import { Injectable, NestInterceptor, UnauthorizedException } from '@nestjs/common';
 // import * as bcrypt from 'bcryptjs';
@@ -28,25 +28,61 @@ export class AuthService {
 		return req;
 	}
 
-	async signUp(code: string, res: any) {
-		const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
+	async signUp(code: string, res: Response) {
+		try {
+			const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
 
-		const axiosConfig: AxiosRequestConfig = {
-			headers: {
-			Authorization: `Bearer ${accessToken.data.access_token}`
-			},
-			withCredentials: true,
+			const axiosConfig: AxiosRequestConfig = {
+				headers: {
+				Authorization: `Bearer ${accessToken.data.access_token}`
+				},
+				withCredentials: true,
+			}
+			const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
+			const userA = {
+				email: user.data.email,
+				id: user.data.id,
+			} 
+			const newAccessToken = this.jwtService.sign({ userA });
+			res.cookie('token', newAccessToken,{
+				httpOnly: true,
+				maxAge: 60 * 60,
+				sameSite: 'lax',
+			});
+			res.send();
+		} catch (err) {
+			console.log(`signUp error: ${err}`);
+			res.send();
 		}
-		const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
-		const userA = user.data.email;
-		const newAccessToken = this.jwtService.sign({userA});
-		res.cookie('token', newAccessToken,{
-			httpOnly: true,
-		 	maxAge: 60 * 60
-		});
 		return ;
 	}
 
-	checkLoginState(req: Request) {
+	checkLoginState(req: Request, res: Response) {
+		try {
+			console.log(req);
+			const token = req.cookies['token'];
+
+			if (!token) {
+			  res.json({ loggedIn: false });
+				return;
+			}
+			const { userData } = this.jwtService.verify(token);
+			const newToken = this.jwtService.sign({ userData });
+			res.cookie('token', newToken, {
+				httpOnly: true,
+				maxAge: 60 * 60 * 1000,// milli seconds
+				sameSite: 'lax',
+			});
+			res.json({ loggedIn: true, user: userData });
+		} catch (err) {
+			console.log(`checkLoginState error: ${err}`);
+			res.json({ loggedIn: false, error: true});
+		}
+		return;
+	}
+
+	signOut(res: Response) {
+		res.clearCookie('token').json({ message: "Signned Out" });
+		res.send();
 	}
 }
