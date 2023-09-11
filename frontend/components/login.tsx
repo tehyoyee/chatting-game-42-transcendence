@@ -44,9 +44,9 @@ Component AuthContextProvider with children parameter
   manages states and function necessary for authorization.
   - loggedIn state
   - user state
-  - checkLoginState async function that fetch login state from backend.
-  - useEffect that monitors checkLoginState and execute checkLoginState.
-  - return with JSX that passes loggedIn, user, checkLoginState to AuthContext and wraps children.
+  - updateLoginState async function that fetch login state from backend.
+  - useEffect that monitors updateLoginState and execute updateLoginState.
+  - return with JSX that passes loggedIn, user, updateLoginState to AuthContext and wraps children.
 
 Component Login
   receive auth server URL from backend and push url to browser.
