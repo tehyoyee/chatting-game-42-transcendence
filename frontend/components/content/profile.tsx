@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image';
-import User from './user';
+import User from '@/components/user/user';
 import styles from '/styles/profile.module.css';
 
 function uploadImage() {

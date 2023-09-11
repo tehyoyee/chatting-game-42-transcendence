@@ -1,4 +1,4 @@
-import Callback from '@/components/callback';
+import Callback from '@/components/user/callback';
 
 export default function Page() {
   return (

@@ -2,7 +2,9 @@
 
 import styles from '/styles/logout.module.css';
 import { useRouter } from 'next/navigation';
-import useToken from '../lib/useToken';
+import useToken from '@/lib/useToken';
+
+// TODO: logout should send logout request to remove cookie
 
 export default function Logout() {
   const {token, setToken} = useToken();
