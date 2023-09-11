@@ -2,7 +2,6 @@
 
 import styles from '/styles/login.module.css';
 
-const loginUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/42`;
 const authUrl = `${process.env.NEXT_PUBLIC_AUTH_URL}`;
 
 /*
