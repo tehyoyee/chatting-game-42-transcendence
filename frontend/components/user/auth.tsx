@@ -10,7 +10,7 @@ interface IAuthContext {
   updateLoginState: Function,
 };
 
-export const AuthContext = createContext<IAuthContext | null>(null);
+const AuthContext = createContext<IAuthContext | null>(null);
 
 export function useAuthContext() {
   const currentAuthContext = useContext(AuthContext);
