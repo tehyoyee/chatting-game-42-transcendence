@@ -13,7 +13,7 @@ import { AuthModule } from './auth/auth.module';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: '1234',
+      password: 'postgres',
       database: 'chat-app',
       entities: [User],
       synchronize: true,
