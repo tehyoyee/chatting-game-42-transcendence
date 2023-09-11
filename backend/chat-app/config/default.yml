@@ -1,0 +1,16 @@
+server:
+  port: 3000
+
+db:
+  type: 'postgres'
+  port: '5432'
+  database: 'board-app'
+
+jwt:
+  expiresIn: 3600
+
+intra:
+  grant_type: 'authorization_code'
+  client_id: 'u-s4t2ud-75652da54aee75146d3762082688b50e87435656fec9351d9b54b29fc375128a'
+  client_secret: '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'
+  redirect_uri: 'http://localhost:3001/auth'
