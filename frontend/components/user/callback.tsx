@@ -2,7 +2,7 @@
 
 import { useRef, useContext, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthContext, useAuthContext } from '@/components/auth';
+import { AuthContext, useAuthContext } from '@/components/user/auth';
 
 const serverUrl = process.env.APP_SERVER_URL;
 const tokenUrl = `${serverUrl}/auth/generate`;
@@ -23,7 +23,7 @@ export default function Callback() {
 
     called.current = true;
     fetch(`${tokenUrl}${window.location.search}`, {
-      method: 'GET'
+      method: 'POST'
     })
     .then(res => res.json())
     .then(data => { // debuggin log

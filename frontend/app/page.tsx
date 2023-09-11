@@ -1,8 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/components/auth';
-import Login from '@/components/login';
+import { useAuthContext } from '@/components/user/auth';
+import Login from '@/components/user/login';
 
 export default function Home() {
   const router = useRouter();
