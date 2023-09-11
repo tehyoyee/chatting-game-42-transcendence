@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { FortyTwoStrategy } from './FortyTwostrategy';
+import { FortyTwoStrategy } from './FortyTwoStrategy';
 import * as config from 'config';
 import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';

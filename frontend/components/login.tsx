@@ -2,34 +2,59 @@
 
 import styles from '/styles/login.module.css';
 
-async function request() {
-  // const handleRequest = () => {
-  // window.location.assign('http://localhost:3000/auth/42');
-  // }
-  // return fetch("http://localhost:3000/login", {
-  //   method: 'GET',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //   },
-  // })
-  // .then(res => res.json())
-  // .catch((reason) => {
-  //     console.log(`token request for login fail: ${reason}`);
-  //   });
-}
+const loginUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/42`;
+const authUrl = `${process.env.NEXT_PUBLIC_AUTH_URL}`;
 
+/*
+ * fetch auth server url and redirect page to the url.
+ */
 export default function Login() {
-  const handleRequest = async () => {
-    window.location.assign('http://localhost:3000/auth/42');
-  //    const token = await request();
-//    setToken(token);
-    // setToken("test123");
-  };
+/*  const handleRequest = async () => {
+    fetch(loginUrl, {
+      method: 'GET',
+      headers: {
+	Origin: `${process.env.NEXT_PUBLIC_APP_FRONT_URL}`,
+      },
+    })
+    .then(res => {
+      console.log(res);
+      console.log(res.headers);
+      window.location.assign(`${data.url}`);
+    })
+    .catch(reason => {
+      console.log(`${loginUrl}: fetch failed: ${reason}`);
+    });
+  }; */
+
 
   return (
     <div className="full-background centerItemFlex">
-      <button type='submit' className={styles.loginButton}>Login</button>
-      <button onClick={ handleRequest }> login with 42</button>
+      <button onClick={ () => {window.location.assign(authUrl)} } className={styles.loginButton}>login with 42</button>
     </div>
   );
 }
+
+/*
+ *
+authorization process for frontend
+
+AuthContext context at root
+
+Component AuthContextProvider with children parameter
+  manages states and function necessary for authorization.
+  - loggedIn state
+  - user state
+  - checkLoginState async function that fetch login state from backend.
+  - useEffect that monitors checkLoginState and execute checkLoginState.
+  - return with JSX that passes loggedIn, user, checkLoginState to AuthContext and wraps children.
+
+Component Login
+  receive auth server URL from backend and push url to browser.
+  it will redirect to callback URI unless received URL fails.
+
+Component Callback
+  callback URI routes to here.
+  handles rest of auth process with authorization code given as query string.
+  send auth code to backend and receive cookie as encoded access token(or user specific information?).
+
+*/

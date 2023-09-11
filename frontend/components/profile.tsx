@@ -56,7 +56,7 @@ export default function Profile() {
 	<ul>
 	  {userProps.map(({ prop, value }) => {
 	      return (
-		<li>
+		<li key={prop}>
 		  {prop}: {value}
 		</li>
 	      );
