@@ -1,5 +1,5 @@
 import { DataSource, Not, Repository } from "typeorm";
-import { User } from "./user.entity";
+import { User } from "./entity/user.entity";
 import { ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { NotFoundError } from "rxjs";
 import { UserStatus } from "./enum/user-status.enum";

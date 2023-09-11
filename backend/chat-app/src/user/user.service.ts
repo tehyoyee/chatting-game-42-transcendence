@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { userRepository } from './user.repository';
-import { User } from './user.entity';
+import { User } from './entity/user.entity';
 import { UpdateDescription } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserStatus } from './enum/user-status.enum';

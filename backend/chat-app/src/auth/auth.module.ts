@@ -6,7 +6,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { FortyTwoStrategy } from './FortyTwoStrategy';
 import * as config from 'config';
-import { User } from 'src/user/user.entity';
+import { User } from 'src/user/entity/user.entity';
 import { UserService } from 'src/user/user.service';
 import { userRepository } from 'src/user/user.repository';
 // const jwtConfig = config.get('jwt');
