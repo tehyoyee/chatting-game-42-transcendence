@@ -1,29 +1,37 @@
 'use client'
 
 import styles from '/styles/logout.module.css';
-import { useRouter } from 'next/navigation';
-import useToken from '@/lib/useToken';
+import { useAuthContext } from '@/components/user/auth';
+
+const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
+const logoutUrl = `${serverUrl}/auth/signout`;
 
 // TODO: logout should send logout request to remove cookie
 
 export default function Logout() {
-  const {token, setToken} = useToken();
-  const router = useRouter();
+	const { loggedIn, updateLoginState } = useAuthContext();
 
-  function showModal() {
-    if (!token) {
+  async function handleLogout() {
+		await updateLoginState(); // for TEST
+    if (!loggedIn) {
       alert("Not logged in currently");
       return;
     }
-    if (confirm("confirm")) {
-      localStorage.removeItem('token');
-      setToken(null);
-      router.push('/');
-    }
+		if (!confirm("confirm sign out")) return;
+		await fetch(logoutUrl, {
+			method: 'GET',
+			credentials: 'include',
+		})
+		.then(() => {
+			updateLoginState();
+		})
+		.catch(err => {
+			console.log(err);
+		});
   }
   return (
     <>
-      <button className={styles.logoutBtn} type="button" onClick={showModal}>log out</button>
+      <button className={styles.logoutBtn} type="button" onClick={handleLogout}>log out</button>
     </>
   );
 }

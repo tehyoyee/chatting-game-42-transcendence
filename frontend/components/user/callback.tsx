@@ -12,29 +12,30 @@ export default function Callback() {
   const { loggedIn, updateLoginState } = useAuthContext();
   const router = useRouter();
   useEffect(() => {
-    if (loggedIn === true) {
-      router.push('/');
-    }
-    if (called.current) return; // prevent re-render caused by strict mode
+		(async() => {
+      if (loggedIn === true) {
+				router.push('/');
+				return;
+      }
+      if (called.current) return; // prevent re-render caused by strict mode
+      called.current = true;
 
-    const searchParams = new URLSearchParams(document.location.search);
-  
-    if (searchParams.get('code') == null) return;
+      const searchParams = new URLSearchParams(document.location.search);
+    
+      if (searchParams.get('code') == null) return;
 
-    called.current = true;
-    fetch(`${tokenUrl}${window.location.search}`, {
-      method: 'GET',
-      credentials: 'include',
-    })
-    .then(res => res.json())
-    .then(data => { // debuggin log
-      updateLoginState();
-      console.log(`response: ${data}`);
-    })
-    .catch(reason => {
-      console.log(`${tokenUrl}: fetch failed: ${reason}`);
-    });
-    router.push('/');
-  }, [ updateLoginState, loggedIn, router]);
+      await fetch(`${tokenUrl}${window.location.search}`, {
+				method: 'GET',
+				credentials: 'include',
+      })
+      .then(() => {
+				updateLoginState();
+				router.push('/');
+      })
+      .catch(reason => {
+				console.log(`${tokenUrl}: fetch failed: ${reason}`);
+      });
+    })()
+  }, [updateLoginState, loggedIn, router]);
   return <></>;
 }
