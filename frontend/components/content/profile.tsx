@@ -1,7 +1,9 @@
 'use client'
 
+import { useRouter, redirect } from 'next/navigation';
 import Image from 'next/image';
 import User from '@/components/user/user';
+import { useAuthContext } from '@/components/user/auth';
 import styles from '/styles/profile.module.css';
 
 function uploadImage() {
@@ -23,19 +25,22 @@ function UploadBtn({ callback, children }: { callback: any, children: any}) {
   );
 }
 
-// component parameter explained
-// ({ props, children })
-// export default function Profile({ user }: { user: User }) {
 export default function Profile() {
-  const user: User = {
-    id: 0,
-    name: "who",
-    email: "abc@student.42seoul.kr",
-  };
-  const userProps: { prop: string, value: string }[] = [
-    { prop: "name", value: user.name },
-    { prop: "email", value: user.email },
+  const { loggedIn } = useAuthContext();
+  const router = useRouter();
+  const userProps = [
+    {
+      prop: "name",
+      value: "value",
+    },
+    {
+      prop: "email",
+      value: "a@b.com",
+    },
   ];
+
+//  const { recentMatchHistory, matchRecord, ranking, archivement } = pullProfileData();
+
   return (
     <>
       <div className="centerItemBlock gridRow1_2 gridCol1_2">
