@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { userRepository } from './user.repository';
+import { UserRepository } from './user.repository';
 import { User } from './user.entity';
 import { UpdateDescription } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -9,7 +9,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UserService {
-    constructor(private userRepository: userRepository) {}
+    constructor(private userRepository: UserRepository) {}
 
     async createUser(createUserDto: CreateUserDto): Promise<User> {
         return await this.userRepository.createUser(createUserDto);

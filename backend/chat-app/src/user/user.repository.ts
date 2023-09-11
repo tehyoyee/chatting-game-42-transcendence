@@ -7,7 +7,7 @@ import { UserAchievement } from "./enum/user-achievements.enum";
 import { CreateUserDto } from "./dto/create-user.dto";
 
 @Injectable()
-export class userRepository extends Repository<User> {
+export class UserRepository extends Repository<User> {
     constructor(dataSource: DataSource) {
         super(User, dataSource.createEntityManager());
     }

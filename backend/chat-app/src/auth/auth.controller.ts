@@ -1,4 +1,4 @@
-import { Param, Request, Get, Body, Controller, Post, Req, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Param, Request, Get, Body, Controller, Post, Req, UseGuards, ValidationPipe, Response } from '@nestjs/common';
 // import { AuthCredentialsDto } from './dto/auth-credetial.dto';
 import { AuthService } from './auth.service';
 // import { AuthGuard } from '@nestjs/passport';
@@ -14,21 +14,17 @@ export class AuthController {
 		return 'asdf';
 	}
 
-	@UseGuards(FortyTwoAuthGuard)
-	@Get('/42')
-	async auth(@Request() req) {
-		// return req;
-		return 'success';
-		// return this.authService.auth(req);
-	}
+	// @UseGuards(FortyTwoAuthGuard)
+	// @Get('/42')
+	// async auth(@Request() req) {
+	// 	// return req;
+	// 	return 'success';
+	// 	// return this.authService.auth(req);
+	// }
 	
-	@Get('/generate')
-	@UseGuards(FortyTwoAuthGuard)
-	fortytwoRedirect(@Query('code') code, @Req() req) {
-		// return 'success';
-		console.log(code);
-		// console.log(req);
-		// return this.authService.auth(req);
+	@Get('/signup')
+	signUp(@Query('code') code, @Req() req) {
+		return this.authService.signUp(code);
 	}
 
 
