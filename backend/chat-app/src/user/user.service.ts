@@ -1,6 +1,11 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+<<<<<<< HEAD
 import { userRepository } from './user.repository';
 import { User } from './entity/user.entity';
+=======
+import { UserRepository } from './user.repository';
+import { User } from './user.entity';
+>>>>>>> 58000b4ec5315494dc1814f9f996ccc086a5231e
 import { UpdateDescription } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserStatus } from './enum/user-status.enum';
@@ -9,7 +14,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UserService {
-    constructor(private userRepository: userRepository) {}
+    constructor(private userRepository: UserRepository) {}
 
     async createUser(createUserDto: CreateUserDto): Promise<User> {
         return await this.userRepository.createUser(createUserDto);

@@ -2,15 +2,15 @@
 
 import { useContext, useEffect, useState, useCallback, ReactNode, createContext } from 'react';
 
-const loggedInUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/login_state`;
+const stateUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/state`;
 
 interface IAuthContext {
   loggedIn: boolean,
-  user: any,
+  user: Object,
   updateLoginState: Function,
 };
 
-export const AuthContext = createContext<IAuthContext | null>(null);
+const AuthContext = createContext<IAuthContext | null>(null);
 
 export function useAuthContext() {
   const currentAuthContext = useContext(AuthContext);
@@ -25,16 +25,18 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
   const [user, setUser] = useState({});
 
   const updateLoginState = useCallback(async () => {
-    fetch(loggedInUrl, {
+    await fetch(stateUrl, {
       method: 'GET',
+      credentials: 'include',
     })
     .then(res => res.json())
     .then(data => {
-      data.user && setUser(data.user);
+			console.log(data);
       setLoggedIn(data.loggedIn);
+      data.user && setUser(data.user);
     })
     .catch(reason => {
-      console.log(`${loggedInUrl}: fecth failed: ${reason}`);
+      console.log(`${stateUrl}: fecth failed: ${reason}`);
     });
   }, []);
 

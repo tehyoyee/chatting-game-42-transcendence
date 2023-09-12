@@ -53,7 +53,7 @@ text-center {
 
 .centerContentBox {
   min-height: 100vh;
-  min-width: 70vh;
+  width: 70vmax;
   background-color: white;
 }
 
