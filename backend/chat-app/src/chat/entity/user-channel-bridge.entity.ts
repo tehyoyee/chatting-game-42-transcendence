@@ -22,11 +22,9 @@ export class UserChannelBridge extends BaseEntity {
 
     //아래는 관계 표현
     @ManyToOne(type => User, user => user.join_channels, { eager: true })
-    @JoinColumn()
     user: User;
     
     @ManyToOne(type => Channel, channel => channel.details, { eager: true })
-    @JoinColumn()
     channel: Channel;
     
 }

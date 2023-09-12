@@ -48,5 +48,5 @@ export class User extends BaseEntity {
     messages: Message[];
 
 
-    //친구, 차단, 게임기록, 조인채널목록 추가 필요
+    //친구, 차단, 게임기록 추가 필요
 }

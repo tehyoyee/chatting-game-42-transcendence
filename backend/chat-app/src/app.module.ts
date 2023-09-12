@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entity/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
+import { ChannelGateway } from './channel/channel.gateway';
 
 @Module({
   imports: [
@@ -22,6 +23,6 @@ import { ChatModule } from './chat/chat.module';
     UserModule, AuthModule, ChatModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ChannelGateway],
 })
 export class AppModule {}
