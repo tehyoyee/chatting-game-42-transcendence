@@ -31,7 +31,7 @@ export default function NavBar() {
 						key={name}
 						id={`#${name}NavBtn`}
 						className={`${styles.button} ${navBtn[state] === name ? styles.current : styles.rest}`}
-						href={`/content/${name}`}>{name}
+						href={`/${name}`}>{name}
 					</Link>
 				);
       })}
