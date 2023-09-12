@@ -1,15 +1,19 @@
 'use client'
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/user/auth';
-import Login from '@/components/user/login';
 
-export default function Home() {
-  const router = useRouter();
+export default function Page() {
   const { loggedIn } = useAuthContext();
+	const router = useRouter();
 
-  if (loggedIn !== true) {
-    return <Login></Login>;
-  }
-  router.push('/content/game');
+	useEffect(() => {
+		if (loggedIn === true) {
+			router.push('/game');
+		} else {
+			router.push('/login');
+		}
+	}, [loggedIn]);
+	return <></>;
 }
