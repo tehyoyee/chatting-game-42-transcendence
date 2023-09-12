@@ -90,27 +90,27 @@ export default function Profile() {
 						Update Name
 					</UploadBtn>
 				</ul>
-				</div>
-				<div
-		className="centerItemBlock"
-				>
-				최근 경기 기록
-				</div>
-				<div
-		className="centerItemBlock"
-				>
-				게임 전적
-				</div>
-				<div
-		className="centerItemBlock"
-				>
-				순위
-				</div>
-				<div
-		className="centerItemBlock"
-				>
-				업적
-				</div>
+			</div>
+			<div
+	className="centerItemBlock"
+			>
+			최근 경기 기록
+			</div>
+			<div
+	className="centerItemBlock"
+			>
+			게임 전적
+			</div>
+			<div
+	className="centerItemBlock"
+			>
+			순위
+			</div>
+			<div
+	className="centerItemBlock"
+			>
+			업적
+			</div>
     </>
   );
 }

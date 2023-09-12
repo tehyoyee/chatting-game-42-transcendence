@@ -10,7 +10,7 @@ export default function Page() {
 
 	useEffect(() => {
 		if (loggedIn === true) {
-			router.push('/game');
+			router.push('/chat');
 		} else {
 			router.push('/login');
 		}

@@ -27,6 +27,10 @@ html {
   background-color: rgb(32, 36, 48);
 }
 
+.full-background-color {
+  background-color: rgb(32, 36, 48);
+}
+
 body {
   /*
   color: rgb(var(--foreground-rgb));
@@ -37,10 +41,6 @@ body {
     )
     rgb(var(--background-start-rgb));
   */
-}
-
-text-center {
-  background-color: red;
 }
 
 .contentBox {

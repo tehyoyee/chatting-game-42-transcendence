@@ -1,5 +1,3 @@
-import styles from '/styles/profile.module.css';
-
 export default function Layout({
   children,
 }: {
@@ -7,7 +5,7 @@ export default function Layout({
 }) {
   return (
     <>
-      <div className={`centerContentBox ${styles.profile}`}>
+      <div className={`centerContentBox`}>
 				{children}
       </div>
 		</>

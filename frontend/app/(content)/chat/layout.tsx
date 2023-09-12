@@ -1,5 +1,3 @@
-import ComponentProtector from "@/components/user/protector";
-
 export default function Layout({
   children,
 }: {
