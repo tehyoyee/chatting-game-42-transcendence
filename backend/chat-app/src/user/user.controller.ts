@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entity/user.entity';
 // import { getUser } from './decorator/get-user.decorator';
@@ -23,15 +23,15 @@ export class UserController {
 
     @ApiOperation({ summary: '내 프로필 보기' })
     @Get('/profile')
-    async getMyProfile(@Body('user_id') id: number, @Req() req: Request): Promise<User> {
+    async getMyProfile(@Body('user_id') id: number, @Req() req: Request, @Res() res: Response): Promise<User> {
         console.log(req);
-        return await this.userService.getMyProfile(id);
+        return await this.userService.getMyProfile(id, res);
     }
 
     @ApiOperation({ summary: '다른 유저 프로필 보기' })
     @Get('/profile/:id')
-    async getProfileByUserId(@Param('id', ParseIntPipe) id: number): Promise<User> {
-        return await this.userService.getProfileByUserId(id);
+    async getProfileByUserId(@Param('id', ParseIntPipe) id: number, @Res() res: Response): Promise<User> {
+        return await this.userService.getProfileByUserId(id, res);
     }
 
     @ApiOperation({ summary: '내 프로필 편집(nickname, two_factor, avatar)' })

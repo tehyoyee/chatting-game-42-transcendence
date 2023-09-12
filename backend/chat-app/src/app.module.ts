@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entity/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { typeORMConfig } from './configs/typeorm.config';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { typeORMConfig } from './configs/typeorm.config';
     //   entities: [User],
     //   synchronize: true,
     // }),
-    UserModule, AuthModule
+    UserModule, AuthModule, ChatModule
   ],
   controllers: [AppController],
   providers: [AppService],

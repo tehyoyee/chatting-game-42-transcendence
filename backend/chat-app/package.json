@@ -26,6 +26,7 @@
     "@nestjs/jwt": "^10.1.1",
     "@nestjs/passport": "^10.0.1",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.2.5",
     "@nestjs/swagger": "^7.1.10",
     "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^10.2.5",
@@ -40,8 +41,10 @@
     "pg": "^8.11.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.7.2",
     "swagger-ui-express": "^5.0.0",
-    "typeorm": "^0.3.17"
+    "typeorm": "^0.3.17",
+    "ws": "^8.14.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

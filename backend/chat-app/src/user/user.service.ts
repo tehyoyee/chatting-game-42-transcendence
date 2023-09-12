@@ -15,7 +15,7 @@ export class UserService {
         return await this.userRepository.createUser(createUserDto);
     }
 
-    async getMyProfile(id: number): Promise<User> {
+    async getMyProfile(id: number, res: Response): Promise<User> {
         return await this.userRepository.getMyProfile(id);
     }
 
@@ -23,7 +23,7 @@ export class UserService {
         return await this.userRepository.getProfileByUserName(nickname);
     }
 
-    async getProfileByUserId(id: number): Promise<User> {
+    async getProfileByUserId(id: number, res: Response): Promise<User> {
         return await this.userRepository.getProfileByUserId(id);
     }
 

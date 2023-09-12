@@ -39,8 +39,11 @@ export class UserRepository extends Repository<User> {
     //     return newUser;
     // }
 
+    //
     async getMyProfile(id: number): Promise<User> {
-
+        
+        //res.send(loginUser);
+        //res.json();
         return 
     }
 
