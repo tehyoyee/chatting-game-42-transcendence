@@ -13,6 +13,7 @@ export default function Logout() {
 	const { loggedIn, updateLoginState } = useAuthContext();
 	const router = useRouter();
 
+	console.log("logout rerender");
   async function handleLogout() {
     if (!loggedIn) {
       alert("Not logged in currently");

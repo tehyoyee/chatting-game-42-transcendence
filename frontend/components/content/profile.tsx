@@ -6,6 +6,8 @@ import User from '@/components/user/user';
 import { useAuthContext } from '@/components/user/auth';
 import styles from '/styles/profile.module.css';
 
+const profileUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/profile`;
+
 function uploadImage() {
   alert("upload image");
 }
@@ -29,6 +31,19 @@ export default function Profile() {
   const { loggedIn } = useAuthContext();
 	const [ profile, setProfile ] = useState();
 
+	useEffect(() => {
+		(async() => {
+			await fetch(profileUrl, {
+				method: 'GET',
+				credentials: 'include',
+			})
+			.then(res => res.json)
+			.then(data => {console.log(data)})
+			.catch(err => {
+				console.log(`${profileUrl}: fetch failed: ${err}`);
+			});
+		})()
+	}, [profile]);
   const userProps = [
     {
       prop: "name",
