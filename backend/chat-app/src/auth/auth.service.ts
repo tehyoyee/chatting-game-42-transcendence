@@ -54,17 +54,22 @@ export class AuthService {
 			const payload = user.data.login;
 			const newAccessToken = this.jwtService.sign({ payload });
 
+			console.log(`uid ${user.data.id}`);
 			const found = await this.userService.getProfileByUserId(user.data.id);
 			// console.log(found);
-			if (found) {
-				res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
+
+			// EDITED
+			// for new user to get cookie
+			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
+			if (found) { 
+			//	res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
 				res.send("sendCookie");
 				return ;
 			}
 			const createUserDto: CreateUserDto = {
 				user_id: user.data.id,
 				username: user.data.login,
-				nickname: generateRandomString(12).toString(),
+				nickname: generateRandomString(12).toString(), // await
 				email: user.data.email,
 				avatar: "Temporary Avator",
 			};
@@ -128,6 +133,5 @@ export class AuthService {
 
 	signOut(res: Response) {
 		res.clearCookie('token').json({ message: "Signned Out" });
-		// res.send();
 	}
 }
