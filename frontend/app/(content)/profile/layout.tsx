@@ -8,8 +8,8 @@ export default function Layout({
   return (
     <>
       <div className={`centerContentBox ${styles.profile}`}>
-	{children}
+				{children}
       </div>
-    </>
+		</>
   );
 }
