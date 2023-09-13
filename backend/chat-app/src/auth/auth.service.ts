@@ -74,6 +74,7 @@ export class AuthService {
 				avatar: "Temporary Avator",
 			};
 			this.userService.createUser(createUserDto);
+			res.send();
 			return;
 		} catch (err) {
 			console.log(`signUp error: ${err}`);
