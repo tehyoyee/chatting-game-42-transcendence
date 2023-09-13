@@ -23,15 +23,16 @@ export class UserController {
 
     @ApiOperation({ summary: '내 프로필 보기' })
     @Get('/profile')
-    async getMyProfile(@Body('user_id') id: number, @Req() req: Request, @Res() res: Response): Promise<User> {
+    //가드 처리
+    async getMyProfile(@Body('user_id') id: number, @Req() req: Request): Promise<User> {
         console.log(req);
-        return await this.userService.getMyProfile(id, res);
+        return await this.userService.getMyProfile(id);
     }
 
     @ApiOperation({ summary: '다른 유저 프로필 보기' })
     @Get('/profile/:id')
-    async getProfileByUserId(@Param('id', ParseIntPipe) id: number, @Res() res: Response): Promise<User> {
-        return await this.userService.getProfileByUserId(id, res);
+    async getProfileByUserId(@Param('id', ParseIntPipe) id: number): Promise<User> {
+        return await this.userService.getProfileByUserId(id);
     }
 
     @ApiOperation({ summary: '내 프로필 편집(nickname, two_factor, avatar)' })

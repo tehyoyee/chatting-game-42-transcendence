@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { ChannelStatus } from "../enum/channel_status.enum";
+import { ChannelType} from "../enum/channel_type.enum";
 import { Message } from "./message.entity";
 import { UserChannelBridge } from "./user-channel-bridge.entity";
 
@@ -11,8 +11,8 @@ export class Channel extends BaseEntity {
     @Column()
     channel_name: string;
 
-    @Column({ default: ChannelStatus.PUBLIC })
-    status: ChannelStatus;
+    @Column({ default: ChannelType.PUBLIC })
+    channel_type: ChannelType;
 
     @Column({ nullable: true })
     channel_pwd: string;

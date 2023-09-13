@@ -5,6 +5,7 @@ import { NotFoundError } from "rxjs";
 import { UserStatus } from "./enum/user-status.enum";
 import { UserAchievement } from "./enum/user-achievements.enum";
 import { CreateUserDto } from "./dto/create-user.dto";
+import { verify } from "crypto";
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -41,10 +42,11 @@ export class UserRepository extends Repository<User> {
 
     //
     async getMyProfile(id: number): Promise<User> {
-        
-        //res.send(loginUser);
-        //res.json();
-        return 
+        const currentUser = await this.getProfileByUserId(id);
+        if (!currentUser)
+            throw new NotFoundException(`${id} 유저는 없다`);   
+
+        return currentUser;
     }
 
     async getProfileByUserName(username: string): Promise<User> {

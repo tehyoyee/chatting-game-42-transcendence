@@ -56,7 +56,7 @@ export class AuthService {
 		}
 		return ;
 	}
-//63 ~ 69 => 로그인 한 유저의 jwt 쿠키를 열어볼 수 있다.
+//63 ~ 70 => 로그인 한 유저의 jwt 쿠키를 열어볼 수 있다.
 //이걸로 유저정보 불러오면 됨!
 	checkLoginState(req: Request, res: Response) {
 		try {
