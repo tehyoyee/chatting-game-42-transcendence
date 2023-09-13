@@ -5,7 +5,19 @@ import { useState, useEffect } from 'react';
 import User from '@/components/user/user';
 import styles from '/styles/profile.module.css';
 
-const profileUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/profile`;
+// incomplete
+interface IProfileType {
+	user_id: number,
+	username: string,
+	nickname: string,
+	avartar: string, // path to profile image stored in frontend server local directory
+	email: string,
+	point: number,
+};
+
+/////////////////////////////////////////////////////////////////////////////
+const profileUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/profile/99922`;
+/////////////////////////////////////////////////////////////////////////////
 
 function uploadImage() {
   alert("upload image");
@@ -27,7 +39,7 @@ function UploadBtn({ callback, children }: { callback: any, children: any}) {
 }
 
 export default function Profile() {
-  const [ profile, setProfile ] = useState();
+  const [ profile, setProfile ] = useState<IProfileType>();
 
   useEffect(() => {
     (async() => {
@@ -35,23 +47,41 @@ export default function Profile() {
         method: 'GET',
         credentials: 'include',
       })
-      .then(res => res.json)
-      .then(data => {console.log(data)})
+      .then(res => res.json())
+      .then(data => {setProfile(data)})
       .catch(err => {
         console.log(`${profileUrl}: fetch failed: ${err}`);
       });
     })()
   }, [profile]);
+	//////////////////////////////
   const userProps = [
     {
-      prop: "name",
-      value: "value",
+      prop: "id",
+      value: profile?.user_id,
+    },
+    {
+      prop: "username",
+      value: profile?.username,
+    },
+    {
+      prop: "nickname",
+      value: profile?.nickname,
     },
     {
       prop: "email",
-      value: "a@b.com",
+      value: profile?.email,
+    },
+    {
+      prop: "point",
+      value: profile?.point,
+    },
+    {
+      prop: "avartar",
+      value: profile?.avartar,
     },
   ];
+	//////////////////////////////
 
 //  const { recentMatchHistory, matchRecord, ranking, archivement } = pullProfileData();
 

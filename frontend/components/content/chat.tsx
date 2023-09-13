@@ -9,8 +9,6 @@ import { useFetch } from "@/lib/hook";
 interface ChatRoom {
   id: number,
   name: string,
-  curUser: number,
-  maxUser: number,
 };
 
 interface ChatRooms {
@@ -24,9 +22,9 @@ export default function Chat() {
   const test: ChatRooms = {
     curRoomId: 2,
     chatRoomArr: [
-      { id: 1, name: "abc", curUser: 0, maxUser: 1 },
-      { id: 2, name: "XYZ", curUser: 2, maxUser: 4 },
-      { id: 3, name: "ijk", curUser: 99, maxUser: 9 },
+      { id: 1, name: "abc" },
+      { id: 2, name: "XYZ" },
+      { id: 3, name: "ijk" },
     ]
   };
   const [chatRooms, setChatRooms] = useFetch(chatReqUrl, test);
@@ -56,7 +54,7 @@ export default function Chat() {
 					data-key={info.id}
 					style={{
 				}}>
-					{`${info.name}  ${info.curUser}/${info.maxUser}`}
+					{`${info.name}`}
 				</button>
 			</li>
 		);
