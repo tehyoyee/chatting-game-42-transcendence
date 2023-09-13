@@ -1,0 +1,20 @@
+.button {
+	width: 214px;
+	height: 40px;
+	margin: 2px;
+	padding: 2px;
+	border-radius: 0.2rem;
+	border-color: black;
+	border-style: solid;
+	border-width: 1px;
+	background-color: lightgray;
+}
+
+.curButton {
+	background-color: lightgreen;
+}
+
+.button:hover {
+	filter: contrast(0.8);
+	border-width: 2px;
+}

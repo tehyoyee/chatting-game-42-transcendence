@@ -12,10 +12,10 @@ export default function Callback() {
   const { loggedIn, updateLoginState } = useAuthContext();
   const router = useRouter();
   useEffect(() => {
-		(async() => {
+    (async() => {
       if (loggedIn === true) {
-				router.push('/');
-				return;
+        router.push('/');
+        return;
       }
       if (called.current) return; // prevent re-render caused by strict mode
       called.current = true;
@@ -25,15 +25,15 @@ export default function Callback() {
       if (searchParams.get('code') == null) return;
 
       await fetch(`${tokenUrl}${window.location.search}`, {
-				method: 'GET',
-				credentials: 'include',
+        method: 'GET',
+        credentials: 'include',
       })
       .then(() => {
-				updateLoginState();
-				router.push('/');
+        updateLoginState();
+        router.push('/');
       })
       .catch(reason => {
-				console.log(`${tokenUrl}: fetch failed: ${reason}`);
+        console.log(`${tokenUrl}: fetch failed: ${reason}`);
       });
     })()
   }, [updateLoginState, loggedIn, router]);

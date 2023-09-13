@@ -8,6 +8,7 @@ interface IAuthContext {
   loggedIn: boolean,
   user: Object,
   updateLoginState: Function,
+  updated: boolean,
 };
 
 const AuthContext = createContext<IAuthContext | null>(null);
@@ -22,6 +23,7 @@ export function useAuthContext() {
 
 export default function AuthContextProvider({ children }: { children: ReactNode }) {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [updated, setUpdated] = useState(false);
   const [user, setUser] = useState({});
 
   const updateLoginState = useCallback(async () => {
@@ -31,7 +33,8 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
     })
     .then(res => res.json())
     .then(data => {
-			console.log(data);
+      console.log(`updateLoginState: ${data.loggedIn}`);
+      setUpdated(true);
       setLoggedIn(data.loggedIn);
       data.user && setUser(data.user);
     })
@@ -46,7 +49,7 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
   // does monitoring required?
 
   return (
-    <AuthContext.Provider value={{ loggedIn, user, updateLoginState }}>
+    <AuthContext.Provider value={{ loggedIn, user, updateLoginState, updated }}>
       {children}
     </AuthContext.Provider>
   );

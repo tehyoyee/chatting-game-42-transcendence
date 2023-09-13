@@ -14,7 +14,7 @@ enum NavBarPos {
 // sessionStorage, localStorage to store status
 // export default function NavBar({ status }: { status: NavBarPos }) {
 export default function NavBar() {
-  const [state, setState] = useState(NavBarPos.game);
+  const [state, setState] = useState(NavBarPos.chat);
   const navBtn: string[] = ["chat", "social", "game", "profile"];
 
   function updateState(e: any) {
@@ -26,15 +26,15 @@ export default function NavBar() {
   return (
     <div className={styles.navbar} onClick={updateState}>
       {navBtn.map((name: string) => {
-				return (
-					<Link
-						key={name}
-						id={`#${name}NavBtn`}
-						className={`${styles.button} ${navBtn[state] === name ? styles.current : styles.rest}`}
-						href={`/content/${name}`}>{name}
-					</Link>
-				);
+        return (
+          <Link
+            key={name}
+            id={`#${name}NavBtn`}
+            className={`${styles.button} ${navBtn[state] === name ? styles.current : styles.rest}`}
+            href={`/${name}`}>{name}
+          </Link>
+        );
       })}
-		</div>
+    </div>
   );
 }

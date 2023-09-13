@@ -12,11 +12,21 @@ export interface SideBarState {
   pos: SideBarPos;
 };
 
-export default function SideBar({ state, children }: { state: SideBarState, children: ReactNode }) {
-  const sideBarPosName = [styles.sideBarLeft, styles.sideBarRight];
+export default function SideBar(
+  { 
+    children,
+    className = "",
+    width = ""
+  }: {
+    children: ReactNode,
+    className?: string,
+    width?: string,
+  }) {
   return (
-    <div className={`${styles.sideBar} ${sideBarPosName[state.pos]}`}>
-      <p>sidebar{state.pos}</p>
+    <div className={`${styles.sideBar} ${className}`}
+      style={{
+        width: `${width}`,
+      }}>
       {children}
     </div>
   );

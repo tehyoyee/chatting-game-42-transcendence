@@ -8,6 +8,7 @@ import { UserService } from 'src/user/user.service';
 import { Observable, firstValueFrom } from 'rxjs';
 import * as config from 'config';
 import { AxiosRequestConfig } from 'axios';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 const dbconfig = config.get('intra');
 const grant_type = dbconfig.get('grant_type');
@@ -23,15 +24,25 @@ export class AuthService {
 		private readonly httpService: HttpService,
 	) {}
 	
-	auth(req) {
-		// console.log(req);
-		return req;
-	}
-
 	async signUp(code: string, res: Response) {
-		try {
-			const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
 
+		try {
+			const generateRandomString = async ( len: number) => {
+				const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
+				let randomString: string = '';
+				for (let i = 0; i < len; i++) {
+				const rnum = Math.floor(Math.random() * chars.length);
+				randomString += chars.substring(rnum, rnum + 1);
+				}
+				const checkDuplicate = await this.userService.getProfileByNickName(randomString);
+
+				if (checkDuplicate) {
+					return generateRandomString(len);
+				}
+				console.log(randomString);
+				return randomString;
+			}
+			const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
 			const axiosConfig: AxiosRequestConfig = {
 				headers: {
 				Authorization: `Bearer ${accessToken.data.access_token}`
@@ -39,28 +50,67 @@ export class AuthService {
 				withCredentials: true,
 			}
 			const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
-			const userA = {
+			// console.log(user);
+			const payload = user.data.login;
+			const newAccessToken = this.jwtService.sign({ payload });
+
+			console.log(`uid ${user.data.id}`);
+			const found = await this.userService.getProfileByUserId(user.data.id);
+			// console.log(found);
+
+			// EDITED
+			// for new user to get cookie
+			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
+			if (found) { 
+			//	res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
+				res.send("sendCookie");
+				return ;
+			}
+			const createUserDto: CreateUserDto = {
+				user_id: user.data.id,
+				username: user.data.login,
+				nickname: generateRandomString(12).toString(), // await
 				email: user.data.email,
-				id: user.data.id,
-			} 
-			const newAccessToken = this.jwtService.sign({ userA });
-			res.cookie('token', newAccessToken,{
-				httpOnly: true,
-				maxAge: 60 * 60,
-				sameSite: 'lax',
-			});
+				avatar: "Temporary Avator",
+			};
+			this.userService.createUser(createUserDto);
 			res.send();
+			return;
 		} catch (err) {
 			console.log(`signUp error: ${err}`);
-			res.send();
 		}
 		return ;
 	}
-//63 ~ 70 => 로그인 한 유저의 jwt 쿠키를 열어볼 수 있다.
-//이걸로 유저정보 불러오면 됨!
+		// try {
+		// 	const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
+
+		// 	const axiosConfig: AxiosRequestConfig = {
+		// 		headers: {
+		// 		Authorization: `Bearer ${accessToken.data.access_token}`
+		// 		},
+		// 		withCredentials: true,
+		// 	}
+		// 	const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
+		// 	const userA = {
+		// 		email: user.data.email,
+		// 		id: user.data.id,
+		// 	} 
+		// 	const newAccessToken = this.jwtService.sign({ userA });
+		// 	res.cookie('token', newAccessToken,{
+		// 		httpOnly: true,
+		// 		maxAge: 60 * 60,
+		// 		sameSite: 'lax',
+		// 	});
+		// 	res.send();
+		// } catch (err) {
+		// 	console.log(`signUp error: ${err}`);
+		// 	res.send();
+		// }
+		// return ;
+
 	checkLoginState(req: Request, res: Response) {
 		try {
-			console.log(req);
+			// console.log(req);
 			const token = req.cookies['token'];
 
 			if (!token) {
@@ -84,6 +134,5 @@ export class AuthService {
 
 	signOut(res: Response) {
 		res.clearCookie('token').json({ message: "Signned Out" });
-		res.send();
 	}
 }
