@@ -1,9 +1,6 @@
-import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryColumn } from "typeorm";
 import { UserStatus } from "../enum/user-status.enum";
 import { UserAchievement } from "../enum/user-achievements.enum";
-import { Message } from "src/chat/entity/message.entity";
-import { Channel } from "src/chat/entity/channel.entity";
-import { UserChannelBridge } from "src/chat/entity/user-channel-bridge.entity";
 
 @Entity()
 export class User extends BaseEntity {

@@ -27,24 +27,10 @@ export class UserRepository extends Repository<User> {
         return newUser;
     }
 
-
-    // async createUser(username: string): Promise<User> {
-    //     console.log('username: ', username);
-        
-    //     const newUser = await this.create({
-    //         username,
-    //         nickname: username,
-    //     });
-
-    //     await this.save(newUser);
-    //     return newUser;
-    // }
-
-    //
     async getMyProfile(id: number): Promise<User> {
         const currentUser = await this.getProfileByUserId(id);
         if (!currentUser)
-            throw new NotFoundException(`${id} 유저는 없다`);   
+            throw new NotFoundException(`유저 ${id}는 없습니다.`);   
 
         return currentUser;
     }

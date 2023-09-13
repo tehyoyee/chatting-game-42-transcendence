@@ -9,18 +9,6 @@ import { ApiOperation } from '@nestjs/swagger';
 export class UserController {
     constructor(private userService: UserService) {}
 
-    // 없어도 될듯? to jiwkwon
-    // @ApiOperation({ summary: '신규계정생성' })
-    // @Post()
-    // async createUser(@Body('username') username: string): Promise<User> {
-    //     const found = await this.userService.getProfileByUserName(username);
-    //     if (found)
-    //         return found;
-        
-    //     console.log('username: ', username);
-    //     return await this.userService.createUser(username);
-    // }
-
     @ApiOperation({ summary: '내 프로필 보기' })
     @Get('/profile')
     //가드 처리
