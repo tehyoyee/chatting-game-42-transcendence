@@ -6,9 +6,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Channel } from './entity/channel.entity';
 import { Message } from './entity/message.entity';
 import { UserChannelBridge } from './entity/user-channel-bridge.entity';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Channel, Message, UserChannelBridge])],
+  imports: [
+    TypeOrmModule.forFeature([Channel, Message, UserChannelBridge]),
+    UserModule
+  ],
   providers: [ChatService, ChatGateway],
   controllers: [ChatController]
 })

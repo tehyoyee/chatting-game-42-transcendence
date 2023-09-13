@@ -7,7 +7,7 @@ export class CreateChannelDto {
     name: string;
 
     @IsEnum(ChannelType)
-    status: ChannelType;
+    type: ChannelType;
 
     @IsOptional()
     password?: string;

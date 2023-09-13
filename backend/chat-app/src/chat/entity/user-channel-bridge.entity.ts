@@ -12,7 +12,7 @@ export class UserChannelBridge extends BaseEntity {
     channel_id: number;
     
     @Column()
-    class: UserType;
+    user_type: UserType;
 
     @Column({ default: false })
     is_banned: boolean;
@@ -21,7 +21,7 @@ export class UserChannelBridge extends BaseEntity {
     is_muted: boolean;
 
     //아래는 관계 표현
-    @ManyToOne(type => User, user => user.join_channels, { eager: true })
+    @ManyToOne(type => User, user => user.join_channels, { eager: false })
     user: User;
     
     @ManyToOne(type => Channel, channel => channel.details, { eager: true })
