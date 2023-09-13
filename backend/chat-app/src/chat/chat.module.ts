@@ -7,13 +7,15 @@ import { Channel } from './entity/channel.entity';
 import { Message } from './entity/message.entity';
 import { UserChannelBridge } from './entity/user-channel-bridge.entity';
 import { UserModule } from 'src/user/user.module';
+import { ChannelRepository } from './channel.repository';
+import { MessageRepository } from './message.repository';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Channel, Message, UserChannelBridge]),
     UserModule
   ],
-  providers: [ChatService, ChatGateway],
+  providers: [ChatService, ChatGateway, ChannelRepository, MessageRepository],
   controllers: [ChatController]
 })
 export class ChatModule {}

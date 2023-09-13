@@ -14,9 +14,19 @@ export class ChatController {
 
     }
 
-    @Get('/channel/list')
+    @Get('/channel/list/join')
     getJoinChannelList() {
 
+    }
+
+    @Get('channel/list/all')
+    getAllChannelList() {
+
+    }
+
+    @Get('/channel/:id')
+    JoinChannelById() {
+        
     }
     
 }
