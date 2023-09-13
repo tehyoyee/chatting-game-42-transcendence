@@ -7,6 +7,7 @@ import { Observable, firstValueFrom } from 'rxjs';
 import * as config from 'config';
 import { AxiosRequestConfig } from 'axios';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { MailService } from './mail.service';
 
 const dbconfig = config.get('intra');
 const grant_type = dbconfig.get('grant_type');
@@ -19,11 +20,11 @@ export class AuthService {
 	constructor(
 		private userService: UserService,
 		private jwtService: JwtService,
-		private readonly httpService: HttpService,
+		private httpService: HttpService,
+		private mailService: MailService,
 	) {}
 	
 	async signUp(code: string, res: Response) {
-
 		try {
 			const generateRandomString = async ( len: number) => {
 				const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
@@ -54,13 +55,12 @@ export class AuthService {
 			const newAccessToken = this.jwtService.sign({ payload });
 			const found = await this.userService.getProfileByUserId(user.data.id);
 
-			// EDITED
-			// for new user to get cookie
 			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
 			if (found) { 
 				res.send("sendCookie");
 				return ;
 			}
+
 			const createUserDto: CreateUserDto = {
 				user_id: user.data.id,
 				username: user.data.login,
@@ -68,7 +68,7 @@ export class AuthService {
 				email: user.data.email,
 				avatar: "Temporary Avator",
 			};
-			console.log(createUserDto);
+
 			this.userService.createUser(createUserDto);
 			res.send();
 			return;
@@ -78,9 +78,8 @@ export class AuthService {
 		return ;
 	}
 
-	checkLoginState(req: Request, res: Response) {
+	async checkLoginState(req: Request, res: Response) {
 		try {
-			// console.log(req);
 			const token = req.cookies['token'];
 
 			if (!token) {
@@ -88,6 +87,16 @@ export class AuthService {
 				return;
 			}
 			const { payload } = this.jwtService.verify(token);
+			
+			const found = await this.userService.getProfileByUserId(payload.id);
+			if (!found) {
+				res.json({ loggedIn: false});
+			}
+			if (this.userService.getTwoFactorByUserId(payload.id)) {
+				const clientEmail = await this.userService.getEmailByUserId(payload.id);
+				const verificationCode = await this.mailService.secondAuthentication(clientEmail);
+				console.log(verificationCode);
+			}
 			const newToken = this.jwtService.sign({ payload });
 			res.cookie('token', newToken, {
 				httpOnly: true,

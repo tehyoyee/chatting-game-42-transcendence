@@ -57,6 +57,20 @@ export class UserRepository extends Repository<User> {
 
         return found;
     }
+    
+    async getTwoFactorByUserId(id: number): Promise<boolean> {
+        const found = await this.findOne({
+            where: {user_id: id}
+        })
+        return found.two_factor;
+    }
+
+    async getEmailByUserId(id: number): Promise<string> {
+        const found = await this.findOne({
+            where: {user_id: id}
+        })
+        return found.email;
+    }
 
     async updateTwoFactor(user: User, newTwoFactor: boolean): Promise<void> {
         user.two_factor = newTwoFactor;

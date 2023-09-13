@@ -31,6 +31,14 @@ export class UserService {
         return await this.userRepository.getProfileByNickName(username);
     }
 
+    async getTwoFactorByUserId(id: number): Promise<Boolean> {
+        return await this.userRepository.getTwoFactorByUserId(id);
+    }
+
+    async getEmailByUserId(id: number): Promise<string> {
+        return await this.userRepository.getEmailByUserId(id);
+    }
+
     async updateProfile(id: number, updateUserDto: UpdateUserDto): Promise<void> {
         const found = await this.userRepository.getProfileByUserId(id);
         if (!found)
