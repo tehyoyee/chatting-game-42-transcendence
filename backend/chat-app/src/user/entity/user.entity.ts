@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, PrimaryColumn } from "typeorm";
-import { UserStatus } from "./enum/user-status.enum";
-import { UserAchievement } from "./enum/user-achievements.enum";
+import { UserStatus } from "../enum/user-status.enum";
+import { UserAchievement } from "../enum/user-achievements.enum";
 
 @Entity()
 export class User extends BaseEntity {

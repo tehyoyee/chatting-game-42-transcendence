@@ -1,5 +1,5 @@
 import { DataSource, Not, Repository } from "typeorm";
-import { User } from "./user.entity";
+import { User } from "./entity/user.entity";
 import { ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { NotFoundError } from "rxjs";
 import { UserStatus } from "./enum/user-status.enum";
@@ -26,22 +26,12 @@ export class UserRepository extends Repository<User> {
         return newUser;
     }
 
-
-    // async createUser(username: string): Promise<User> {
-    //     console.log('username: ', username);
-        
-    //     const newUser = await this.create({
-    //         username,
-    //         nickname: username,
-    //     });
-
-    //     await this.save(newUser);
-    //     return newUser;
-    // }
-
     async getMyProfile(id: number): Promise<User> {
+        const currentUser = await this.getProfileByUserId(id);
+        if (!currentUser)
+            throw new NotFoundException(`유저 ${id}는 없습니다.`);   
 
-        return 
+        return currentUser;
     }
 
     async getProfileByUserName(username: string): Promise<User> {
