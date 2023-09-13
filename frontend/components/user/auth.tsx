@@ -6,7 +6,7 @@ const stateUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/state`;
 
 interface IAuthContext {
   loggedIn: boolean,
-  user: Object,
+  user: any, // TODO type
   updateLoginState: Function,
   updated: boolean,
 };
@@ -33,7 +33,7 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
     })
     .then(res => res.json())
     .then(data => {
-      console.log(`updateLoginState: ${data.loggedIn}`);
+      console.log(`updateLoginState: ${data}`);
       setUpdated(true);
       setLoggedIn(data.loggedIn);
       data.user && setUser(data.user);
