@@ -12,7 +12,7 @@ export default function Login() {
     fetch(loginUrl, {
       method: 'GET',
       headers: {
-	Origin: `${process.env.NEXT_PUBLIC_APP_FRONT_URL}`,
+  Origin: `${process.env.NEXT_PUBLIC_APP_FRONT_URL}`,
       },
     })
     .then(res => {

@@ -6,14 +6,14 @@ import { useAuthContext } from '@/components/user/auth';
 
 export default function Page() {
   const { loggedIn } = useAuthContext();
-	const router = useRouter();
+  const router = useRouter();
 
-	useEffect(() => {
-		if (loggedIn === true) {
-			router.push('/chat');
-		} else {
-			router.push('/login');
-		}
-	}, [loggedIn]);
-	return <></>;
+  useEffect(() => {
+    if (loggedIn === true) {
+      router.push('/chat');
+    } else {
+      router.push('/login');
+    }
+  }, [loggedIn]);
+  return <></>;
 }

@@ -13,20 +13,20 @@ export interface SideBarState {
 };
 
 export default function SideBar(
-	{ 
-		children,
-		className = "",
-		width = ""
-	}: {
-		children: ReactNode,
-		className?: string,
-		width?: string,
-	}) {
+  { 
+    children,
+    className = "",
+    width = ""
+  }: {
+    children: ReactNode,
+    className?: string,
+    width?: string,
+  }) {
   return (
     <div className={`${styles.sideBar} ${className}`}
-			style={{
-				width: `${width}`,
-			}}>
+      style={{
+        width: `${width}`,
+      }}>
       {children}
     </div>
   );

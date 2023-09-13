@@ -6,13 +6,13 @@ import { useAuthContext } from '@/components/user/auth';
 
 export default function ComponentProtector({ children }: { children: ReactNode }) {
   const { loggedIn } = useAuthContext();
-	const router = useRouter();
+  const router = useRouter();
 
-	useEffect(() => {
-		if (loggedIn == false) {
-			router.push('/');
-		}
-	}, []);
+  useEffect(() => {
+    if (loggedIn == false) {
+      router.push('/');
+    }
+  }, []);
 
   return ((loggedIn && <>{children}</>) || <></>);
 }

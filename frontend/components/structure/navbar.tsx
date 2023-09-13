@@ -26,15 +26,15 @@ export default function NavBar() {
   return (
     <div className={styles.navbar} onClick={updateState}>
       {navBtn.map((name: string) => {
-				return (
-					<Link
-						key={name}
-						id={`#${name}NavBtn`}
-						className={`${styles.button} ${navBtn[state] === name ? styles.current : styles.rest}`}
-						href={`/${name}`}>{name}
-					</Link>
-				);
+        return (
+          <Link
+            key={name}
+            id={`#${name}NavBtn`}
+            className={`${styles.button} ${navBtn[state] === name ? styles.current : styles.rest}`}
+            href={`/${name}`}>{name}
+          </Link>
+        );
       })}
-		</div>
+    </div>
   );
 }

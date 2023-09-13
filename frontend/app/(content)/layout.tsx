@@ -8,14 +8,14 @@ export default function Layout({
   children: React.ReactNode
 }) {
   return (
-		<>
-			<NavBar></NavBar>
-			<Logout></Logout>
-			<ComponentProtector>
-				<div className="contentBox">
-					{children}
-				</div>
-			</ComponentProtector>
-		</>
+    <>
+      <NavBar></NavBar>
+      <Logout></Logout>
+      <ComponentProtector>
+        <div className="contentBox">
+          {children}
+        </div>
+      </ComponentProtector>
+    </>
   );
 }

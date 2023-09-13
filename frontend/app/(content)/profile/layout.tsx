@@ -6,8 +6,8 @@ export default function Layout({
   return (
     <>
       <div className={`centerContentBox`}>
-				{children}
+        {children}
       </div>
-		</>
+    </>
   );
 }

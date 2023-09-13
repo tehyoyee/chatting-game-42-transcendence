@@ -21,13 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-				<link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body className={`${inter.className} full-background`}>
-				<h1 className={titleStyles.mainTitle}>Transcendence</h1>
-				<AuthContextProvider>
-					{children}
-				</AuthContextProvider>
+        <h1 className={titleStyles.mainTitle}>Transcendence</h1>
+        <AuthContextProvider>
+          {children}
+        </AuthContextProvider>
       </body>
     </html>
   )
