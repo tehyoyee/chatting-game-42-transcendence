@@ -9,7 +9,7 @@ export default function Page() {
   const { loggedIn, updated } = useAuthContext();
   const router = useRouter();
 
-  console.log("rendering loginpage");
+  console.log(`rendering loginpage: updated=${updated} loggedIn=${loggedIn}`);
 // TODO: buggy
   useEffect(() => {
     if (loggedIn === true) {

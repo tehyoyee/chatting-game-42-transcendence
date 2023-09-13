@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import User from '@/components/user/user';
 import styles from '/styles/profile.module.css';
+import { useAuthContext } from '@/components/user/auth';
 
 // incomplete
 interface IProfileType {
@@ -16,7 +16,7 @@ interface IProfileType {
 };
 
 /////////////////////////////////////////////////////////////////////////////
-const profileUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/profile/99922`;
+const profileUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/profile`;
 /////////////////////////////////////////////////////////////////////////////
 
 function uploadImage() {
@@ -40,10 +40,11 @@ function UploadBtn({ callback, children }: { callback: any, children: any}) {
 
 export default function Profile() {
   const [ profile, setProfile ] = useState<IProfileType>();
+	const { user } = useAuthContext();
 
   useEffect(() => {
     (async() => {
-      await fetch(profileUrl, {
+      await fetch(`${profileUrl}/${user.id}`, {
         method: 'GET',
         credentials: 'include',
       })

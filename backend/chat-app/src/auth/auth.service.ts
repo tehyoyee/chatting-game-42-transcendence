@@ -51,10 +51,9 @@ export class AuthService {
 			}
 			const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
 			// console.log(user);
-			const payload = user.data.login;
+			const payload = { username: user.data.login, id: user.data.id };
 			const newAccessToken = this.jwtService.sign({ payload });
 
-			console.log(`uid ${user.data.id}`);
 			const found = await this.userService.getProfileByUserId(user.data.id);
 			// console.log(found);
 
@@ -117,14 +116,14 @@ export class AuthService {
 			  res.json({ loggedIn: false });
 				return;
 			}
-			const { userData } = this.jwtService.verify(token);
-			const newToken = this.jwtService.sign({ userData });
+			const { payload } = this.jwtService.verify(token);
+			const newToken = this.jwtService.sign({ payload });
 			res.cookie('token', newToken, {
 				httpOnly: true,
 				maxAge: 60 * 60 * 1000,// milli seconds
 				sameSite: 'lax',
 			});
-			res.json({ loggedIn: true, user: userData });
+			res.json({ loggedIn: true, user: payload });
 		} catch (err) {
 			console.log(`checkLoginState error: ${err}`);
 			res.json({ loggedIn: false, error: true});
