@@ -34,8 +34,8 @@ import { MailService } from './mail.service';
         host: 'smtp.gmail.com',
         port: 587,
         auth: {
-          user: 'tehyoyee@gmail.com',
-          pass: 'icfdxuzxjlstesqx'
+          user: config.get('mail.user'),
+          pass: config.get('mail.pass')
         },
       },
       defaults: {

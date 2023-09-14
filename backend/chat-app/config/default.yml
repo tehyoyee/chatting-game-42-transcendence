@@ -9,6 +9,7 @@ db:
 jwt:
   expiresIn: 3600
 
+
 intra:
   grant_type: 'authorization_code'
   client_id: 'u-s4t2ud-75652da54aee75146d3762082688b50e87435656fec9351d9b54b29fc375128a'
