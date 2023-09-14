@@ -93,7 +93,8 @@ export class AuthService {
 				res.json({ loggedIn: false});
 				return;
 			}
-			if (this.userService.getTwoFactorByUserId(payload.id)) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
+			const two_factor = await this.userService.getTwoFactorByUserId(payload.id);
+			if (two_factor) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
 				if (payload.two_factor_signed === false) {
 					const clientEmail = await this.userService.getEmailByUserId(payload.id);
 					const verificationCode = await this.mailService.secondAuthentication(clientEmail);
