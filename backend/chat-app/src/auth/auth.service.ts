@@ -51,7 +51,7 @@ export class AuthService {
 				withCredentials: true,
 			}
 			const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
-			const payload = { username: user.data.login, id: user.data.id };
+			const payload = { username: user.data.login, id: user.data.id, two_factor_signed: false };
 			const newAccessToken = this.jwtService.sign({ payload });
 			const found = await this.userService.getProfileByUserId(user.data.id);
 
@@ -88,15 +88,19 @@ export class AuthService {
 			}
 			const { payload } = this.jwtService.verify(token);
 			
-			const found = await this.userService.getProfileByUserId(payload.id);
-			if (!found) {
+			const found = await this.userService.getProfileByUserId(payload.id);	// 토큰에 해당하는 유저찾기
+			if (!found) { // 잘못된 토큰 -> 토큰 삭제
 				res.json({ loggedIn: false});
+				return;
 			}
-			if (this.userService.getTwoFactorByUserId(payload.id)) {
-				const clientEmail = await this.userService.getEmailByUserId(payload.id);
-				const verificationCode = await this.mailService.secondAuthentication(clientEmail);
-				console.log(verificationCode);
+			if (this.userService.getTwoFactorByUserId(payload.id)) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
+				if (payload.two_factor_signed === false) {
+					const clientEmail = await this.userService.getEmailByUserId(payload.id);
+					const verificationCode = await this.mailService.secondAuthentication(clientEmail);
+					console.log(verificationCode);
+				}
 			}
+			payload.two_factor_signed = true;
 			const newToken = this.jwtService.sign({ payload });
 			res.cookie('token', newToken, {
 				httpOnly: true,

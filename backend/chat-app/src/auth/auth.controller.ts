@@ -10,11 +10,6 @@ import { Request, Response } from 'express';
 export class AuthController {
 	constructor(private authService: AuthService) {}
 
-	@Get('/')
-	asdf() {
-		return 'asdf';
-	}
-
 	// @UseGuards(FortyTwoAuthGuard)
 	// @Get('/42')
 	// async auth(@Request() req) {
@@ -23,6 +18,11 @@ export class AuthController {
 	// 	// return this.authService.auth(req);
 	// }
 	
+	@Get('/')
+	asdf() {
+		return 'asdf';
+	}
+
 	@Get('/signup')
 	signUp(@Query('code') code, @Res() res: Response) {
 		return this.authService.signUp(code, res);
@@ -37,6 +37,9 @@ export class AuthController {
 	signOut(@Res() res: Response) {
 		return this.authService.signOut(res);
 	}
+
+	// @Get('/2fa')
+	// twofactorVarify(@Res() res:)
 
 	// @Get()
 	// @UseGuards(AuthGuard('google'))
