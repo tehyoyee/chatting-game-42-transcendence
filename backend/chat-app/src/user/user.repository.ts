@@ -124,4 +124,19 @@ export class UserRepository extends Repository<User> {
         found.point -= 100;
         return await this.save(found);
     }
+
+    async updateAuthCodeByUserId(id: number, authCode: string): Promise<void> {
+        const found = await this.getProfileByUserId(id);
+        if (!found)
+            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+        found.auth_code = authCode;
+        return;
+    }
+
+    async getAuthCodeByUserId(id: number): Promise<string> {
+        const found = await this.getProfileByUserId(id);
+        if (!found)
+            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+        return found.auth_code;
+    }
 }
