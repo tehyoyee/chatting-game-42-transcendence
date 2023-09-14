@@ -34,13 +34,9 @@ export class AuthService {
 				randomString += chars.substring(rnum, rnum + 1);
 				}
 				const checkDuplicate = await this.userService.getProfileByNickName(randomString);
-				
-				console.log(checkDuplicate);
-
 				if (checkDuplicate) {
 					return generateRandomString(len);
 				}
-				console.log(randomString);
 				return randomString;
 			}
 			const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
