@@ -24,7 +24,7 @@ export class AuthController {
 	}
 
 	@Post('/twofactor')
-	authTwoFactor(@Body() body: any, @Query() inputCode: string) {
+	authTwoFactor(@Body() body: any, @Query('inputCode') inputCode: string) {
 		return this.authService.authTwoFactor(body, inputCode);
 	}
 	
