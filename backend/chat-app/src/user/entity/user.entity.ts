@@ -10,9 +10,6 @@ export class User extends BaseEntity {
     @Column({ default: false })
     two_factor: boolean;
 
-    @Column({ default: false})
-    two_factor_signed: boolean;
-    
     @Column()
     username: string;
     
