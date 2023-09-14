@@ -4,5 +4,9 @@ db:
   password: '1234'
   synchronize: true
 
+mail:
+  user: 'tehyoyee@gmail.com'
+  pass: 'icfdxuzxjlstesqx'
+  
 jwt:
   secret: 'Secret1234'
