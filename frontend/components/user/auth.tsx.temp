@@ -4,11 +4,16 @@ import { useContext, useEffect, useState, useCallback, ReactNode, createContext 
 
 const stateUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/state`;
 
-type AuthContextType = {
+type AuthStateType = {
   loggedIn: boolean,
   user: any, // TODO type
-  updateLoginState: Function,
   updated: boolean,
+	twoFactor: boolean,
+};
+
+type AuthContextType = {
+	authState: AuthStateType,
+  updateLoginState: Function,
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -22,21 +27,37 @@ export function useAuthContext() {
 }
 
 export default function AuthContextProvider({ children }: { children: ReactNode }) {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [updated, setUpdated] = useState(false);
-  const [user, setUser] = useState({});
+  const [authState, setAuthState] = useState<AuthStateType>({
+		loggedIn: false,
+		user: null,
+		updated: false,
+		twoFactor: false,
+	});
 
   const updateLoginState = useCallback(async () => {
     await fetch(stateUrl, {
       method: 'GET',
       credentials: 'include',
     })
-    .then(res => res.json())
+    .then(res => {
+			if (res.ok) return res.json()
+			else throw new Error("invalid response");
+		})
     .then(data => {
       console.log(`updateLoginState: ${data}`);
-      setUpdated(true);
-      setLoggedIn(data.loggedIn);
-      data.user && setUser(data.user);
+			if (data.loggedIn === false) {
+				setAuthState({
+				...authState,
+				loggedIn: false,
+				})
+				return;
+			}
+			setAuthState({
+				loggedIn: data.loggedIn,
+				user: data.user,
+				updated: true,
+				twoFactor: data.user,
+			});
     })
     .catch(reason => {
       console.log(`${stateUrl}: fecth failed: ${reason}`);
@@ -49,7 +70,7 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
   // does monitoring required?
 
   return (
-    <AuthContext.Provider value={{ loggedIn, user, updateLoginState, updated }}>
+    <AuthContext.Provider value={{ authState, updateLoginState }}>
       {children}
     </AuthContext.Provider>
   );
