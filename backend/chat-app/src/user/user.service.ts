@@ -31,25 +31,58 @@ export class UserService {
         return await this.userRepository.getProfileByNickName(username);
     }
 
-    async updateProfile(id: number, updateUserDto: UpdateUserDto): Promise<void> {
+    // async updateProfile(id: number, updateUserDto: UpdateUserDto): Promise<void> {
+    //     const found = await this.userRepository.getProfileByUserId(id);
+    //     if (!found)
+    //         throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+
+    //     if (updateUserDto.two_factor === true || updateUserDto.two_factor === false && found.two_factor !== updateUserDto.two_factor)
+    //         await this.userRepository.updateTwoFactor(found, updateUserDto.two_factor);
+        
+    //     if (updateUserDto.avatar && found.avatar !== updateUserDto.avatar)
+    //         await this.userRepository.updateAvatar(found, updateUserDto.avatar);
+        
+    //     if (updateUserDto.nickname && found.nickname !== updateUserDto.nickname) {
+    //         const duplicate = await this.getProfileByNickName(updateUserDto.nickname);
+    //         if (duplicate)
+    //             throw new ForbiddenException(`${updateUserDto.nickname} 은/는 이미 있는 닉네임입니다.`);
+    //         else
+    //             await this.userRepository.updateNickName(found, updateUserDto.nickname);
+    //     }
+    // }
+
+    async updateNickName(id: number, nickName: string): Promise<User> {
         const found = await this.userRepository.getProfileByUserId(id);
         if (!found)
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
 
-        if (updateUserDto.two_factor === true || updateUserDto.two_factor === false && found.two_factor !== updateUserDto.two_factor)
-            await this.userRepository.updateTwoFactor(found, updateUserDto.two_factor);
-        
-        if (updateUserDto.avatar && found.avatar !== updateUserDto.avatar)
-            await this.userRepository.updateAvatar(found, updateUserDto.avatar);
-        
-        if (updateUserDto.nickname && found.nickname !== updateUserDto.nickname) {
-            const duplicate = await this.getProfileByNickName(updateUserDto.nickname);
+        if (nickName && found.nickname !== nickName) {
+            const duplicate = await this.getProfileByNickName(nickName);
             if (duplicate)
-                throw new ForbiddenException(`${updateUserDto.nickname} 은/는 이미 있는 닉네임입니다.`);
-            else
-                await this.userRepository.updateNickName(found, updateUserDto.nickname);
+                throw new ForbiddenException(`${nickName} 은/는 이미 있는 닉네임입니다.`);
+            
+            return await this.userRepository.updateNickName(found, nickName);
         }
     }
+
+    async updateAvatar(id: number, avatar: string): Promise<User> {
+        const found = await this.userRepository.getProfileByUserId(id);
+        if (!found)
+            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+
+        if (avatar && found.avatar !== avatar)
+            return await this.userRepository.updateAvatar(found, avatar);
+    }
+
+    async updateTwoFactor(id: number, twoFactor: boolean): Promise<User> {
+        const found = await this.userRepository.getProfileByUserId(id);
+        if (!found)
+            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+
+        if (twoFactor === true || twoFactor === false && found.two_factor !== twoFactor)
+            return await this.userRepository.updateTwoFactor(found, twoFactor);
+    }
+
 
     async updateStatus(id: number, status: UserStatus): Promise<User> {
         return await this.userRepository.updateStatus(id, status);

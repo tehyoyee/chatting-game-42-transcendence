@@ -59,19 +59,19 @@ export class UserRepository extends Repository<User> {
         return found;
     }
 
-    async updateTwoFactor(user: User, newTwoFactor: boolean): Promise<void> {
+    async updateTwoFactor(user: User, newTwoFactor: boolean): Promise<User> {
         user.two_factor = newTwoFactor;
-        await this.save(user);
+        return await this.save(user);
     }
     
-    async updateAvatar(user: User, newAvatar: string): Promise<void> {
+    async updateAvatar(user: User, newAvatar: string): Promise<User> {
         user.avatar = newAvatar;
-        await this.save(user);
+        return await this.save(user);
     }
 
-    async updateNickName(user: User, newNickname: string): Promise<void> {
+    async updateNickName(user: User, newNickname: string): Promise<User> {
         user.nickname = newNickname;
-        await this.save(user);
+        return await this.save(user);
     }
 
     async updateStatus(id: number, newStatus: UserStatus): Promise<User> {

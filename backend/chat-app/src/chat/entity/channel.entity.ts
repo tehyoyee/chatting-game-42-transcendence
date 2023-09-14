@@ -8,18 +8,27 @@ export class Channel extends BaseEntity {
     @PrimaryGeneratedColumn()
     channel_id: number;
 
-    @Column()
+    @Column({ unique: true })
     channel_name: string;
 
-    @Column({ default: ChannelType.PUBLIC })
-    channel_type: ChannelType;
+    // @Column({ default: ChannelType.PUBLIC })
+    // channel_type: ChannelType;
+
+    @Column({ default: true })
+    is_channel: boolean;
+    
+    @Column({ default: true })
+    is_public: boolean;
+
+    @Column()
+    salt: string;
 
     @Column({ nullable: true })
     channel_pwd: string;
 
     //아래는 관계 표현
     @OneToMany(type => UserChannelBridge, details => details.channel, { eager: false })
-    details: UserChannelBridge;
+    details: UserChannelBridge[];
 
     @OneToMany(type => Message, messages => messages.channel, { eager: false })
     messages: Message[];

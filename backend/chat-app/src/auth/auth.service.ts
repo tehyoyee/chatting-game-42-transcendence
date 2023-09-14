@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { HttpService } from '@nestjs/axios';
-import { Injectable, NestInterceptor, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NestInterceptor, UnauthorizedException } from '@nestjs/common';
 // import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
@@ -9,6 +9,7 @@ import { Observable, firstValueFrom } from 'rxjs';
 import * as config from 'config';
 import { AxiosRequestConfig } from 'axios';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { User } from 'src/user/entity/user.entity';
 
 const dbconfig = config.get('intra');
 const grant_type = dbconfig.get('grant_type');
@@ -134,5 +135,17 @@ export class AuthService {
 
 	signOut(res: Response) {
 		res.clearCookie('token').json({ message: "Signned Out" });
+	}
+
+	async verifyToken(token: string): Promise<User> {
+		try {
+			const verified = await this.jwtService.verify(token);
+			if (typeof verified === 'object' && 'id' in verified)
+				return verified;
+		
+			throw new UnauthorizedException('token is not verified');
+		} catch (error) {
+			throw new HttpException('Invalid Token', HttpStatus.UNAUTHORIZED)
+		}
 	}
 }

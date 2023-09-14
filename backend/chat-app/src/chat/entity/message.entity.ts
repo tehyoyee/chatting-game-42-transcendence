@@ -7,14 +7,21 @@ export class Message extends BaseEntity {
     @PrimaryGeneratedColumn()
     message_id: number;
     
-    @ManyToOne(type => Channel, channel => channel.messages, { eager: true })
-    @JoinColumn()
-    channel: Channel;
-    
-    @ManyToOne(type => User, user => user.messages, { eager: true })
-    @JoinColumn()
-    user: User;
-    
     @Column()
     content: string;
+    
+    @Column({ name: 'user_id' })
+    user_id: number;
+    
+    @Column({ name: 'channel_id' })
+    channel_id: number;
+    
+    @ManyToOne(type => Channel, channel => channel.messages)
+    @JoinColumn({ name: 'channel_id' })
+    channel: Channel;
+    
+    @ManyToOne(type => User, user => user.messages)
+    @JoinColumn({ name: 'user_id' })
+    user: User;
+    
 }

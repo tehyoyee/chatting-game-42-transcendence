@@ -1,24 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { Channel } from './entity/channel.entity';
 import { User } from 'src/user/entity/user.entity';
-import { CreateChannelDto } from './dto/create-channel.dto';
 import { ChannelRepository } from './channel.repository';
 import { MessageRepository } from './message.repository';
 import { ChatGateway } from './chat.gateway';
+import { ChannelDto } from './dto/channel-dto';
+import { UcbRepository } from './ucb.repository';
 
 @Injectable()
 export class ChatService {
     constructor( private channelRepository: ChannelRepository,
         private messageRepository: MessageRepository,
+        private ucbRepository: UcbRepository,
         private chatGateway: ChatGateway) {}
     
 
-    async createChannel(user: User, createChannelDto: CreateChannelDto): Promise<Channel> {
-        const newChannel =  await this.channelRepository.createChannel(user, createChannelDto);
-        
-        this.chatGateway
+    async createChannel(channelDto: ChannelDto, channelMembers: User[]): Promise<Channel> {
+        const newChannel =  await this.channelRepository.createChannel(channelDto, channelMembers);
+    
+        for (let user of channelMembers)
+            await this.ucbRepository.createUCBridge(user.user_id, newChannel.channel_id, newChannel, user);
+
         return newChannel;
-        
     }
 
     async getChannelByName(name: string): Promise<Channel> {
@@ -29,8 +32,9 @@ export class ChatService {
         return await this.channelRepository.getChannelById(id);
     }
 
-    async JoinChannelById(): Promise<Channel> {
-        return
+    async JoinChannelById(id: number, user: User) {
+        return await this.channelRepository.JoinChannelById(id, user);
+
     }
 
 }
