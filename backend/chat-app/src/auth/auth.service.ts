@@ -34,13 +34,9 @@ export class AuthService {
 				randomString += chars.substring(rnum, rnum + 1);
 				}
 				const checkDuplicate = await this.userService.getProfileByNickName(randomString);
-				
-				console.log(checkDuplicate);
-
 				if (checkDuplicate) {
 					return generateRandomString(len);
 				}
-				console.log(randomString);
 				return randomString;
 			}
 			const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
@@ -51,13 +47,29 @@ export class AuthService {
 				withCredentials: true,
 			}
 			const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
-			const payload = { username: user.data.login, id: user.data.id, two_factor_signed: false };
+			const payload = { username: user.data.login, id: user.data.id };
 			const newAccessToken = this.jwtService.sign({ payload });
 			const found = await this.userService.getProfileByUserId(user.data.id);
 
 			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
-			if (found) { 
-				res.send("sendCookie");
+			if (found) {
+				const two_factor = await this.userService.getTwoFactorByUserId(payload.id);
+				if (two_factor) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
+					const clientEmail = await this.userService.getEmailByUserId(payload.id);
+					const verificationCode = await this.mailService.secondAuthentication(clientEmail);
+					console.log(`server sended ${verificationCode}`);
+					res.send({
+						id: payload.id,
+						firstLogin: false,
+						two_factor: true
+					})
+				} else {
+					res.send({
+						id: payload.id,
+						firstLogin: false,
+						two_factor: false
+					})		
+				}
 				return ;
 			}
 
@@ -70,7 +82,11 @@ export class AuthService {
 			};
 
 			this.userService.createUser(createUserDto);
-			res.send();
+			res.send({
+				id: createUserDto.user_id,
+				firstLogin: true,
+				two_factor: false
+			})
 			return;
 		} catch (err) {
 			console.log(`signUp error: ${err}`);
@@ -93,15 +109,7 @@ export class AuthService {
 				res.json({ loggedIn: false});
 				return;
 			}
-			const two_factor = await this.userService.getTwoFactorByUserId(payload.id);
-			if (two_factor) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
-				if (payload.two_factor_signed === false) {
-					const clientEmail = await this.userService.getEmailByUserId(payload.id);
-					const verificationCode = await this.mailService.secondAuthentication(clientEmail);
-					console.log(verificationCode);
-				}
-			}
-			payload.two_factor_signed = true;
+
 			const newToken = this.jwtService.sign({ payload });
 			res.cookie('token', newToken, {
 				httpOnly: true,
@@ -118,5 +126,13 @@ export class AuthService {
 
 	signOut(res: Response) {
 		res.clearCookie('token').json({ message: "Signned Out" });
+	}
+
+	async authTwoFactor(body: any, inputCode: string) {
+		const serverCode = await this.userService.getAuthCodeByUserId(body.id);
+		if (serverCode === inputCode) {
+			return true;
+		}
+		return false;
 	}
 }

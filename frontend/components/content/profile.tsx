@@ -76,11 +76,7 @@ export default function Profile() {
     {
       prop: "point",
       value: profile?.point,
-    },
-    {
-      prop: "avartar",
-      value: profile?.avartar,
-    },
+    }
   ];
 	//////////////////////////////
 
@@ -112,12 +108,21 @@ export default function Profile() {
               );
             })}
           <br />
+          <li>
+            <label>
+              two factor auth:
+            </label>
+            <input type='checkbox' checked></input>
+            <button>submit</button>
+          </li>
           <UploadBtn callback={uploadImage}>
             Upload image
           </UploadBtn>
           <UploadBtn callback={updateName}>
             Update Name
           </UploadBtn>
+          <br></br>
+            <button>적용</button>
         </ul>
       </div>
       <div
