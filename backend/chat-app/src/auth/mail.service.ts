@@ -29,6 +29,6 @@ export class MailService {
       	.catch((error) => {
         	new ConflictException(error);
       	});
-    	return code;
+    	return;
   	}
 }
