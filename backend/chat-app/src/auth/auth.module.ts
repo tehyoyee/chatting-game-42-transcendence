@@ -11,6 +11,7 @@ import { HttpModule, HttpService } from "@nestjs/axios";
 import { UserRepository } from '../user/user.repository';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MailService } from './mail.service';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -50,7 +51,7 @@ import { MailService } from './mail.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, UserRepository, MailService],
-  exports: [TypeOrmModule, PassportModule, JwtModule],
+  providers: [AuthService, UserService, UserRepository, MailService, JwtStrategy],
+  exports: [TypeOrmModule, JwtStrategy, PassportModule, JwtModule],
 })
 export class AuthModule {}
