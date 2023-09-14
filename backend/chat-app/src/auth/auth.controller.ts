@@ -38,6 +38,12 @@ export class AuthController {
 		return this.authService.signOut(res);
 	}
 
+	@Post('/twofactor')
+	async authTwoFactor(@Body() body: any, @Query() inputCode: string) {
+		return await this.authService.authTwoFactor(body, inputCode);
+	}
+	
+
 	// @Get('/2fa')
 	// twofactorVarify(@Res() res:)
 

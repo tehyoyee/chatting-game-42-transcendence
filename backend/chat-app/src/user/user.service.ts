@@ -75,4 +75,12 @@ export class UserService {
         return await this.userRepository.loseGame(id);
     }
 
+    async updateAuthCodeByUserId(id: number, authCode: string): Promise<void> {
+        return await this.userRepository.updateAuthCodeByUserId(id, authCode);
+    }
+
+    async getAuthCodeByUserId(id: number): Promise<string> {
+        return await this.userRepository.getAuthCodeByUserId(id);
+    }
+
 }
