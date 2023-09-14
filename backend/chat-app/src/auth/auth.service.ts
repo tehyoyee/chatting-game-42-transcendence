@@ -7,6 +7,7 @@ import { Observable, firstValueFrom } from 'rxjs';
 import * as config from 'config';
 import { AxiosRequestConfig } from 'axios';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { MailService } from './mail.service';
 
 const dbconfig = config.get('intra');
 const grant_type = dbconfig.get('grant_type');
@@ -19,11 +20,11 @@ export class AuthService {
 	constructor(
 		private userService: UserService,
 		private jwtService: JwtService,
-		private readonly httpService: HttpService,
+		private httpService: HttpService,
+		private mailService: MailService,
 	) {}
 	
 	async signUp(code: string, res: Response) {
-
 		try {
 			const generateRandomString = async ( len: number) => {
 				const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
@@ -33,13 +34,9 @@ export class AuthService {
 				randomString += chars.substring(rnum, rnum + 1);
 				}
 				const checkDuplicate = await this.userService.getProfileByNickName(randomString);
-				
-				console.log(checkDuplicate);
-
 				if (checkDuplicate) {
 					return generateRandomString(len);
 				}
-				console.log(randomString);
 				return randomString;
 			}
 			const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
@@ -54,13 +51,28 @@ export class AuthService {
 			const newAccessToken = this.jwtService.sign({ payload });
 			const found = await this.userService.getProfileByUserId(user.data.id);
 
-			// EDITED
-			// for new user to get cookie
 			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
-			if (found) { 
-				res.send("sendCookie");
+			if (found) {
+				const two_factor = await this.userService.getTwoFactorByUserId(payload.id);
+				if (two_factor) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
+					const clientEmail = await this.userService.getEmailByUserId(payload.id);
+					const verificationCode = await this.mailService.secondAuthentication(clientEmail);
+					console.log(`server sended ${verificationCode}`);
+					res.send({
+						id: payload.id,
+						firstLogin: false,
+						two_factor: true
+					})
+				} else {
+					res.send({
+						id: payload.id,
+						firstLogin: false,
+						two_factor: false
+					})		
+				}
 				return ;
 			}
+
 			const createUserDto: CreateUserDto = {
 				user_id: user.data.id,
 				username: user.data.login,
@@ -68,9 +80,13 @@ export class AuthService {
 				email: user.data.email,
 				avatar: "Temporary Avator",
 			};
-			console.log(createUserDto);
+
 			this.userService.createUser(createUserDto);
-			res.send();
+			res.send({
+				id: createUserDto.user_id,
+				firstLogin: true,
+				two_factor: false
+			})
 			return;
 		} catch (err) {
 			console.log(`signUp error: ${err}`);
@@ -78,9 +94,8 @@ export class AuthService {
 		return ;
 	}
 
-	checkLoginState(req: Request, res: Response) {
+	async checkLoginState(req: Request, res: Response) {
 		try {
-			// console.log(req);
 			const token = req.cookies['token'];
 
 			if (!token) {
@@ -88,6 +103,13 @@ export class AuthService {
 				return;
 			}
 			const { payload } = this.jwtService.verify(token);
+			
+			const found = await this.userService.getProfileByUserId(payload.id);	// 토큰에 해당하는 유저찾기
+			if (!found) { // 잘못된 토큰 -> 토큰 삭제
+				res.json({ loggedIn: false});
+				return;
+			}
+
 			const newToken = this.jwtService.sign({ payload });
 			res.cookie('token', newToken, {
 				httpOnly: true,
@@ -104,5 +126,13 @@ export class AuthService {
 
 	signOut(res: Response) {
 		res.clearCookie('token').json({ message: "Signned Out" });
+	}
+
+	async authTwoFactor(body: any, inputCode: string) {
+		const serverCode = await this.userService.getAuthCodeByUserId(body.id);
+		if (serverCode === inputCode) {
+			return true;
+		}
+		return false;
 	}
 }

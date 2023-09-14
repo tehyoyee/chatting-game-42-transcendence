@@ -9,7 +9,7 @@ export class User extends BaseEntity {
     
     @Column({ default: false })
     two_factor: boolean;
-    
+
     @Column()
     username: string;
     
@@ -36,6 +36,9 @@ export class User extends BaseEntity {
 
     @Column({ default: UserAchievement.A0 })
     achievement: UserAchievement;
+
+    @Column({ default: '' })
+    auth_code: string;
 
     //친구, 차단, 게임기록, 조인채널목록 추가 필요
 }
