@@ -2,9 +2,9 @@
 
 import { useState, useCallback, SetStateAction } from 'react';
 import style from '../../styles/tfa.module.css';
+import { LoginData } from '@/components/user/callback';
 
-
-export default function Tfa() {
+export default function Tfa({ loginData }: { loginData: LoginData }) {
   const [inputCode, setInputCode] = useState('');
   const [message, setMessage] = useState('');
 
@@ -14,12 +14,12 @@ export default function Tfa() {
 
   const checkAuthCode = useCallback(async (code: any) => {
     try {
-      const response = await fetch('/api/checkAuthCode', {
+      const response = await fetch(`/auth/twofactor?inputCode=${code}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ loginData }),
       });
 
       if (response.ok) {
@@ -43,6 +43,7 @@ export default function Tfa() {
     [checkAuthCode, inputCode]
   );
 
+	// frequent callback refresh -> refresh overhead caching advantage?
   const handleButtonClick = useCallback(() => {
     checkAuthCode(inputCode);
   }, [checkAuthCode, inputCode]);
