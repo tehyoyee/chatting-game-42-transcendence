@@ -1,6 +1,8 @@
-import { BaseEntity, Column, Entity, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
 import { UserStatus } from "../enum/user-status.enum";
 import { UserAchievement } from "../enum/user-achievements.enum";
+import { UserChannelBridge } from "src/chat/entity/user-channel-bridge.entity";
+import { Message } from "src/chat/entity/message.entity";
 
 @Entity()
 export class User extends BaseEntity {
@@ -37,6 +39,15 @@ export class User extends BaseEntity {
     @Column({ default: UserAchievement.A0 })
     achievement: UserAchievement;
 
+    //아래는 관계표현
+    @OneToMany(type => UserChannelBridge, join_channels => join_channels.user, { eager: false })
+    join_channels: UserChannelBridge[];
+    
+    @OneToMany(type => Message, messages => messages.user, { eager: false })
+    messages: Message[];
+
+
+    //친구, 차단, 게임기록 추가 필요
     @Column({ default: '' })
     auth_code: string;
 

@@ -31,32 +31,74 @@ export class UserService {
         return await this.userRepository.getProfileByNickName(username);
     }
 
+    // async updateProfile(id: number, updateUserDto: UpdateUserDto): Promise<void> {
+    //     const found = await this.userRepository.getProfileByUserId(id);
+    //     if (!found)
+    //         throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+
+    //     if (updateUserDto.two_factor === true || updateUserDto.two_factor === false && found.two_factor !== updateUserDto.two_factor)
+    //         await this.userRepository.updateTwoFactor(found, updateUserDto.two_factor);
+        
+    //     if (updateUserDto.avatar && found.avatar !== updateUserDto.avatar)
+    //         await this.userRepository.updateAvatar(found, updateUserDto.avatar);
+        
+    //     if (updateUserDto.nickname && found.nickname !== updateUserDto.nickname) {
+    //         const duplicate = await this.getProfileByNickName(updateUserDto.nickname);
+    //         if (duplicate)
+    //             throw new ForbiddenException(`${updateUserDto.nickname} 은/는 이미 있는 닉네임입니다.`);
+    //         else
+    //             await this.userRepository.updateNickName(found, updateUserDto.nickname);
+    //     }
+    // }
+
     async getTwoFactorByUserId(id: number): Promise<Boolean> {
         return await this.userRepository.getTwoFactorByUserId(id);
     }
-
+    
     async getEmailByUserId(id: number): Promise<string> {
         return await this.userRepository.getEmailByUserId(id);
     }
+    
+    // async updateProfile(id: number, updateUserDto: UpdateUserDto): Promise<void> {
+    //     const found = await this.userRepository.getProfileByUserId(id);
+    //     if (!found)
+    //     throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+    // }
+    
+    async updateNickName(id: number, nickName: string): Promise<User> {
+        const found = await this.userRepository.getProfileByUserId(id);
+        if (!found)
+            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+        if (nickName && found.nickname !== nickName) {
+            const duplicate = await this.getProfileByNickName(nickName);
+            if (duplicate)
+                throw new ForbiddenException(`${nickName} 은/는 이미 있는 닉네임입니다.`);
+            
+            await this.userRepository.updateNickName(found, nickName);
+        }
+        return found;
+    }
 
-    async updateProfile(id: number, updateUserDto: UpdateUserDto): Promise<void> {
+    async updateAvatar(id: number, avatar: string): Promise<User> {
         const found = await this.userRepository.getProfileByUserId(id);
         if (!found)
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
 
-        if (updateUserDto.two_factor === true || updateUserDto.two_factor === false && found.two_factor !== updateUserDto.two_factor)
-            await this.userRepository.updateTwoFactor(found, updateUserDto.two_factor);
-        
-        if (updateUserDto.avatar && found.avatar !== updateUserDto.avatar)
-            await this.userRepository.updateAvatar(found, updateUserDto.avatar);
-        
-        if (updateUserDto.nickname && found.nickname !== updateUserDto.nickname) {
-            const duplicate = await this.getProfileByNickName(updateUserDto.nickname);
-            if (duplicate)
-                throw new ForbiddenException(`${updateUserDto.nickname} 은/는 이미 있는 닉네임입니다.`);
-            else
-                await this.userRepository.updateNickName(found, updateUserDto.nickname);
-        }
+        if (avatar && found.avatar !== avatar)
+            await this.userRepository.updateAvatar(found, avatar);
+
+        return found;
+    }
+
+    async updateTwoFactor(id: number, twoFactor: boolean): Promise<User> {
+        const found = await this.userRepository.getProfileByUserId(id);
+        if (!found)
+            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+
+        if (twoFactor === true || twoFactor === false && found.two_factor !== twoFactor)
+            await this.userRepository.updateTwoFactor(found, twoFactor);
+
+        return found;
     }
 
     async updateStatus(id: number, status: UserStatus): Promise<User> {

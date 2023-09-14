@@ -5,6 +5,7 @@ import { NotFoundError } from "rxjs";
 import { UserStatus } from "./enum/user-status.enum";
 import { UserAchievement } from "./enum/user-achievements.enum";
 import { CreateUserDto } from "./dto/create-user.dto";
+import { verify } from "crypto";
 
 @Injectable()
 export class UserRepository extends Repository<User> {

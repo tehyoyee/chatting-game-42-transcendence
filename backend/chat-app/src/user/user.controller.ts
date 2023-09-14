@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entity/user.entity';
 // import { getUser } from './decorator/get-user.decorator';
@@ -11,6 +11,7 @@ export class UserController {
 
     @ApiOperation({ summary: '내 프로필 보기' })
     @Get('/profile')
+    //가드 처리
     async getMyProfile(@Body('user_id') id: number, @Req() req: Request): Promise<User> {
         console.log(req);
         return await this.userService.getMyProfile(id);
@@ -23,10 +24,22 @@ export class UserController {
     }
 
     @ApiOperation({ summary: '내 프로필 편집(nickname, two_factor, avatar)' })
-    @Patch('/update/:id')
-    async updateProfile(@Param('id', ParseIntPipe) id: number,
-                        @Body() updateUserDto: UpdateUserDto): Promise<void> {
-        await this.userService.updateProfile(id, updateUserDto);
+    @Patch('/update/:id/:nickName')
+    async updateNickName(@Param('id', ParseIntPipe) id: number,
+                        @Param('nickName') nickName: string): Promise<void> {
+        await this.userService.updateNickName(id, nickName);
+    }
+    
+    @Patch('/update/:id/:avatar')
+    async updateAvatar(@Param('id', ParseIntPipe) id: number,
+                        @Param('avatar') avatar: string): Promise<void> {
+        await this.userService.updateAvatar(id, avatar);
+    }
+    
+    @Patch('/update/:id/:twoFactor')
+    async updateTwoFactor(@Param('id', ParseIntPipe) id: number,
+                       @Param('twoFactor') twoFactor: boolean): Promise<void> {
+        await this.userService.updateTwoFactor(id, twoFactor);
     }
     
 
