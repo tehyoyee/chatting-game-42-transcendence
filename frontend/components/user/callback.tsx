@@ -26,16 +26,6 @@ export default function Callback() {
 		two_factor: true,
 	});
 
-	function handleLogin({ res }: { res: LoginData }) {
-		if (res.two_factor === true) {
-			setLoginData(res);
-			setTfa(true);
-			return;
-		} else if (res.firstLogin === true) {
-			router.push('/login/setprofile');
-		}
-	}
-
   useEffect(() => {
     (async() => {
       if (loggedIn === true) {
@@ -53,15 +43,21 @@ export default function Callback() {
         method: 'GET',
         credentials: 'include',
       })
-			.then(res => res.json())
-			.then(data => {
-					if (!data.ok) throw new Error(`response is not ok: ${data}`);
-					return data;
+			.then(res => {
+				if (!res.ok) throw new Error(`response is not ok: ${res.status}`);
+				return res.json()
 			})
       .catch(reason => {
         console.log(`${tokenUrl}: fetch failed: ${reason}`);
+				router.push('/');
       });
-			handleLogin(res);
+			if (res.two_factor === true) {
+				setLoginData(res);
+				setTfa(true);
+				return;
+			} else if (res.firstLogin === true) {
+				router.push('/login/setprofile');
+			}
       await updateLoginState();
       router.push('/');
     })()

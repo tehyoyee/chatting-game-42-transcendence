@@ -57,9 +57,8 @@ export class AuthService {
 				const two_factor = await this.userService.getTwoFactorByUserId(payload.id);
 				if (two_factor) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
 					const clientEmail = await this.userService.getEmailByUserId(payload.id);
-					const verificationCode = await this.mailService.secondAuthentication(clientEmail);
+					const verificationCode = this.mailService.secondAuthentication(clientEmail);
 					this.userService.updateTwoFactorCode(payload.id, verificationCode);
-					console.log(`server sended verification code : ${verificationCode}`);
 					res.send({
 						id: payload.id,
 						firstLogin: false,
@@ -144,7 +143,7 @@ export class AuthService {
 		}
 	}
 
-	async authTwoFactor(body: any, inputCode: string, res: Response) {
+	async authTwoFactor(body: any, inputCode: any, res: Response) {
 		const thisUser = await this.userService.getProfileByUserId(body.id);
 		if (thisUser.auth_code === inputCode) {
 			const payload = { username: thisUser.username, id: thisUser.user_id };
@@ -154,6 +153,7 @@ export class AuthService {
 			return ;
 		} else {
 			console.log("invalid varification code");
+			res.send("invalid varification code");
 		}
 		return;
 	}

@@ -146,5 +146,8 @@ export class UserRepository extends Repository<User> {
         if (!found)
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
         found.auth_code = newCode;
+				await this.save(found);
+				return;
+
     }
 }

@@ -3,10 +3,14 @@
 import { useState, useCallback, SetStateAction } from 'react';
 import style from '../../styles/tfa.module.css';
 import { LoginData } from '@/components/user/callback';
+import { useRouter } from 'next/navigation';
+import { useAuthContext } from '@/components/user/auth';
 
 export default function Tfa({ loginData }: { loginData: LoginData }) {
   const [inputCode, setInputCode] = useState('');
   const [message, setMessage] = useState('');
+	const router = useRouter();
+	const { loggedIn, updateLoginState } = useAuthContext();
 
   const handleChange = useCallback((e: { target: { value: SetStateAction<string>; }; }) => {
     setInputCode(e.target.value);
@@ -14,17 +18,21 @@ export default function Tfa({ loginData }: { loginData: LoginData }) {
 
   const checkAuthCode = useCallback(async (code: any) => {
     try {
-      const response = await fetch(`/auth/twofactor?inputCode=${code}`, {
+      const response = await fetch(`http://localhost:3000/auth/twofactor?inputCode=${code}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ loginData }),
+				credentials: 'include',
+        body: JSON.stringify(loginData),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setMessage(data.success ? '인증 성공' : '인증 실패');
+			console.log("response arrived");
+			await updateLoginState();
+			console.log(`loggedIn=${loggedIn}`);
+      if (loggedIn === true) {
+        setMessage('인증 성공');
+				router.push('/');
       } else {
         setMessage('인증 실패');
       }
