@@ -1,0 +1,24 @@
+.tfa {
+  background-color: #86e3ed;
+  /* width: 500px; */
+  height: 80px;
+  text-align: center;
+  border-radius: 0.2rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.tfaInput {
+  border-radius: 0.2rem;
+}
+
+.tfaConfirm {
+	/* width: 30px;
+	height: 30px; */
+	background-color: #1688a8;
+	/* height: 80px; */
+  text-align: center;
+  border-radius: 0.2rem;
+  justify-content: center;
+  align-items: center;
+}

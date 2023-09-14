@@ -1,28 +1,13 @@
 import { Param, Get, Body, Controller, Post, Req, UseGuards, ValidationPipe, Res } from '@nestjs/common';
-// import { AuthCredentialsDto } from './dto/auth-credetial.dto';
 import { AuthService } from './auth.service';
-// import { AuthGuard } from '@nestjs/passport';
-import { FortyTwoAuthGuard } from './guard';
 import { Query } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
 	constructor(private authService: AuthService) {}
 
-	@Get('/')
-	asdf() {
-		return 'asdf';
-	}
-
-	// @UseGuards(FortyTwoAuthGuard)
-	// @Get('/42')
-	// async auth(@Request() req) {
-	// 	// return req;
-	// 	return 'success';
-	// 	// return this.authService.auth(req);
-	// }
-	
 	@Get('/signup')
 	signUp(@Query('code') code, @Res() res: Response) {
 		return this.authService.signUp(code, res);
@@ -38,6 +23,19 @@ export class AuthController {
 		return this.authService.signOut(res);
 	}
 
+	@Post('/twofactor')
+	authTwoFactor(@Body() body: any, @Query('inputCode') inputCode: string) {
+		return this.authService.authTwoFactor(body, inputCode);
+	}
+	
+	@Get('/test')
+	@UseGuards(AuthGuard())
+	test() {
+		console.log('authguard passed');
+	}
+
+	// @Get('/2fa')
+	// twofactorVarify(@Res() res:)
 
 	// @Get()
 	// @UseGuards(AuthGuard('google'))

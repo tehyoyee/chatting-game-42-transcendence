@@ -51,18 +51,32 @@ export class UserService {
     //     }
     // }
 
+    async getTwoFactorByUserId(id: number): Promise<Boolean> {
+        return await this.userRepository.getTwoFactorByUserId(id);
+    }
+    
+    async getEmailByUserId(id: number): Promise<string> {
+        return await this.userRepository.getEmailByUserId(id);
+    }
+    
+    // async updateProfile(id: number, updateUserDto: UpdateUserDto): Promise<void> {
+    //     const found = await this.userRepository.getProfileByUserId(id);
+    //     if (!found)
+    //     throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+    // }
+    
     async updateNickName(id: number, nickName: string): Promise<User> {
         const found = await this.userRepository.getProfileByUserId(id);
         if (!found)
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
-
         if (nickName && found.nickname !== nickName) {
             const duplicate = await this.getProfileByNickName(nickName);
             if (duplicate)
                 throw new ForbiddenException(`${nickName} 은/는 이미 있는 닉네임입니다.`);
             
-            return await this.userRepository.updateNickName(found, nickName);
+            await this.userRepository.updateNickName(found, nickName);
         }
+        return found;
     }
 
     async updateAvatar(id: number, avatar: string): Promise<User> {
@@ -71,7 +85,9 @@ export class UserService {
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
 
         if (avatar && found.avatar !== avatar)
-            return await this.userRepository.updateAvatar(found, avatar);
+            await this.userRepository.updateAvatar(found, avatar);
+
+        return found;
     }
 
     async updateTwoFactor(id: number, twoFactor: boolean): Promise<User> {
@@ -80,9 +96,10 @@ export class UserService {
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
 
         if (twoFactor === true || twoFactor === false && found.two_factor !== twoFactor)
-            return await this.userRepository.updateTwoFactor(found, twoFactor);
-    }
+            await this.userRepository.updateTwoFactor(found, twoFactor);
 
+        return found;
+    }
 
     async updateStatus(id: number, status: UserStatus): Promise<User> {
         return await this.userRepository.updateStatus(id, status);
@@ -100,4 +117,11 @@ export class UserService {
         return await this.userRepository.loseGame(id);
     }
 
+    async updateAuthCodeByUserId(id: number, authCode: string): Promise<void> {
+        return await this.userRepository.updateAuthCodeByUserId(id, authCode);
+    }
+
+    async getAuthCodeByUserId(id: number): Promise<string> {
+        return await this.userRepository.getAuthCodeByUserId(id);
+    }
 }

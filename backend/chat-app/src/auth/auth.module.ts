@@ -7,10 +7,11 @@ import { PassportModule } from '@nestjs/passport';
 import * as config from 'config';
 import { User } from 'src/user/entity/user.entity';
 import { UserService } from 'src/user/user.service';
-// import { serRepository } from 'src/user/user.repository';
 import { HttpModule, HttpService } from "@nestjs/axios";
 import { UserRepository } from '../user/user.repository';
-// const jwtConfig = config.get('jwt');
+import { MailerModule } from '@nestjs-modules/mailer';
+import { MailService } from './mail.service';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -28,10 +29,29 @@ import { UserRepository } from '../user/user.repository';
     HttpModule.register({
       timeout: 5000,
       maxRedirects: 5,
-    })
+    }),
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com',
+        port: 587,
+        auth: {
+          user: config.get('mail.user'),
+          pass: config.get('mail.pass')
+        },
+      },
+      defaults: {
+        from: '"nest-modules" <modules@nestjs.com>',
+      },
+      template: {
+        dir: __dirname + '/templates',
+        options: {
+          strict: true,
+        },
+      },
+    }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, UserRepository],
-  exports: [TypeOrmModule, PassportModule, JwtModule],
+  providers: [AuthService, UserService, UserRepository, MailService, JwtStrategy],
+  exports: [TypeOrmModule, JwtStrategy, PassportModule, JwtModule],
 })
 export class AuthModule {}

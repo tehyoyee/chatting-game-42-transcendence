@@ -6,6 +6,7 @@ import { MessageRepository } from './message.repository';
 import { ChatGateway } from './chat.gateway';
 import { ChannelDto } from './dto/channel-dto';
 import { UcbRepository } from './ucb.repository';
+import { UserType } from './enum/user_type.enum';
 
 @Injectable()
 export class ChatService {
@@ -22,6 +23,14 @@ export class ChatService {
             await this.ucbRepository.createUCBridge(user.user_id, newChannel.channel_id, newChannel, user);
 
         return newChannel;
+    }
+
+    async addMember(user: User, channel: Channel ,type: UserType): Promise<void> {
+        const found = await this.ucbRepository.getUcbByIds(user.user_id, channel.channel_id);
+        if (!found)
+        {
+            
+        }
     }
 
     async getChannelByName(name: string): Promise<Channel> {

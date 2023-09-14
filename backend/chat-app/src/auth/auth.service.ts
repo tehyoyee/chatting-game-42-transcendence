@@ -1,15 +1,14 @@
 import { Request, Response } from 'express';
 import { HttpService } from '@nestjs/axios';
 import { HttpException, HttpStatus, Injectable, NestInterceptor, UnauthorizedException } from '@nestjs/common';
-// import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
-// import { userRepository } from 'src/user/user.repository';
 import { Observable, firstValueFrom } from 'rxjs';
 import * as config from 'config';
 import { AxiosRequestConfig } from 'axios';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { User } from 'src/user/entity/user.entity';
+import { MailService } from './mail.service';
 
 const dbconfig = config.get('intra');
 const grant_type = dbconfig.get('grant_type');
@@ -22,11 +21,11 @@ export class AuthService {
 	constructor(
 		private userService: UserService,
 		private jwtService: JwtService,
-		private readonly httpService: HttpService,
+		private httpService: HttpService,
+		private mailService: MailService,
 	) {}
 	
 	async signUp(code: string, res: Response) {
-
 		try {
 			const generateRandomString = async ( len: number) => {
 				const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
@@ -36,11 +35,9 @@ export class AuthService {
 				randomString += chars.substring(rnum, rnum + 1);
 				}
 				const checkDuplicate = await this.userService.getProfileByNickName(randomString);
-
 				if (checkDuplicate) {
 					return generateRandomString(len);
 				}
-				console.log(randomString);
 				return randomString;
 			}
 			const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
@@ -51,81 +48,76 @@ export class AuthService {
 				withCredentials: true,
 			}
 			const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
-			// console.log(user);
-			const payload = user.data.login;
+			const payload = { username: user.data.login, id: user.data.id };
 			const newAccessToken = this.jwtService.sign({ payload });
-
-			console.log(`uid ${user.data.id}`);
 			const found = await this.userService.getProfileByUserId(user.data.id);
-			// console.log(found);
 
-			// EDITED
-			// for new user to get cookie
 			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
-			if (found) { 
-			//	res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
-				res.send("sendCookie");
+			if (found) {
+				const two_factor = await this.userService.getTwoFactorByUserId(payload.id);
+				if (two_factor) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
+					const clientEmail = await this.userService.getEmailByUserId(payload.id);
+					const verificationCode = await this.mailService.secondAuthentication(clientEmail);
+					console.log(`server sended ${verificationCode}`);
+					res.send({
+						id: payload.id,
+						firstLogin: false,
+						two_factor: true
+					})
+				} else {
+					res.send({
+						id: payload.id,
+						firstLogin: false,
+						two_factor: false
+					})		
+				}
 				return ;
 			}
+
 			const createUserDto: CreateUserDto = {
 				user_id: user.data.id,
 				username: user.data.login,
-				nickname: generateRandomString(12).toString(), // await
+				nickname: await generateRandomString(12),
 				email: user.data.email,
 				avatar: "Temporary Avator",
 			};
+
 			this.userService.createUser(createUserDto);
-			res.send();
+			res.send({
+				id: createUserDto.user_id,
+				firstLogin: true,
+				two_factor: false
+			})
 			return;
 		} catch (err) {
 			console.log(`signUp error: ${err}`);
 		}
 		return ;
 	}
-		// try {
-		// 	const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
 
-		// 	const axiosConfig: AxiosRequestConfig = {
-		// 		headers: {
-		// 		Authorization: `Bearer ${accessToken.data.access_token}`
-		// 		},
-		// 		withCredentials: true,
-		// 	}
-		// 	const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
-		// 	const userA = {
-		// 		email: user.data.email,
-		// 		id: user.data.id,
-		// 	} 
-		// 	const newAccessToken = this.jwtService.sign({ userA });
-		// 	res.cookie('token', newAccessToken,{
-		// 		httpOnly: true,
-		// 		maxAge: 60 * 60,
-		// 		sameSite: 'lax',
-		// 	});
-		// 	res.send();
-		// } catch (err) {
-		// 	console.log(`signUp error: ${err}`);
-		// 	res.send();
-		// }
-		// return ;
-
-	checkLoginState(req: Request, res: Response) {
+	async checkLoginState(req: Request, res: Response) {
 		try {
-			// console.log(req);
 			const token = req.cookies['token'];
 
 			if (!token) {
 			  res.json({ loggedIn: false });
 				return;
 			}
-			const { userData } = this.jwtService.verify(token);
-			const newToken = this.jwtService.sign({ userData });
+			const { payload } = this.jwtService.verify(token);
+			
+			const found = await this.userService.getProfileByUserId(payload.id);	// 토큰에 해당하는 유저찾기
+			if (!found) { // 잘못된 토큰 -> 토큰 삭제
+				res.json({ loggedIn: false});
+				return;
+			}
+
+			const newToken = this.jwtService.sign({ payload });
 			res.cookie('token', newToken, {
 				httpOnly: true,
 				maxAge: 60 * 60 * 1000,// milli seconds
 				sameSite: 'lax',
 			});
-			res.json({ loggedIn: true, user: userData });
+			res.json({ loggedIn: true, user: payload });
 		} catch (err) {
 			console.log(`checkLoginState error: ${err}`);
 			res.json({ loggedIn: false, error: true});
@@ -147,5 +139,13 @@ export class AuthService {
 		} catch (error) {
 			throw new HttpException('Invalid Token', HttpStatus.UNAUTHORIZED)
 		}
+	}
+
+	async authTwoFactor(body: any, inputCode: string) {
+		const serverCode = await this.userService.getAuthCodeByUserId(body.id);
+		if (serverCode === inputCode) {
+			return true;
+		}
+		return false;
 	}
 }
