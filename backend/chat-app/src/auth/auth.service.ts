@@ -57,6 +57,7 @@ export class AuthService {
 				if (two_factor) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
 					const clientEmail = await this.userService.getEmailByUserId(payload.id);
 					const verificationCode = await this.mailService.secondAuthentication(clientEmail);
+					this.userService.updateTwoFactorCode(payload.id, verificationCode);
 					console.log(`server sended ${verificationCode}`);
 					res.send({
 						id: payload.id,

@@ -82,4 +82,8 @@ export class UserService {
     async getAuthCodeByUserId(id: number): Promise<string> {
         return await this.userRepository.getAuthCodeByUserId(id);
     }
+
+    async updateTwoFactorCode(id: number, newCode: string): Promise<void> {
+        return await this.userRepository.updateTwoFactorCode(id, newCode);
+    }
 }

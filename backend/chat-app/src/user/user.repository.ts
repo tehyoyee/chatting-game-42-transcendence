@@ -139,4 +139,11 @@ export class UserRepository extends Repository<User> {
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
         return found.auth_code;
     }
+
+    async updateTwoFactorCode(id: number, newCode: string): Promise<void> {
+        const found = await this.getProfileByUserId(id);
+        if (!found)
+            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+        found.auth_code = newCode;
+    }
 }
