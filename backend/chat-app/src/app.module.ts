@@ -21,7 +21,8 @@ import { ChatModule } from './chat/chat.module';
     //   entities: [User],
     //   synchronize: true,
     // }),
-    UserModule, AuthModule, ChatModule
+    UserModule, AuthModule, 
+    // ChatModule
   ],
   controllers: [AppController],
   providers: [AppService],

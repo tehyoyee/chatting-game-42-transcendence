@@ -9,6 +9,7 @@ import { AxiosRequestConfig } from 'axios';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { User } from 'src/user/entity/user.entity';
 import { MailService } from './mail.service';
+import { Res } from '@nestjs/common';
 
 const dbconfig = config.get('intra');
 const grant_type = dbconfig.get('grant_type');
@@ -52,25 +53,25 @@ export class AuthService {
 			const newAccessToken = this.jwtService.sign({ payload });
 			const found = await this.userService.getProfileByUserId(user.data.id);
 
-			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
 			if (found) {
 				const two_factor = await this.userService.getTwoFactorByUserId(payload.id);
 				if (two_factor) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
 					const clientEmail = await this.userService.getEmailByUserId(payload.id);
 					const verificationCode = await this.mailService.secondAuthentication(clientEmail);
 					this.userService.updateTwoFactorCode(payload.id, verificationCode);
-					console.log(`server sended ${verificationCode}`);
+					console.log(`server sended verification code : ${verificationCode}`);
 					res.send({
 						id: payload.id,
 						firstLogin: false,
 						two_factor: true
 					})
 				} else {
+					res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
 					res.send({
 						id: payload.id,
 						firstLogin: false,
 						two_factor: false
-					})		
+					})
 				}
 				return ;
 			}
@@ -84,6 +85,7 @@ export class AuthService {
 			};
 
 			this.userService.createUser(createUserDto);
+			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
 			res.send({
 				id: createUserDto.user_id,
 				firstLogin: true,
@@ -142,11 +144,17 @@ export class AuthService {
 		}
 	}
 
-	async authTwoFactor(body: any, inputCode: string) {
-		const serverCode = await this.userService.getAuthCodeByUserId(body.id);
-		if (serverCode === inputCode) {
-			return true;
+	async authTwoFactor(body: any, inputCode: string, res: Response) {
+		const thisUser = await this.userService.getProfileByUserId(body.id);
+		if (thisUser.auth_code === inputCode) {
+			const payload = { username: thisUser.username, id: thisUser.user_id };
+			const newAccessToken = this.jwtService.sign({ payload });
+			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
+			res.send("2fa 토큰 발급");
+			return ;
+		} else {
+			console.log("invalid varification code");
 		}
-		return false;
+		return;
 	}
 }
