@@ -1,18 +1,20 @@
 'use client'
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/components/user/auth";
 import Login from "@/components/user/login";
-import Tfa from "@/components/user/tfa";
 
 export default function Page() {
   const { loggedIn, updated } = useAuthContext();
   const router = useRouter();
+  const called = useRef(false);
 
   console.log(`rendering loginpage: updated=${updated} loggedIn=${loggedIn}`);
 // TODO: buggy
   useEffect(() => {
+		if (called.current) return;
+		called.current = true
     if (loggedIn === true) {
       router.push('/');
     }

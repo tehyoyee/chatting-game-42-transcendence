@@ -95,7 +95,7 @@ export class UserService {
         if (!found)
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
 
-        if (twoFactor === true || twoFactor === false && found.two_factor !== twoFactor)
+        if (found.two_factor !== twoFactor)
             await this.userRepository.updateTwoFactor(found, twoFactor);
 
         return found;

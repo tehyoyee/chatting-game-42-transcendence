@@ -1,7 +1,7 @@
 export default function Loading() {
   return (
     <>
-      <p>loading waiting room </p>
+      <p>loading waiting room</p>
     </>
   );
 }

@@ -1,75 +1,76 @@
 'use client';
 
-import { useState, useCallback, SetStateAction } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from '../../styles/tfa.module.css';
 import { LoginData } from '@/components/user/callback';
-import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/user/auth';
+import { setTimeout } from 'timers';
+
+const authUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/twofactor`
 
 export default function Tfa({ loginData }: { loginData: LoginData }) {
-  const [inputCode, setInputCode] = useState('');
   const [message, setMessage] = useState('');
-  // const [messageFail, setMessageFail] = useState('');
-	const router = useRouter();
 	const { loggedIn, updateLoginState } = useAuthContext();
+	const router = useRouter();
 
-  const handleChange = useCallback((e: { target: { value: SetStateAction<string>; }; }) => {
-    setInputCode(e.target.value);
-  }, []);
-
-  const checkAuthCode = useCallback(async (code: any) => {
+  const checkAuthCode = useCallback(async () => {
+		const inputField = document.querySelector("input")?.value;
+		console.log(`checkAuthCode=${inputField}`)
+		if (!inputField) return;
+		const code = inputField;
     try {
-      const response = await fetch(`http://localhost:3000/auth/twofactor?inputCode=${code}`, {
+			if (code.length !== 6) {
+				setMessage("유효하지 않은 코드입니다.");
+				return;
+			}
+			setMessage("처리 중");
+      const res = await fetch(`${authUrl}?inputCode=${code}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
+				},
 				credentials: 'include',
         body: JSON.stringify(loginData),
-      });
-
-			console.log("response arrived");
-			await updateLoginState();
-			console.log(`loggedIn=${loggedIn}`);
-      if (loggedIn === true) {
-        // setMessage('인증 성공');
+			})
+			.then(res => {
+				if (!res.ok)
+					throw new Error(`invalid response: ${res.status}`);
+				return res.json();
+			});
+			console.log(`res=${res.state}`);
+			if (res.state !== true) {
+				setMessage('인증 실패');
+			} else {
 				router.push('/');
-      } else {
-        setMessage('인증 실패');
-      }
-    } catch (error) {
-      console.error('인증 요청 중 오류 발생:', error);
-      setMessage('인증 요청 중 오류 발생');
-    }
-  }, []);
+			}
+		} catch (error) {
+			console.error('인증 요청 중 오류 발생:', error);
+			setMessage('인증 요청 중 오류 발생');
+			router.push('/');
+		}
+  }, [updateLoginState, router]);
 
-  const handleEnterKey = useCallback(
-    (e: { key: string; }) => {
-      if (e.key === 'Enter') {
-        checkAuthCode(inputCode);
-      }
-    },
-    [checkAuthCode, inputCode]
-  );
-
-	// frequent callback refresh -> refresh overhead caching advantage?
-  const handleButtonClick = useCallback(() => {
-    checkAuthCode(inputCode);
-  }, [checkAuthCode, inputCode]);
+  const handleEnterKey = (e: any) => {
+		if (e.key === 'Enter') {
+			checkAuthCode();
+		}
+	};
 
   return (
     <>
-    <div className={styles.tfaContainer}>
-      <h1 className={styles.tfaPhrase}>인증 코드 입력</h1>
-      <input type="text"
-        value={inputCode}
-        placeholder="6자리 코드를 입력해주세요."
-        onChange={handleChange}
+    <hr></hr>
+    <div className={styles.tfa}>
+    <div className={styles.tfaFail}>{message}</div>
+      <h1 className={styles.tfaFont}>{!message && '인증 코드 입력'}</h1>
+      <input className={styles.tfaInput}
+        type="text"
+        placeholder="6자리 코드를 입력해주세요"
         onKeyDown={handleEnterKey}
-        maxLength={6} className={styles.tfaInput} />
-      <button onClick={handleButtonClick} className={styles.tfaButton}>확인</button>
-      <div className={styles.tfaResult}>{message}</div>
+        maxLength={6} />
+      <button onClick={checkAuthCode} className={styles.tfaConfirm}>확인</button>
+      <div>{message}</div>
     </div>
-</>
+      </>
   );
 }

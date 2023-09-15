@@ -133,8 +133,8 @@ export class AuthService {
 
 	async verifyToken(token: string): Promise<User> {
 		try {
-			const verified = await this.jwtService.verify(token);
-			if (typeof verified === 'object' && 'id' in verified)
+			const { verified }  = await this.jwtService.verify(token);
+			if (verified)
 				return verified;
 		
 			throw new UnauthorizedException('token is not verified');
@@ -149,11 +149,11 @@ export class AuthService {
 			const payload = { username: thisUser.username, id: thisUser.user_id };
 			const newAccessToken = this.jwtService.sign({ payload });
 			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
-			res.send("2fa 토큰 발급");
+			res.send({state: true});
 			return ;
 		} else {
 			console.log("invalid varification code");
-			res.send("invalid varification code");
+			res.send({state: false});
 		}
 		return;
 	}
