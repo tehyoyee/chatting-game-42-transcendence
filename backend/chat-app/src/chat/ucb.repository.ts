@@ -32,4 +32,14 @@ export class UcbRepository extends Repository<UserChannelBridge> {
             await newMembership.save();
         }
     }
+
+    async addMember(user: User, channel: Channel, type: UserType, found: UserChannelBridge): Promise<void> {
+        const newMembership = new UserChannelBridge();
+
+        newMembership.user_type = type;
+        newMembership.user = user;
+        newMembership.channel = channel;
+        
+        await newMembership.save();
+    }
 }

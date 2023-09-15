@@ -91,6 +91,16 @@ export class ChannelRepository extends Repository<Channel> {
         return found;
     }
 
+    async getChatRoomById(id: number): Promise<Channel> {
+        const room = await this
+        .createQueryBuilder('r')
+        .where('r.channel_id = :id', {id})
+        .select(['r.channel_id', 'r.channel_name', 'r.is_public', 'r.is_channel'])
+        .getOne();
+
+        return room;
+    }
+
     async JoinChannelById(id: number, user: User) {
         const found = await this.getChannelById(id);
         if (!found)

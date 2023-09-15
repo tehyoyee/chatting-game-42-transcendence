@@ -23,8 +23,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
   constructor(
     private authService: AuthService,
-    private chatService: ChatService,
-    private userService: UserService) {}
+    private userService: UserService,
+    private chatService: ChatService) {}
 
   
   private async definePlayer(client: Socket) {
@@ -95,9 +95,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
         const room = await this.chatService.createChannel(channelDto, this.channelMembers);
         await this.chatService.addMember(client.data.currentUser, room, UserType.OWNER);
 
-      }
-    }
+        let userId: any;
+        let rooms: any;
+        let allRooms: any;
+        let members = await this.chatService.getMembersByChannelId(room.channel_id, this.currentUser.user_id);
+        for (let x of this.connectedUsers) {
+          userId = await x.handshake.query.token;
+          userId = await this.authService.verifyToken(userId);
+          rooms = await this.chatService.getRoomsForUser(userId.id);
+          allRooms = await this.chatService.getAllRooms(userId.id);
 
+          this.server.to(x.id).emit('message', rooms);
+          this.server.to(x.id).emit('members', members);
+          this.server.to(x.id).emit('allRooms', allRooms);
+        }
+      }
+      this.channelMembers.splice(0);
+    }
   }
 
 
