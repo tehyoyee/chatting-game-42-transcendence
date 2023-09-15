@@ -34,6 +34,12 @@
   color: rgb(255, 204, 0);
 }
 
+.tfaLoading {
+  font-size: larger;
+  color: rgb(21, 206, 83);
+  text-align: center;
+}
+
 .tfaFail {
   font-size: larger;
   color: rgb(201, 26, 26);

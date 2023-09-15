@@ -25,24 +25,7 @@ export default function Page() {
 
   return (
   <>
-    {/* <div className="centerItemBlock gridRow1_2 gridCol1_2">
-        <Image
-          className={`${styles.profileImage}`}
-          src={'/default.png'}
-          height={128}
-          width={128}
-          alt={"profile image"} />
-      </div>
-
-    {match && <div className="centerItemBlock gridRow1_2 gridCol1_2">
-      <Image
-        className={`${styles.profileImage}`}
-        src={'/default.png'}
-        height={128}
-        width={128}
-        alt={"profile image"} />
-    </div>} */}
-
+    matching room
   </>
   );
 }
