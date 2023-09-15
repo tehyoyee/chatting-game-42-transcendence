@@ -10,13 +10,23 @@ import { UserModule } from 'src/user/user.module';
 import { ChannelRepository } from './channel.repository';
 import { MessageRepository } from './message.repository';
 import { UcbRepository } from './ucb.repository';
+import { AuthModule } from 'src/auth/auth.module';
+import { UserService } from 'src/user/user.service';
+import { AuthService } from 'src/auth/auth.service';
+import { HttpModule, HttpService } from '@nestjs/axios';
+import { MailService } from 'src/auth/mail.service';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Channel, Message, UserChannelBridge]),
-    UserModule
+    AuthModule,
+    UserModule,
+    HttpModule,
+    MailerModule
   ],
-  providers: [ChatService, ChatGateway, ChannelRepository, MessageRepository, UcbRepository],
-  controllers: [ChatController]
+  controllers: [ChatController],
+  providers: [ChatGateway, UserService, AuthService, MailService, ChatService, ChannelRepository, MessageRepository, UcbRepository],
+  exports: [ChatService, ChannelRepository, MessageRepository, UcbRepository]
 })
 export class ChatModule {}
