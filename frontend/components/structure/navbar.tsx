@@ -14,7 +14,7 @@ enum NavBarPos {
 // sessionStorage, localStorage to store status
 // export default function NavBar({ status }: { status: NavBarPos }) {
 export default function NavBar() {
-  const [state, setState] = useState(NavBarPos.chat);
+  const [state, setState] = useState(NavBarPos.profile); // when change this line, sync with root page
   const navBtn: string[] = ["chat", "social", "game", "profile"];
 
   function updateState(e: any) {

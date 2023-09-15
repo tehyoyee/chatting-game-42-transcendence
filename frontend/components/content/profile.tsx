@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import styles from '/styles/profile.module.css';
-import { useAuthContext } from '@/components/user/auth';
 
 // incomplete
 interface IProfileType {
@@ -12,12 +11,9 @@ interface IProfileType {
 	nickname: string,
 	avartar: string, // path to profile image stored in frontend server local directory
 	email: string,
-	point: number,
 };
 
-/////////////////////////////////////////////////////////////////////////////
 const profileUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/profile`;
-/////////////////////////////////////////////////////////////////////////////
 
 function uploadImage() {
   alert("upload image");
@@ -38,13 +34,12 @@ function UploadBtn({ callback, children }: { callback: any, children: any}) {
   );
 }
 
-export default function Profile() {
+export default function Profile({ uid }: { uid: number }) {
   const [ profile, setProfile ] = useState<IProfileType>();
-	const { user } = useAuthContext();
 
   useEffect(() => {
     (async() => {
-      await fetch(`${profileUrl}/${user.id}`, {
+      await fetch(`${profileUrl}/${uid}`, {
         method: 'GET',
         credentials: 'include',
       })
@@ -73,10 +68,6 @@ export default function Profile() {
       prop: "email",
       value: profile?.email,
     },
-    {
-      prop: "point",
-      value: profile?.point,
-    }
   ];
 	//////////////////////////////
 
@@ -108,23 +99,9 @@ export default function Profile() {
               );
             })}
           <br />
-          <li>
-            <label>
-              two factor auth:
-            </label>
-            <input type='checkbox' checked></input>
-            <button>submit</button>
-          </li>
-          <UploadBtn callback={uploadImage}>
-            Upload image
-          </UploadBtn>
-          <UploadBtn callback={updateName}>
-            Update Name
-          </UploadBtn>
-          <br></br>
-            <button>적용</button>
         </ul>
       </div>
+			<ProfileUpdator></ProfileUpdator>
       <div
         className="centerItemBlock"
       >
@@ -147,4 +124,39 @@ export default function Profile() {
       </div>
     </>
   );
+}
+
+function ProfileUpdator() {
+	return (
+		<div
+			id="profileUpdator"
+			style={{
+				borderWidth: '1px',
+				borderStyle: 'solid',
+				borderColor: 'black',
+				borderRadius: '0.3rem',
+				display: "flex",
+				alignItems: "center",
+				gridRow: "1 / 2",
+				gridColumn: "4 / 5",
+			}}>
+			<ul>
+				<li>
+					<label>
+						two factor auth:
+					</label>
+					<input type='checkbox' checked></input>
+					<button>submit</button>
+				</li>
+				<UploadBtn callback={uploadImage}>
+					Upload image
+				</UploadBtn>
+				<UploadBtn callback={updateName}>
+					Update Name
+				</UploadBtn>
+				<br></br>
+					<button>적용</button>
+			</ul>
+		</div>
+	);
 }

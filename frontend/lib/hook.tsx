@@ -11,7 +11,9 @@ export function useFetch<T>(path: string, init: T): [T, React.Dispatch<React.Set
 				method: 'GET',
 				credentials: 'include',
 			})
-			.then(res => res.json())
+			.then(res => {
+				return res.json()
+			})
 			.then(data => {setItem(data)})
 			.catch(err => {
 				console.log(`${path}: fetch failed: ${err}`);

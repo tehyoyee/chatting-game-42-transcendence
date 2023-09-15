@@ -4,9 +4,14 @@ import { useContext, useEffect, useState, useCallback, ReactNode, createContext 
 
 const stateUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/state`;
 
+type UserIdentifier = {
+	username: string,
+	id: number,
+}
+
 type AuthContextType = {
   loggedIn: boolean,
-  user: any, // TODO type
+  user: UserIdentifier,
   updateLoginState: Function,
   updated: boolean,
 };
@@ -24,7 +29,10 @@ export function useAuthContext() {
 export default function AuthContextProvider({ children }: { children: ReactNode }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [updated, setUpdated] = useState(false);
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState({
+		username: '',
+		id: 0,
+	});
 
   const updateLoginState = useCallback(async () => {
     await fetch(stateUrl, {
@@ -33,7 +41,7 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
     })
     .then(res => res.json())
     .then(data => {
-      console.log(`updateLoginState: ${data}`);
+      console.log(`updateLoginState: ${JSON.stringify(data)}`);
       setUpdated(true);
       setLoggedIn(data.loggedIn);
       data.user && setUser(data.user);

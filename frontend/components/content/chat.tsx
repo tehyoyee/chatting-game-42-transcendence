@@ -16,7 +16,7 @@ interface ChatRooms {
   chatRoomArr: ChatRoom[],
 };
 
-const chatReqUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/`; // path to fetch chat info
+const chatReqUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/channel/list/all`; // path to fetch chat info
 
 export default function Chat() {
   const test: ChatRooms = {
@@ -27,7 +27,9 @@ export default function Chat() {
       { id: 3, name: "ijk" },
     ]
   };
-  const [chatRooms, setChatRooms] = useFetch(chatReqUrl, test);
+// socketIO must be used
+//  const [chatRooms, setChatRooms] = useFetch(chatReqUrl, test);
+	const chatRooms = test;
 	const [curRoomId, setCurRoomId] = useState(chatRooms?.curRoomId);
 
   const joined = chatRooms?.chatRoomArr.find(data => data.id === curRoomId);
