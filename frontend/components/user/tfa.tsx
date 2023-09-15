@@ -22,6 +22,9 @@ export default function Tfa({ loginData }: { loginData: LoginData }) {
     try {
 			if (code.length !== 6) {
 				setMessage("유효하지 않은 코드입니다.");
+        setTimeout(() => {
+          setMessage('');
+        }, 3000);
 				return;
 			}
 			setMessage("처리 중");
@@ -41,12 +44,18 @@ export default function Tfa({ loginData }: { loginData: LoginData }) {
 			console.log(`res=${res.state}`);
 			if (res.state !== true) {
 				setMessage('인증 실패');
+        setTimeout(() => {
+          setMessage('');
+        }, 3000);
 			} else {
 				router.push('/');
 			}
 		} catch (error) {
 			console.error('인증 요청 중 오류 발생:', error);
 			setMessage('인증 요청 중 오류 발생');
+      setTimeout(() => {
+        setMessage('');
+      }, 3000);
 			router.push('/');
 		}
   }, [updateLoginState, router]);
@@ -61,7 +70,10 @@ export default function Tfa({ loginData }: { loginData: LoginData }) {
     <>
     <hr></hr>
     <div className={styles.tfa}>
-    <div className={styles.tfaFail}>{message}</div>
+      <h1 className={styles.tfaLoading}>{message.length == 4 && message}</h1>
+      <h1 className={styles.tfaFail}>{message.length == 14 && message}</h1>
+      <h1 className={styles.tfaFail}>{message.length == 5 && message}</h1>
+      <h1 className={styles.tfaFail}>{message.length == 13 && message}</h1>
       <h1 className={styles.tfaFont}>{!message && '인증 코드 입력'}</h1>
       <input className={styles.tfaInput}
         type="text"
@@ -69,7 +81,6 @@ export default function Tfa({ loginData }: { loginData: LoginData }) {
         onKeyDown={handleEnterKey}
         maxLength={6} />
       <button onClick={checkAuthCode} className={styles.tfaConfirm}>확인</button>
-      <div>{message}</div>
     </div>
       </>
   );
