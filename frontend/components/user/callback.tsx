@@ -15,8 +15,8 @@ export type LoginData = {
 };
 
 export default function Callback() {
-  const called = useRef(false);
   const { loggedIn, updateLoginState } = useAuthContext();
+  const called = useRef(false);
   const router = useRouter();
 	const [tfa, setTfa] = useState(false);
 	const [loginData, setLoginData] = useState<LoginData>({
@@ -54,6 +54,7 @@ export default function Callback() {
 			if (res.two_factor === true) {
 				setLoginData(res);
 				setTfa(true);
+				sessionStorage.setItem('tfa', 'true');
 				return;
 			} else if (res.firstLogin === true) {
 				router.push('/login/setprofile');

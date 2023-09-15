@@ -22,3 +22,8 @@
 .profileImageUpload:hover {
   filter: contrast(0.8);
 }
+
+.infoBox {
+	border: solid 1.5px lightgray;
+	border-radius: 0.3rem;
+}

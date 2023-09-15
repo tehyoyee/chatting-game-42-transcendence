@@ -26,12 +26,16 @@ export default function Logout() {
       method: 'GET',
       credentials: 'include',
     })
-    .catch(err => {
-      console.log(err);
-    });
+		.then(res => {
+			if (!res.ok) throw new Error(`invalid response: ${res.status}`);
+		})
+		.catch(err => {
+			console.log(err);
+		});
+		sessionStorage.removeItem('tfa');
     await updateLoginState();
     router.push('/');
-  }, [updateLoginState, router]);
+  }, []);
   return (
     <>
       {loggedIn && <button className={styles.logoutBtn} type="button" onClick={handleLogout}>log out</button>}
