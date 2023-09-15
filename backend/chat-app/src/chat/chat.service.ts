@@ -13,6 +13,8 @@ import { UserChannelBridge } from './entity/user-channel-bridge.entity';
 import { AuthService } from 'src/auth/auth.service';
 import { MessageDto } from './dto/message-dto';
 import { Message } from './entity/message.entity';
+import * as bcrypt from 'bcrypt';
+import { channel } from 'diagnostics_channel';
 
 @Injectable()
 export class ChatService {
@@ -27,9 +29,13 @@ export class ChatService {
         const newChannel =  await this.channelRepository.createChannel(channelDto, channelMembers);
     
         for (let user of channelMembers)
-            await this.ucbRepository.createUCBridge(user.user_id, newChannel.channel_id, newChannel, user);
+            await this.createUCBridge(user.user_id, newChannel.channel_id, newChannel, user);
 
         return newChannel;
+    }
+
+    async createUCBridge(userId: number, channelId: number, channel: Channel, user: User) {
+        await this.ucbRepository.createUCBridge(userId, channelId, channel, user);
     }
 
     async addMember(user: User, channel: Channel, type: UserType): Promise<void> {
@@ -139,6 +145,24 @@ export class ChatService {
     
         return messages;
     }
+
+    async deleteUCBridge(channelId: number, userId: number) {
+        return await this.ucbRepository.deleteUCBridge(channelId, userId);
+    }
+
+    async updateUserTypeOfUCBridge(userId: number, channelId: number, newType: UserType) {
+       await this.ucbRepository.updateUserTypeOfUCBridge(userId, channelId, newType);
+    }
+
+
+    async checkChannelPassword(channel: Channel, inputPwd: string): Promise<boolean> {
+        const hashed = await bcrypt.hash(inputPwd, channel.salt);
+        
+        if (channel.channel_pwd === hashed)
+            return true;
+        return false;
+    }
+
 
 
     async getChannelByName(name: string): Promise<Channel> {
