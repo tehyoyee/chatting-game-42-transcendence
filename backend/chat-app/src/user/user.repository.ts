@@ -47,7 +47,6 @@ export class UserRepository extends Repository<User> {
         const found = await this.findOne({
             where: {user_id: id}
         });
-
         return found;
     }
 
