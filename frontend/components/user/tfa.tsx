@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useCallback, SetStateAction } from 'react';
-import style from '../../styles/tfa.module.css';
+import styles from '../../styles/tfa.module.css';
 import { LoginData } from '@/components/user/callback';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/user/auth';
+import { setTimeout } from 'timers';
 
 export default function Tfa({ loginData }: { loginData: LoginData }) {
   const [inputCode, setInputCode] = useState('');
@@ -30,11 +31,14 @@ export default function Tfa({ loginData }: { loginData: LoginData }) {
 			console.log("response arrived");
 			await updateLoginState();
 			console.log(`loggedIn=${loggedIn}`);
+      setMessage('');
       if (loggedIn === true) {
-        setMessage('인증 성공');
 				router.push('/');
       } else {
-        setMessage('인증 실패');
+        setMessage('입력하신 코드가 올바르지 않습니다');
+        setTimeout(() => {
+          setMessage('');
+        }, 3000);
       }
     } catch (error) {
       console.error('인증 요청 중 오류 발생:', error);
@@ -55,20 +59,23 @@ export default function Tfa({ loginData }: { loginData: LoginData }) {
   const handleButtonClick = useCallback(() => {
     checkAuthCode(inputCode);
   }, [checkAuthCode, inputCode]);
-
+  
   return (
-    <div className={style.tfa}>
-      <h1>인증 코드 입력</h1>
-      <input className={style.tfaInput}
+    <>
+    <hr></hr>
+    <div className={styles.tfa}>
+    <div className={styles.tfaFail}>{message}</div>
+      <h1 className={styles.tfaFont}>{!message && '인증 코드 입력'}</h1>
+      <input className={styles.tfaInput}
         type="text"
         value={inputCode}
-        placeholder="6자리 코드를 입력해주세요"
+        placeholder="6자리 코드를 입력해주세요."
         onChange={handleChange}
         onKeyDown={handleEnterKey}
         maxLength={6}
       />
-      <button onClick={handleButtonClick} className={style.tfaConfirm}>확인</button>
-      <div>{message}</div>
+      <button onClick={handleButtonClick} className={styles.tfaConfirm}>확인</button>
     </div>
+      </>
   );
 }
