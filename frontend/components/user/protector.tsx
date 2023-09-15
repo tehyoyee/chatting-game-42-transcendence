@@ -5,13 +5,17 @@ import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/user/auth';
 
 export default function ComponentProtector({ children }: { children: ReactNode }) {
-  const { loggedIn } = useAuthContext();
+	// TODO: logout redirection?
+  const { loggedIn, updateLoginState } = useAuthContext();
   const router = useRouter();
 
   useEffect(() => {
-    if (loggedIn == false) {
-      router.push('/');
-    }
+		(async() => {
+			await updateLoginState();
+			if (loggedIn == false) {
+				router.push('/');
+			}
+		})()
   }, []);
 
   return ((loggedIn && <>{children}</>) || <></>);
