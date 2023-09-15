@@ -10,6 +10,7 @@ import { UserType } from './enum/user_type.enum';
 import { memberDto } from './dto/member-dto';
 import { UserService } from 'src/user/user.service';
 import { UserChannelBridge } from './entity/user-channel-bridge.entity';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class ChatService {
@@ -17,7 +18,7 @@ export class ChatService {
         private messageRepository: MessageRepository,
         private ucbRepository: UcbRepository,
         private userService: UserService,
-        private chatGateway: ChatGateway) {}
+        private authService: AuthService) {}
     
 
     async createChannel(channelDto: ChannelDto, channelMembers: User[]): Promise<Channel> {
@@ -94,7 +95,6 @@ export class ChatService {
             else
                 i++;
         }
-        
         return rooms;
     }
 

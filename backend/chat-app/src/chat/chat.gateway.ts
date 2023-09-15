@@ -10,6 +10,7 @@ import { NotFoundError } from 'rxjs';
 import { NotFoundException } from '@nestjs/common';
 import { UserType } from './enum/user_type.enum';
 
+
 @WebSocketGateway({namespace: '/chat'})
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
