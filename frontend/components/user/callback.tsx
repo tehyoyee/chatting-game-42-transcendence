@@ -57,11 +57,12 @@ export default function Callback() {
 				return;
 			} else if (res.firstLogin === true) {
 				router.push('/login/setprofile');
+				return;
 			}
-      await updateLoginState();
+//      await updateLoginState();
       router.push('/');
     })()
-  }, [updateLoginState, loggedIn/*, router*/]);
+  }, [updateLoginState, loggedIn, router]);
   return (
 		<>
 			{tfa && <Tfa loginData={loginData}></Tfa>}
