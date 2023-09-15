@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Channel } from "./channel.entity";
 import { User } from "src/user/entity/user.entity";
 
@@ -9,6 +9,9 @@ export class Message extends BaseEntity {
     
     @Column()
     content: string;
+
+    @CreateDateColumn()
+    created_at: Date;
     
     @Column({ name: 'user_id' })
     user_id: number;

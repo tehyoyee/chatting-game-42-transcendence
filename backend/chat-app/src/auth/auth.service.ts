@@ -133,8 +133,8 @@ export class AuthService {
 
 	async verifyToken(token: string): Promise<User> {
 		try {
-			const verified = await this.jwtService.verify(token);
-			if (typeof verified === 'object' && 'id' in verified)
+			const { verified }  = await this.jwtService.verify(token);
+			if (verified)
 				return verified;
 		
 			throw new UnauthorizedException('token is not verified');
