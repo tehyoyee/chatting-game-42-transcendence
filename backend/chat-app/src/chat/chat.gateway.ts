@@ -9,6 +9,7 @@ import { ChannelDto } from './dto/channel-dto';
 import { NotFoundError } from 'rxjs';
 import { NotFoundException } from '@nestjs/common';
 import { UserType } from './enum/user_type.enum';
+import { MessageDto } from './dto/message-dto';
 
 
 @WebSocketGateway({namespace: '/chat'})
@@ -35,9 +36,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       this.currentUser = null;
       this.currentUser = await this.userService.getProfileByUserId(this.accessToken.id);
 
-      if (!this.currentUser)
+      if (!this.currentUser) {
         return this.disconnect(client);
-
+      }
+      
     } catch (error) {
       return this.disconnect(client);
     }
@@ -77,6 +79,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   @SubscribeMessage('createChannel')
   async onCreateChannel(client: Socket, channelDto: ChannelDto) {
     await this.definePlayer(client);
+    
     if (this.currentUser) {
       const found = await this.chatService.getChannelByName(channelDto.name);
       if (found)
@@ -115,31 +118,52 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
   }
 
+  @SubscribeMessage('createMessage')
+  async onCreateMessage(client: Socket, messageDto: MessageDto) {
+    await this.definePlayer(client);
 
+    if (this.currentUser) {
+      const member = await this.chatService.isMember(messageDto.channel_id, this.currentUser.user_id);
+      if (member && messageDto.content !== '' && member.is_muted === false) {
+        await this.chatService.createMessage(messageDto, this.currentUser);
 
+        let userId: any;
+        let messages: any;
+        for (let x of this.connectedUsers) {
+          userId = await x.handshake.query.token;
+          userId = await this.authService.verifyToken(userId);
 
-
-
-
-
-
-  @SubscribeMessage('message')
-  handleMessage(@ConnectedSocket() client: Socket,
-  @MessageBody('channelName') channelName: string) {
-
-    console.log('hi');
-    console.log(channelName);
-    
-    // client.on('message', (client) => console.log(client));
-    client.emit('message', channelName);
-    client.broadcast.emit('message', channelName);
+          if (await this.chatService.isMember(messageDto.channel_id, userId)) {
+            messages = await this.chatService.getMembersByChannelId(messageDto.channel_id, userId);
+            this.server.to(x.user_id).emit('sendMessages', messages);
+          }
+        }
+      }
+    }
   }
 
-  async onChannelJoin(@ConnectedSocket() client: Socket,
-  @MessageBody('channelName') channelName: string) {
-		client.join(channelName);
-	}
+  @SubscribeMessage('leaveChannel')
+  async onLeaveChannel(client: Socket, channel_id: number) {
 
 
+  }
+
+
+  // @SubscribeMessage('message')
+  // handleMessage(@ConnectedSocket() client: Socket,
+  // @MessageBody('channelName') channelName: string) {
+
+  //   console.log('hi');
+  //   console.log(channelName);
+    
+  //   // client.on('message', (client) => console.log(client));
+  //   client.emit('message', channelName);
+  //   client.broadcast.emit('message', channelName);
+  // }
+
+  // async onChannelJoin(@ConnectedSocket() client: Socket,
+  // @MessageBody('channelName') channelName: string) {
+	// 	client.join(channelName);
+	// }
 
 }

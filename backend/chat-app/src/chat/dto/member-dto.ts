@@ -1,7 +1,7 @@
 import { User } from "src/user/entity/user.entity";
 import { UserType } from "../enum/user_type.enum";
 
-export class memberDto {
+export class MemberDto {
     member: User;
 
     type: UserType;
