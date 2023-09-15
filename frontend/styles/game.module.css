@@ -1,4 +1,175 @@
-.startButton {
-	width: 300px;
-	height: 300px;
+.body {
+	background: rgb(211, 211, 211);
+  }
+  
+  .h1 {
+	position: relative;
+	text-align: center;
+	color: #353535;
+	margin: 70px 0px 0px 0px;
+	font-size: 50px;
+	font-family: Impact, 'Arial Narrow Bold', sans-serif;
+  }
+  
+  .p {
+	font-family: 'Lato', sans-serif;
+	font-weight: 300;
+	text-align: center;
+	font-size: 18px;
+	color: #676767;
+  }
+  
+  .frame {
+	width: 90%;
+	/* margin: 1px auto; */
+	text-align: center;
+  }
+  
+  .button {
+	margin: 20px;
+  }
+  
+  .custom {
+	width: 380px;
+	height: 230px;
+	color: #fff;
+	border-radius: 5px;
+	padding: 10px 25px;
+	font-family: 'Lato', sans-serif;
+	font-weight: 500;
+	background: transparent;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	position: relative;
+	display: inline-block;
+	box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5), 7px 7px 20px 0px rgba(0, 0, 0, .1), 4px 4px 5px 0px rgba(0, 0, 0, .1);
+	outline: none;
+  }
+
+
+.btn1 {
+	background: rgb(22, 9, 240);
+	background: linear-gradient(0deg, rgba(22, 9, 240, 1) 0%, rgba(49, 110, 244, 1) 100%);
+	color: #fff;
+	border: none;
+	transition: all 0.3s ease;
+	overflow: hidden;
+	position: relative;
+  }
+  
+  .btn1::after {
+	content: " ";
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: -1;
+	width: 100%;
+	height: 100%;
+	transition: all 0.3s ease;
+	transform: scale(0.1);
+  }
+  
+  .btn1:hover {
+	color: rgba(2, 126, 251, 1);
+	border: none;
+	background: transparent;
+  }
+  
+  .btn1:hover::after {
+	background: rgb(0, 3, 255);
+	background: linear-gradient(0deg, rgba(2, 126, 251, 1) 0%, rgba(0, 3, 255, 1) 100%);
+	transform: scale(1);
+  }
+
+.btn2 {
+  background: rgb(247, 150, 192);
+  background: radial-gradient(circle, rgba(247, 150, 192, 1) 0%, rgba(118, 174, 241, 1) 100%);
+  line-height: 42px;
+  padding: 0;
+  border: none;
+  position: relative;
+  overflow: hidden; /* overflow 속성 추가 */
+}
+
+.btn2 span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -10%);
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease; /* 텍스트 애니메이션 속성 추가 */
+}
+
+/* 이하 스타일은 동일 */
+.btn2:before,
+.btn2:after {
+  position: absolute;
+  content: "";
+  height: 0%;
+  width: 1px;
+  box-shadow: -1px -1px 20px 0px rgba(255, 255, 255, 1), -4px -4px 5px 0px rgba(255, 255, 255, 1), 7px 7px 20px 0px rgba(0, 0, 0, .4), 4px 4px 5px 0px rgba(0, 0, 0, .3);
+}
+
+.btn2:before {
+  right: 0;
+  top: 0;
+  transition: all 500ms ease;
+}
+
+.btn2:after {
+  left: 0;
+  bottom: 0;
+  transition: all 500ms ease;
+}
+
+.btn2:hover span {
+  transform: translate(-50%, -10%) scale(0.9); /* hover 시에 텍스트 축소 효과 추가 */
+}
+
+.btn2:hover {
+  background: transparent;
+  color: #76aef1;
+  box-shadow: none;
+}
+
+.btn2:hover:before {
+  transition: all 500ms ease;
+  height: 100%;
+}
+
+.btn2:hover:after {
+  transition: all 500ms ease;
+  height: 100%;
+}
+
+.btn2 span:before,
+.btn2 span:after {
+  position: absolute;
+  content: "";
+  box-shadow: -1px -1px 20px 0px rgba(255, 255, 255, 1), -4px -4px 5px 0px rgba(255, 255, 255, 1), 7px 7px 20px 0px rgba(0, 0, 0, .4), 4px 4px 5px 0px rgba(0, 0, 0, .3);
+}
+
+.btn2 span:before {
+  left: 0;
+  top: 0;
+  width: 0%;
+  height: .5px;
+  transition: all 500ms ease;
+}
+
+.btn2 span:after {
+  right: 0;
+  bottom: 0;
+  width: 0%;
+  height: .5px;
+  transition: all 500ms ease;
+}
+
+.btn2 span:hover:before {
+  width: 100%;
+}
+
+.btn2 span:hover:after {
+  width: 100%;
 }

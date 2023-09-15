@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, SetStateAction } from 'react';
-import style from '../../styles/tfa.module.css';
+import styles from '../../styles/tfa.module.css';
 import { LoginData } from '@/components/user/callback';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/user/auth';
@@ -9,6 +9,7 @@ import { useAuthContext } from '@/components/user/auth';
 export default function Tfa({ loginData }: { loginData: LoginData }) {
   const [inputCode, setInputCode] = useState('');
   const [message, setMessage] = useState('');
+  // const [messageFail, setMessageFail] = useState('');
 	const router = useRouter();
 	const { loggedIn, updateLoginState } = useAuthContext();
 
@@ -31,7 +32,7 @@ export default function Tfa({ loginData }: { loginData: LoginData }) {
 			await updateLoginState();
 			console.log(`loggedIn=${loggedIn}`);
       if (loggedIn === true) {
-        setMessage('인증 성공');
+        // setMessage('인증 성공');
 				router.push('/');
       } else {
         setMessage('인증 실패');
@@ -57,18 +58,18 @@ export default function Tfa({ loginData }: { loginData: LoginData }) {
   }, [checkAuthCode, inputCode]);
 
   return (
-    <div className={style.tfa}>
-      <h1>인증 코드 입력</h1>
-      <input className={style.tfaInput}
-        type="text"
+    <>
+    <div className={styles.tfaContainer}>
+      <h1 className={styles.tfaPhrase}>인증 코드 입력</h1>
+      <input type="text"
         value={inputCode}
-        placeholder="6자리 코드를 입력해주세요"
+        placeholder="6자리 코드를 입력해주세요."
         onChange={handleChange}
         onKeyDown={handleEnterKey}
-        maxLength={6}
-      />
-      <button onClick={handleButtonClick} className={style.tfaConfirm}>확인</button>
-      <div>{message}</div>
+        maxLength={6} className={styles.tfaInput} />
+      <button onClick={handleButtonClick} className={styles.tfaButton}>확인</button>
+      <div className={styles.tfaResult}>{message}</div>
     </div>
+</>
   );
 }
