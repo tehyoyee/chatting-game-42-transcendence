@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Channel } from './entity/channel.entity';
 import { User } from 'src/user/entity/user.entity';
 import { ChannelRepository } from './channel.repository';
@@ -16,6 +16,7 @@ import { Message } from './entity/message.entity';
 import * as bcrypt from 'bcrypt';
 import { channel } from 'diagnostics_channel';
 import { DmDto } from './dto/dm-dto';
+import { JoinChannelDto } from './dto/join-channel-dto';
 
 @Injectable()
 export class ChatService {
@@ -218,8 +219,39 @@ export class ChatService {
         return messages;
     }
     
+    async isOwnerOfChannel(userId: number, channelId: number) {
+        const found = await this.ucbRepository.getUcbByIds(userId, channelId);
+        if (!found)
+            throw new NotFoundException(`user ${userId} not found in channel ${channelId}`);
 
+        if (found.user_type === UserType.OWNER)
+            return true;
+        return null;
+    }
 
+    async updatePassword(channelId: number, newPassword: string): Promise<Channel> {
+        const channel = await this.getChannelById(channelId);
+
+        channel.salt = await bcrypt.genSalt();
+        channel.channel_pwd = await bcrypt.hash(newPassword, channel.salt);
+
+        await channel.save();
+        return channel;
+    }
+
+    async setPasswordToChannel(joinChannelDto: JoinChannelDto) {
+        const {channel_id, password} = joinChannelDto;
+
+        const channel = await this.channelRepository.getChannelById(channel_id);
+        if (!channel)
+            throw new NotFoundException(`channel ${channel_id} not found`);
+
+        channel.is_public = false;
+        channel.salt = await bcrypt.genSalt();
+        channel.channel_pwd = await bcrypt.hash(password, channel.salt);
+
+        await channel.save();
+    }
 
     async getChannelByName(name: string): Promise<Channel> {
         return await this.channelRepository.getChannelByName(name);

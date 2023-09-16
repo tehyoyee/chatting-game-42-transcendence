@@ -270,46 +270,60 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
         let receiverId = dmDto.receiver_id;
         let DMRoom = await this.chatService.checkDMRoomExists(this.currentUser.user_id, receiverId);
         await this.chatService.createDM(dmDto, this.currentUser, DMRoom.channel_id);
-
         
-
-
-
+        let receiverSocket = await this.getSocketId(receiverId);
+        let DMs = await this.chatService.getDMs(this.currentUser.user_id, receiverId);
+        if (receiverSocket) {
+          this.server.to(receiverSocket.id).emit('sendMessage', DMs);
+        }
+        this.server.to(sender.id).emit('sendMessage', DMs);
       }
     }
-
   }
 
+  @SubscribeMessage('changePassword')
+  async oncCangePassword(client: Socket, joinChannelDto: JoinChannelDto) {
+    await this.definePlayer(client);
 
+    if (this.currentUser) {
+      if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, joinChannelDto.channel_id)) {
+        const {channel_id, password} = joinChannelDto;
+        
+        await this.chatService.updatePassword(channel_id, password);
+      }
+    }
+  }
+
+  @SubscribeMessage('removePassword')
+  async onRemovePassword(client: Socket, channelId: number) {
+    await this.definePlayer(client);
+  
+    if (this.currentUser) {
+      if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, channelId)) {
+        await this.chatService.updatePassword(channelId, '');
+      }
+    }
+  }
+  
+  @SubscribeMessage('set-password')
+  async onSetPassword(client: Socket, joinChannelDto: JoinChannelDto) {
+    await this.definePlayer(client);
+  
+    if (this.currentUser) {
+      if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, joinChannelDto.channel_id)) {
+        await this.chatService.setPasswordToChannel(joinChannelDto);
+      }
+    }
+  }
 
   // @SubscribeMessage('kickUser')
   
-  // @SubscribeMessage('banUser')
-  // @SubscribeMessage('unbanUser')
+  // @SubscribeMessage('banUser') 
+  // @SubscribeMessage('unbanUser') <- 없어도 될듯?
   
   // @SubscribeMessage('muteUser')
   // @SubscribeMessage('unmuteUser')
 
   // @SubscribeMessage('inviteGame')
-
-
-
-
-  // @SubscribeMessage('message')
-  // handleMessage(@ConnectedSocket() client: Socket,
-  // @MessageBody('channelName') channelName: string) {
-
-  //   console.log('hi');
-  //   console.log(channelName);
-    
-  //   // client.on('message', (client) => console.log(client));
-  //   client.emit('message', channelName);
-  //   client.broadcast.emit('message', channelName);
-  // }
-
-  // async onChannelJoin(@ConnectedSocket() client: Socket,
-  // @MessageBody('channelName') channelName: string) {
-	// 	client.join(channelName);
-	// }
 
 }
