@@ -38,7 +38,7 @@ export default function Logout() {
   }, []);
   return (
     <>
-      {loggedIn && <button className={styles.logoutBtn} type="button" onClick={handleLogout}>log out</button>}
+      {loggedIn && <button className={styles.logoutBtn} type="button" onClick={(e) => {e.preventDefault(); handleLogout()}}>log out</button>}
     </>
   );
 }

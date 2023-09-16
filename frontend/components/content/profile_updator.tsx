@@ -1,5 +1,7 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
-import styles from '/styles/profile.module.css';
+import styles from '@/styles/profile.module.css';
+import Modal from '@/components/structure/modal';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 
@@ -11,14 +13,21 @@ function updateName () {
   alert("update name");
 }
 
-function UploadBtn({ callback, children }: { callback: any, children: any}) {
+function UploadBtn({ children, title }: { children: React.ReactNode, title: string}) {
+	const [showModal, setShowModal] = useState(false);
   return (
-    <button
-      className={`${styles.profileUpdateBtn}`}
-      type="button"
-      onClick={callback}>
-      {children}
-    </button>
+		<>
+			<button
+				className={`${styles.profileUpdateBtn}`}
+				type="button"
+				onClick={(e) => {e.preventDefault(); setShowModal(true)}}>
+				{title}
+			</button>
+			{showModal &&
+			<Modal title={`${title}`} onClose={() => setShowModal(false)}>
+				{children}
+			</Modal>}
+		</>
   );
 }
 
@@ -44,6 +53,7 @@ export default function ProfileUpdator({ uid }: { uid: number }) {
 					<ImgUpdator uid={uid}></ImgUpdator>
 				</li>
 				<li>
+					<NameUpdator uid={uid}></NameUpdator>
 				</li>
 			</ul>
 		</div>
@@ -51,24 +61,24 @@ export default function ProfileUpdator({ uid }: { uid: number }) {
 }
 function TfaUpdator({ uid }: { uid: number }) {
 	const tfaUpdateUrl = `${serverUrl}/updateTFA/${uid}`;
-	const [checked, setChecked] = useState<string | null>(sessionStorage.getItem('tfa'));
+	const [state, setState] = useState<string | null>(sessionStorage.getItem('tfa'));
 
 	useEffect(() => {
-		setChecked(sessionStorage.getItem('tfa'));
+		setState(sessionStorage.getItem('tfa'));
 	}, []);
 
 	const handleToggle = async() => {
-		const state = document.querySelector('input')?.checked;
-		fetch(`${tfaUpdateUrl}/${state ? "true" : "false"}`, {
+		const checked = document.querySelector('input')?.checked;
+		fetch(`${tfaUpdateUrl}/${checked ? "true" : "false"}`, {
 			method: 'PATCH',
 			credentials: 'include',
 		})
 			.then(res => {
 					// NOTE: get 2fa info from backend?
 				if (!res.ok) throw new Error(`invalid response: ${res.status}`);
-				const result = state ? "true" : "false";
+				const result = checked ? "true" : "false";
 				localStorage.setItem('tfa', result);
-				setChecked(result);
+				setState(result);
 				console.log(`tfa updated result=${result}`);
 			})
 			.catch(err => {
@@ -84,8 +94,8 @@ function TfaUpdator({ uid }: { uid: number }) {
 				style={{
 					margin: "4px",
 				}}
-				onChange={() => {handleToggle()}}
-				defaultChecked={checked === "true"}
+				onChange={(e) => {e.preventDefault(); handleToggle()}}
+				defaultChecked={state === "true"}
 				id='tfaCheckbox' type='checkbox'></input>
 		</>
 	);
@@ -94,8 +104,12 @@ function TfaUpdator({ uid }: { uid: number }) {
 function ImgUpdator({ uid }: { uid: number }) {
 	return (
 		<>
-			<UploadBtn callback={uploadImage}>
-				Upload image
+			<UploadBtn title={"Update Avatar"}>
+				<div>
+					<p>
+						modal test
+					</p>
+				</div>
 			</UploadBtn>
 		</>
 	);
@@ -104,8 +118,12 @@ function ImgUpdator({ uid }: { uid: number }) {
 function NameUpdator({ uid }: { uid: number }) {
 	return (
 		<>
-			<UploadBtn callback={updateName}>
-				Update Name
+			<UploadBtn title={"Update Name"}>
+				<div>
+					<p>
+						modal test 2
+					</p>
+				</div>
 			</UploadBtn>
 		</>
 	);

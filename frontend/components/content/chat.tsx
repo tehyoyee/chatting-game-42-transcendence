@@ -51,7 +51,7 @@ export default function Chat() {
 		return (
 			<li>
 				<button
-					onClick={(event) => {toggleChat(event)}}
+					onClick={(event) => {event.preventDefault(); toggleChat(event)}}
 					className={`${styles.button} ${className}`}
 					data-key={info.id}
 					style={{
