@@ -35,11 +35,11 @@ export default function Matching() {
       <div className={styles.userProfileContainer}>
         <div className={styles.userProfile}>
           <Image src={defaultImage} alt='profile image' className={styles.userImage} />
-          <div>user1</div>
+          <div className={styles.userText}>user1</div>
         </div>
         <div className={styles.userProfile}>
           <Image src={defaultImage} alt='profile image' className={styles.userImage} />
-          <div>user2</div>
+          <div className={styles.userText}>user2</div>
         </div>
       </div>
       {loading && <p>Loading...</p>}
@@ -53,9 +53,9 @@ export default function Matching() {
           <p className={styles.countdown}>{countdown}</p>
         </div>
       )}
-      <div className={styles.bottomRight}>
-        <Link href='/game'>나가기</Link>
-      </div>
+        <div>
+          <Link href='/game' className={styles.bottomRight}>Exit</Link>
+        </div>
     </div>
   );
 }

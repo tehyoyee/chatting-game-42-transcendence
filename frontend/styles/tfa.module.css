@@ -42,13 +42,13 @@
 
 .tfaError {
   font-size: larger;
-  color: rgb(201, 26, 26);
+  color: rgb(255, 0, 0);
   text-align: center;
 }
 
 .tfaLessThanSix {
   font-size: larger;
-  color: rgb(245, 61, 4);
+  color: rgb(255, 85, 0);
   text-align: center;
 }
 
@@ -63,7 +63,7 @@
 
 .tfaFail {
   font-size: larger;
-  color: rgb(201, 26, 26);
+  color: rgb(255, 0, 0);
   animation: shake 0.13s ease-in-out infinite;
 }
 
