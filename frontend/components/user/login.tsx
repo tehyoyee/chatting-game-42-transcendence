@@ -8,30 +8,12 @@ const authUrl = `${process.env.NEXT_PUBLIC_AUTH_URL}`;
  * fetch auth server url and redirect page to the url.
  */
 export default function Login() {
-/*  const handleRequest = async () => {
-    fetch(loginUrl, {
-      method: 'GET',
-      headers: {
-  Origin: `${process.env.NEXT_PUBLIC_APP_FRONT_URL}`,
-      },
-    })
-    .then(res => {
-      console.log(res);
-      console.log(res.headers);
-      window.location.assign(`${data.url}`);
-    })
-    .catch(reason => {
-      console.log(`${loginUrl}: fetch failed: ${reason}`);
-    });
-  }; */
-
-
   return (
     <>
       <hr></hr>
 			<div className="full-background centerItemFlex">
 				<button 
-					onClick={ (e) => {e.preventDefault(); window.location.assign(authUrl)} }
+					onClick={(e) => {e.preventDefault(); window.location.assign(authUrl)} }
 					className={styles.loginButton}>login with 42
 				</button>
 			</div>
@@ -63,35 +45,3 @@ Component Callback
   send auth code to backend and receive cookie as encoded access token(or user specific information?).
 
 */
-
-
-
-// 'use client';
-
-// import { useState, useCallback } from 'react';
-// import Tfa from './tfa'; // TFA 컴포넌트
-
-// export default function Login() {
-//   const [isLoggedIn, setIsLoggedIn] = useState(false);
-//   const [isTfaOk, setTfaOk] = useState(false);
-
-//   const handleLogin = useCallback(() => {
-//     // 로그인 요청을 서버로 보내고 성공 여부를 판단
-//     // 로그인에 성공하면 setIsLoggedIn(true) 호출
-//     // 이후 TFA 인증 단계로 이동
-//     setIsLoggedIn(true);
-//   }, []);
-
-//   return (
-//     <div>
-//       {!isLoggedIn ? (
-//         <div className="full-background centerItemFlex">
-//           <button onClick={handleLogin} className="full-background centerItemFlex">login with 42</button>
-//         </div>
-//       ) : !isTfaOk ?(
-//         <Tfa />
-//       ) : 
-//       }
-//     </div>
-//   );
-// }
