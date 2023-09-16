@@ -36,13 +36,19 @@
 
 .tfaLoading {
   font-size: larger;
-  color: rgb(21, 206, 83);
+  color: rgb(24, 197, 82);
   text-align: center;
 }
 
 .tfaFail {
   font-size: larger;
   color: rgb(201, 26, 26);
+  text-align: center;
+}
+
+.tfaLessThanSix {
+  font-size: larger;
+  color: rgb(245, 61, 4);
   text-align: center;
 }
 
@@ -55,7 +61,20 @@
   color: #ffdd00;
 }
 
-.tfaResult {
-  font-size: medium;
-  color:rgb(220, 60, 20);
+.tfaFailShake {
+  font-size: larger;
+  color: rgb(201, 26, 26);
+  animation: shake 0.13s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 100% {
+      transform: translateX(0);
+  }
+  25%, 75% {
+      transform: translateX(-10px);
+  }
+  50% {
+      transform: translateX(10px);
+  }
 }

@@ -26,34 +26,34 @@ export default function Tfa({ loginData }: { loginData: LoginData }) {
 		const code = inputField;
     try {
 			if (code.length !== 6) {
-				setMessage("유효하지 않은 코드입니다.");
+				setMessage("6자리 코드를 입력해주세요");
 				await sleep(500);
         setTimeout(() => {
           setMessage('');
         }, 3000);
 				return;
 			}
-			setMessage("처리 중");
-      const res = await fetch(`${authUrl}?inputCode=${code}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+			const res = await fetch(`${authUrl}?inputCode=${code}`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
 				},
 				credentials: 'include',
-        body: JSON.stringify(loginData),
+				body: JSON.stringify(loginData),
 			})
 			.then(res => {
 				if (!res.ok)
-					throw new Error(`invalid response: ${res.status}`);
-				return res.json();
-			});
-			console.log(`res=${res.state}`);
-			if (res.state !== true) {
-				setMessage('인증 실패');
-				await sleep(500);
+				throw new Error(`invalid response: ${res.status}`);
+			setMessage("인증 성공");
+			return res.json();
+		});
+		console.log(`res=${res.state}`);
+		if (res.state !== true) {
+				setMessage('인증 실패!');
+				await sleep(280);
         setTimeout(() => {
           setMessage('');
-        }, 3000);
+        }, 280);
 			} else {
 				router.push('/');
 			}
@@ -78,14 +78,14 @@ export default function Tfa({ loginData }: { loginData: LoginData }) {
     <>
 			<hr></hr>
 			<div className={styles.tfa}>
-				<h1 className={styles.tfaLoading}>{message.length == 4 && message}</h1>
-				<h1 className={styles.tfaFail}>{message.length == 14 && message}</h1>
-				<h1 className={styles.tfaFail}>{message.length == 5 && message}</h1>
+				<h1 className={styles.tfaLoading}>{message.length == 5 && message}</h1>
 				<h1 className={styles.tfaFail}>{message.length == 13 && message}</h1>
+				<h1 className={styles.tfaFailShake}>{message.length == 6 && message}</h1>
+				<h1 className={styles.tfaLessThanSix}>{message.length == 14 && message}</h1>
 				<h1 className={styles.tfaFont}>{!message && '인증 코드 입력'}</h1>
 				<input className={styles.tfaInput}
 					type="text"
-					placeholder="6자리 코드를 입력해주세요"
+					placeholder="6자리 코드를 입력해주세요."
 					onKeyDown={handleEnterKey}
 					maxLength={6} />
 				<button onClick={checkAuthCode} className={styles.tfaConfirm}>확인</button>
