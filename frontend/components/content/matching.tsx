@@ -6,16 +6,13 @@ import defaultImage from '../../public/default.png';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '@/styles/matching.module.css';
+import DotLoader from './dodLoader';
 
 export default function Matching() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
   const [countdown, setCountdown] = useState(3);
-
-  const handleReady = () => {
-    setReady(true);
-  };
 
   useEffect(() => {
     if (ready) {
@@ -43,6 +40,8 @@ export default function Matching() {
         </div>
       </div>
       {loading && <p>Loading...</p>}
+      {!ready && <DotLoader></DotLoader>}
+
       {!loading && !ready && (
         <div className={styles.buttonContainer}>
           <button className={styles.button} onClick={() => setReady(true)}>Ready</button>

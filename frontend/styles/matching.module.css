@@ -1,11 +1,10 @@
 .userProfileContainer {
 	display: flex;
-	justify-content: space-evenly;
 	align-items: center;
 }
 
 .userProfile {
-	padding: 50px 100px 50px 100px;
+	padding: 50px 100px 0px 100px;
 	text-align: center;
   }
   
@@ -35,12 +34,12 @@
   }
   
   .buttonContainer {
+	padding: 50px 0px 0px 0px;
 	text-align: center;
   }
   
   .countdownContainer {
 	text-align: center;
-	margin-top: 20px;
   }
   
   .countdown {
@@ -61,10 +60,9 @@
 	align-items: center;
 	color: #fff;
 	cursor: pointer;
-	position: absolute;
 	position: fixed;
-	bottom: 5px;
-	right: 5px;
+	bottom: 10px;
+	right: 10px;
   }
 
   .bottomRight:hover {
@@ -78,6 +76,6 @@
   .countdown {
 	font-size: 100px;
 	font-weight: bold;
-	color: #2dc5d9;
+	color: #05d9f6;
 	-webkit-text-stroke: 1px black;
   }
