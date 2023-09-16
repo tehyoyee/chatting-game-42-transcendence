@@ -12,6 +12,7 @@ import { UserType } from './enum/user_type.enum';
 import { MessageDto } from './dto/message-dto';
 import { JoinChannelDto } from './dto/join-channel-dto';
 import { UcbDto } from './dto/ucb-dto';
+import { DmDto } from './dto/dm-dto';
 
 
 @WebSocketGateway( {namespace: '/chat'} )
@@ -229,9 +230,58 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   }
 
 
-  // @SubscribeMessage('createDM')
-  // @SubscribeMessage('sendDM')
-  
+  @SubscribeMessage('createDM')
+  async onCreateDM(sender: Socket, receiverId: number) {
+    await this.definePlayer(sender);
+
+    if (this.currentUser) {
+      const room = await this.chatService.checkDMRoomExists(this.currentUser.user_id, receiverId);
+      if (room) {
+        let messages = await this.chatService.getDMs(this.currentUser.user_id, receiverId);
+        this.server.to(this.accessToken.id).emit('sendMessages', messages);
+      }
+      else {
+        const DMRoom = await this.chatService.createDMRoom(this.currentUser.user_id, receiverId);
+
+        let allRooms = await this.chatService.getAllRooms(this.currentUser.user_id);
+        let rooms = await this.chatService.getRoomsForUser(this.currentUser.user_id);
+
+        this.server.to(sender.id).emit('allRooms', allRooms);
+        this.server.to(sender.id).emit('rooms', rooms);
+
+        let receiver = await this.getSocketId(receiverId);
+        if (receiver) {
+          allRooms = await this.chatService.getAllRooms(receiverId);
+          rooms = await this.chatService.getRoomsForUser(receiverId);
+
+          this.server.to(receiver.id).emit('allRooms', allRooms);
+          this.server.to(receiver.id).emit('message', rooms);
+        }
+      }
+    }
+  }
+
+  @SubscribeMessage('sendDM')
+  async onSendDM(sender: Socket, dmDto: DmDto) {
+    if (dmDto.content !== '') {
+      await this.definePlayer(sender);
+
+      if (this.currentUser) {
+        let receiverId = dmDto.receiver_id;
+        let DMRoom = await this.chatService.checkDMRoomExists(this.currentUser.user_id, receiverId);
+        await this.chatService.createDM(dmDto, this.currentUser, DMRoom.channel_id);
+
+        
+
+
+
+      }
+    }
+
+  }
+
+
+
   // @SubscribeMessage('kickUser')
   
   // @SubscribeMessage('banUser')

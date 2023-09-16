@@ -15,6 +15,7 @@ import { MessageDto } from './dto/message-dto';
 import { Message } from './entity/message.entity';
 import * as bcrypt from 'bcrypt';
 import { channel } from 'diagnostics_channel';
+import { DmDto } from './dto/dm-dto';
 
 @Injectable()
 export class ChatService {
@@ -162,6 +163,61 @@ export class ChatService {
             return true;
         return false;
     }
+
+    async checkDMRoomExists(senderId: number, receiverId: number): Promise<Channel> {
+        let channelName = "[DM]" + senderId + "&" + receiverId;
+        const found1 = await this.channelRepository.getDMRoomByName(channelName, false);
+        if (found1)
+            return found1;
+
+        channelName = "[DM]" + receiverId + "&" + senderId;
+        const found2 = await this.channelRepository.getDMRoomByName(channelName, false);
+        if (found2)
+            return found2;
+
+        return null;
+    }
+
+    async createDMRoom(senderId: number, receiverId: number): Promise<Channel> {
+        const newDMRoom = await this.channelRepository.createDMRoom(senderId, receiverId);
+
+        const sender = await this.userService.getProfileByUserId(senderId);
+        const receiver = await this.userService.getProfileByUserId(receiverId);
+
+        await this.addMember(sender, newDMRoom, UserType.GENERAL);
+        await this.addMember(receiver, newDMRoom, UserType.GENERAL);
+
+        return newDMRoom;
+    }
+
+    async createDM(dmDto: DmDto, sender: User, channel_id: number): Promise<Message> {
+        const {receiver_id, content} = dmDto;
+        
+        const newDM = new Message();
+        newDM.content = content;
+        newDM.user = sender;
+        newDM.channel = await this.channelRepository.getChannelById(channel_id);
+        await newDM.save();
+        
+        return newDM;
+    }
+
+    async getDMs(senderId: number, receiverId: number): Promise<Message[]> {
+        let messages: Message[] = [];
+
+        //sender가 receiver로부터 block되었는지 확인해야 함
+        let channelName = "[DM]" + senderId + "&" + receiverId;
+        let found = await this.getChannelByName(channelName);
+        if (!found) {
+            channelName = "[DM]" + receiverId + "&" + senderId;
+            found = await this.getChannelByName(channelName);
+        }
+
+        messages = await this.getMessagesByChannelId(found.channel_id, senderId);
+
+        return messages;
+    }
+    
 
 
 

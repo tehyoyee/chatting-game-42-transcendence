@@ -75,6 +75,21 @@ export class ChannelRepository extends Repository<Channel> {
     //     }
     // }
     
+    async createDMRoom(senderId: number, receiverId: number): Promise<Channel> {
+        const newRoom = new Channel();
+
+        newRoom.channel_name = "[DM]" + senderId + "&" + receiverId;
+        newRoom.is_channel = false;
+        newRoom.is_public = false;
+        newRoom.salt = '';
+        newRoom.channel_pwd = '';
+
+        await newRoom.save();
+
+        return newRoom;
+    }
+
+
     async getChannelByName(name: string): Promise<Channel> {
         const found = await this.findOne({
             where: {channel_name: name},
@@ -86,6 +101,15 @@ export class ChannelRepository extends Repository<Channel> {
     async getChannelById(id: number): Promise<Channel> {
         const found = await this.findOne({
             where: {channel_id: id},
+        });
+
+        return found;
+    }
+
+    async getDMRoomByName(name: string, isChannel: boolean): Promise<Channel> {
+        const found = await this.findOne({
+            where: {channel_name: name,
+                is_channel: isChannel}
         });
 
         return found;
