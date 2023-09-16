@@ -1,26 +1,32 @@
 .userProfileContainer {
 	display: flex;
-	justify-content: space-evenly;
 	align-items: center;
 }
 
 .userProfile {
-	padding: 100px 100px 100px 100px;
+	padding: 50px 100px 0px 100px;
 	text-align: center;
   }
   
   .userImage {
-	margin-bottom: 10px;
+	margin-bottom: 0px;
+  }
+
+  .userText {
+	padding: 35px 0px 0px 0px;
+	font-size: 40px;
   }
   
   .button {
 	width: 300px;
 	height: 100px;
-	font-size: 25px;
+	font-size: 30px;
 	background-color: #0b76e8;
 	color: #fff;
 	border: none;
 	cursor: pointer;
+	border: 2px solid #ccc;
+	border-radius: 15px;
   }
   
   .button:hover {
@@ -28,19 +34,12 @@
   }
   
   .buttonContainer {
+	padding: 50px 0px 0px 0px;
 	text-align: center;
-	margin-top: 20px;
-  }
-  
-  .bottomRight {
-	position: absolute;
-	bottom: 10px;
-	right: 10px;
   }
   
   .countdownContainer {
 	text-align: center;
-	margin-top: 20px;
   }
   
   .countdown {
@@ -51,15 +50,32 @@
 
   .bottomRight {
 	background-color: rgb(202, 15, 15);
+	border: 2px solid #ccc;
+	border-radius: 15px;
 	font-size: 25px;
-	width: 300px;
-	height: 100px;
-	text-align: center;
-	vertical-align: middle;
+	width: 240px;
+	height: 90px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	color: #fff;
-	border: none;
 	cursor: pointer;
-	position: absolute;
-	bottom: 0px;
-	right: 0px;
+	position: fixed;
+	bottom: 10px;
+	right: 10px;
+  }
+
+  .bottomRight:hover {
+	background-color: rgb(122, 36, 36);
+  }
+  
+  .countdownContainer {
+	text-align: center;
+  }
+  
+  .countdown {
+	font-size: 100px;
+	font-weight: bold;
+	color: #05d9f6;
+	-webkit-text-stroke: 1px black;
   }
