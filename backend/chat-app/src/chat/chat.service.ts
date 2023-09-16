@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Channel } from './entity/channel.entity';
 import { User } from 'src/user/entity/user.entity';
 import { ChannelRepository } from './channel.repository';
@@ -15,6 +15,8 @@ import { MessageDto } from './dto/message-dto';
 import { Message } from './entity/message.entity';
 import * as bcrypt from 'bcrypt';
 import { channel } from 'diagnostics_channel';
+import { DmDto } from './dto/dm-dto';
+import { JoinChannelDto } from './dto/join-channel-dto';
 
 @Injectable()
 export class ChatService {
@@ -163,7 +165,93 @@ export class ChatService {
         return false;
     }
 
+    async checkDMRoomExists(senderId: number, receiverId: number): Promise<Channel> {
+        let channelName = "[DM]" + senderId + "&" + receiverId;
+        const found1 = await this.channelRepository.getDMRoomByName(channelName, false);
+        if (found1)
+            return found1;
 
+        channelName = "[DM]" + receiverId + "&" + senderId;
+        const found2 = await this.channelRepository.getDMRoomByName(channelName, false);
+        if (found2)
+            return found2;
+
+        return null;
+    }
+
+    async createDMRoom(senderId: number, receiverId: number): Promise<Channel> {
+        const newDMRoom = await this.channelRepository.createDMRoom(senderId, receiverId);
+
+        const sender = await this.userService.getProfileByUserId(senderId);
+        const receiver = await this.userService.getProfileByUserId(receiverId);
+
+        await this.addMember(sender, newDMRoom, UserType.GENERAL);
+        await this.addMember(receiver, newDMRoom, UserType.GENERAL);
+
+        return newDMRoom;
+    }
+
+    async createDM(dmDto: DmDto, sender: User, channel_id: number): Promise<Message> {
+        const {receiver_id, content} = dmDto;
+        
+        const newDM = new Message();
+        newDM.content = content;
+        newDM.user = sender;
+        newDM.channel = await this.channelRepository.getChannelById(channel_id);
+        await newDM.save();
+        
+        return newDM;
+    }
+
+    async getDMs(senderId: number, receiverId: number): Promise<Message[]> {
+        let messages: Message[] = [];
+
+        //sender가 receiver로부터 block되었는지 확인해야 함
+        let channelName = "[DM]" + senderId + "&" + receiverId;
+        let found = await this.getChannelByName(channelName);
+        if (!found) {
+            channelName = "[DM]" + receiverId + "&" + senderId;
+            found = await this.getChannelByName(channelName);
+        }
+
+        messages = await this.getMessagesByChannelId(found.channel_id, senderId);
+
+        return messages;
+    }
+    
+    async isOwnerOfChannel(userId: number, channelId: number) {
+        const found = await this.ucbRepository.getUcbByIds(userId, channelId);
+        if (!found)
+            throw new NotFoundException(`user ${userId} not found in channel ${channelId}`);
+
+        if (found.user_type === UserType.OWNER)
+            return true;
+        return null;
+    }
+
+    async updatePassword(channelId: number, newPassword: string): Promise<Channel> {
+        const channel = await this.getChannelById(channelId);
+
+        channel.salt = await bcrypt.genSalt();
+        channel.channel_pwd = await bcrypt.hash(newPassword, channel.salt);
+
+        await channel.save();
+        return channel;
+    }
+
+    async setPasswordToChannel(joinChannelDto: JoinChannelDto) {
+        const {channel_id, password} = joinChannelDto;
+
+        const channel = await this.channelRepository.getChannelById(channel_id);
+        if (!channel)
+            throw new NotFoundException(`channel ${channel_id} not found`);
+
+        channel.is_public = false;
+        channel.salt = await bcrypt.genSalt();
+        channel.channel_pwd = await bcrypt.hash(password, channel.salt);
+
+        await channel.save();
+    }
 
     async getChannelByName(name: string): Promise<Channel> {
         return await this.channelRepository.getChannelByName(name);

@@ -12,6 +12,7 @@ import { UserType } from './enum/user_type.enum';
 import { MessageDto } from './dto/message-dto';
 import { JoinChannelDto } from './dto/join-channel-dto';
 import { UcbDto } from './dto/ucb-dto';
+import { DmDto } from './dto/dm-dto';
 
 
 @WebSocketGateway( {namespace: '/chat'} )
@@ -229,37 +230,100 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   }
 
 
-  // @SubscribeMessage('createDM')
-  // @SubscribeMessage('sendDM')
+  @SubscribeMessage('createDM')
+  async onCreateDM(sender: Socket, receiverId: number) {
+    await this.definePlayer(sender);
+
+    if (this.currentUser) {
+      const room = await this.chatService.checkDMRoomExists(this.currentUser.user_id, receiverId);
+      if (room) {
+        let messages = await this.chatService.getDMs(this.currentUser.user_id, receiverId);
+        this.server.to(this.accessToken.id).emit('sendMessages', messages);
+      }
+      else {
+        const DMRoom = await this.chatService.createDMRoom(this.currentUser.user_id, receiverId);
+
+        let allRooms = await this.chatService.getAllRooms(this.currentUser.user_id);
+        let rooms = await this.chatService.getRoomsForUser(this.currentUser.user_id);
+
+        this.server.to(sender.id).emit('allRooms', allRooms);
+        this.server.to(sender.id).emit('rooms', rooms);
+
+        let receiver = await this.getSocketId(receiverId);
+        if (receiver) {
+          allRooms = await this.chatService.getAllRooms(receiverId);
+          rooms = await this.chatService.getRoomsForUser(receiverId);
+
+          this.server.to(receiver.id).emit('allRooms', allRooms);
+          this.server.to(receiver.id).emit('message', rooms);
+        }
+      }
+    }
+  }
+
+  @SubscribeMessage('sendDM')
+  async onSendDM(sender: Socket, dmDto: DmDto) {
+    if (dmDto.content !== '') {
+      await this.definePlayer(sender);
+
+      if (this.currentUser) {
+        let receiverId = dmDto.receiver_id;
+        let DMRoom = await this.chatService.checkDMRoomExists(this.currentUser.user_id, receiverId);
+        await this.chatService.createDM(dmDto, this.currentUser, DMRoom.channel_id);
+        
+        let receiverSocket = await this.getSocketId(receiverId);
+        let DMs = await this.chatService.getDMs(this.currentUser.user_id, receiverId);
+        if (receiverSocket) {
+          this.server.to(receiverSocket.id).emit('sendMessage', DMs);
+        }
+        this.server.to(sender.id).emit('sendMessage', DMs);
+      }
+    }
+  }
+
+  @SubscribeMessage('changePassword')
+  async oncCangePassword(client: Socket, joinChannelDto: JoinChannelDto) {
+    await this.definePlayer(client);
+
+    if (this.currentUser) {
+      if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, joinChannelDto.channel_id)) {
+        const {channel_id, password} = joinChannelDto;
+        
+        await this.chatService.updatePassword(channel_id, password);
+      }
+    }
+  }
+
+  @SubscribeMessage('removePassword')
+  async onRemovePassword(client: Socket, channelId: number) {
+    await this.definePlayer(client);
   
+    if (this.currentUser) {
+      if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, channelId)) {
+        await this.chatService.updatePassword(channelId, '');
+      }
+    }
+  }
+  
+  @SubscribeMessage('set-password')
+  async onSetPassword(client: Socket, joinChannelDto: JoinChannelDto) {
+    await this.definePlayer(client);
+  
+    if (this.currentUser) {
+      if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, joinChannelDto.channel_id)) {
+        await this.chatService.setPasswordToChannel(joinChannelDto);
+      }
+    }
+  }
+
   // @SubscribeMessage('kickUser')
   
-  // @SubscribeMessage('banUser')
-  // @SubscribeMessage('unbanUser')
+  // @SubscribeMessage('banUser') 
+  // @SubscribeMessage('unbanUser') <- 없어도 될듯?
   
   // @SubscribeMessage('muteUser')
   // @SubscribeMessage('unmuteUser')
 
   // @SubscribeMessage('inviteGame')
-
-
-
-
-  // @SubscribeMessage('message')
-  // handleMessage(@ConnectedSocket() client: Socket,
-  // @MessageBody('channelName') channelName: string) {
-
-  //   console.log('hi');
-  //   console.log(channelName);
-    
-  //   // client.on('message', (client) => console.log(client));
-  //   client.emit('message', channelName);
-  //   client.broadcast.emit('message', channelName);
-  // }
-
-  // async onChannelJoin(@ConnectedSocket() client: Socket,
-  // @MessageBody('channelName') channelName: string) {
-	// 	client.join(channelName);
-	// }
 
 }
