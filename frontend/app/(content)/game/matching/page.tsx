@@ -4,6 +4,7 @@ import Link from 'next/link';
 import d from '/frontend/public/default.png'
 import { useAuthContext } from '@/components/user/auth';
 import { useEffect, useState } from 'react';
+import Matching from '@/components/content/matching';
 export default function Page() {
   // const [match, setMatch] = useState(false);
 
@@ -25,7 +26,7 @@ export default function Page() {
 
   return (
   <>
-    matching room
+    <Matching></Matching>
   </>
   );
 }
