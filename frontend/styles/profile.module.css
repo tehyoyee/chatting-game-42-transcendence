@@ -1,56 +1,157 @@
-.profile {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr 1fr;
+
+.profileContainer {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	grid-row: 1 / span 2;
+	grid-column: 1 / span 1;
+	background-color: #0056b3;
+	padding: 20px;
+
 }
+
 
 .profileImage {
-  grid-row: 1 / 2;
-  grid-column: 1 / 2;
-}
-
-.profileUpdateBtn {
-  margin-top: 8px;
-  background-color: lightgray;
-  border-radius: 0.3rem;
-  border: solid 1.5px gray;
-  width: 7.2rem;
-  height: 1.6rem;
-  margin: 2px;
-}
-
-.profileImageUpload:hover {
-  filter: contrast(0.8);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 50%;
+	border: 6px solid #fff;
+	box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+	width: 150px;
+	height: 150px;
 }
 
 .infoBox {
-	border: solid 1.5px lightgray;
-	border-radius: 0.3rem;
+	font-size: 18px;
+	border: 2px solid #ddd;
+	border-radius: 10px;
+	padding: 30px;
+	margin: 20px;
+	text-align: center;
+	box-shadow: 0 0 7px rgba(0, 0, 0, 0.3);
+	background-color: #fff;
 }
 
-#nameUpdateField {
-	border-color: black;
-	margin: 0.5rem;
-	border: solid 1px;
-	width: 14rem;
+.userProps {
+	text-align: center;
+	font-size: 23px;
+	font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	font-weight: bold;
 }
 
-#nameUpdateField:invalid {
-	border-color: red;
+.settings {
+	text-align: right;
+	position:relative;
+	top: 160px;
+	right: 220px; 
+
 }
 
-#nameUpdateField + #nameValidity {
-	padding-right: 30px;
+.profileUpdateBtn {
+	background-color: #007bff;
+	color: #fff;
+	border: none;
+	border-radius: 3px;
+	width: 120px;
+	height: 28px;
+	margin: 2px;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	font-size: 15px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+	
 }
 
-#nameUpdateField:invalid + #nameValidity::after {
+.profileUpdateBtn:hover {
+	background-color: #0056b3;
+}
+
+.updateModal {
+	width: 400px;
+	padding: 20px;
+	background-color: #fff;
+	border-radius: 10px;
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+	text-align: center;
+	position: relative;
+}
+
+.updateModal label {
+	font-size: 20px;
+	font-weight: bold;
+}
+
+.updateModal input[type="text"] {
+	width: 100%;
+	padding: 12px;
+	margin: 10px 0;
+	border: 2px solid #ddd;
+	border-radius: 10px;
+}
+
+.updateModal button {
+	background-color: #007bff;
+	color: #fff;
+	border: none;
+	border-radius: 10px;
+	padding: 12px 24px;
+	font-size: 18px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+	margin-top: 20px;
+}
+	
+.updateModal button:hover {
+	background-color: #0056b3;
+}
+
+.updateMessage {
+	font-size: 20px;
+	margin-top: 20px;
+}
+
+.updateStatusIcon {
+	font-size: 30px;
+	margin-top: 20px;
+}
+
+.modalCloseBtn {
 	position: absolute;
-	content: 'x';
-	padding-left: 5px;
+	top: 10px;
+	right: 10px;
+	cursor: pointer;
+	font-size: 30px;
 }
 
-#nameUpdateField:valid + #nameValidity::after {
-	position: absolute;
-	content: 'o';
-	padding-left: 5px;
-}
+.buttonWrapper {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	margin: 10px;
+  }
+  
+  .buttonContent {
+	max-height: 0;
+	overflow: hidden;
+	transition: max-height 0.3s ease;
+	background-color: #f8f8f8;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	margin-top: 10px;
+	opacity: 0;
+  }
+  
+  .buttonWrapper.active .buttonContent {
+	max-height: 100%;
+	overflow: visible;
+	margin-top: 10px;
+	opacity: 1;
+	transition: max-height 0.3s ease, opacity 0.3s ease;
+	animation: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  }
+  
+  

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import styles from '/styles/profile.module.css';
 import ProfileUpdator from '@/components/content/profile_updator';
+import ExpandableButtons from './expandableButtons';
 
 // incomplete
 export interface IProfileType {
@@ -56,62 +57,34 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
     },
   ];
 	//////////////////////////////
-
+  
   return (
     <>
-      <div className="centerItemBlock gridRow1_2 gridCol1_2">
+    {isMyProfile &&
+      <ProfileUpdator
+        uid={uid} 
+        name={profile.nickname} 
+        update={{setUpdate}}
+      ></ProfileUpdator>}
+      <div className={`${"centerItemBlock gridRow1_2 gridCol1_2"} ${styles.profileImage}`}>
         <Image
-          className={`${styles.profileImage}`}
           src={'/default.png'}
           height={128}
           width={128}
           alt={"profile image"} />
       </div>
-      <div 
-				className={`${styles.infoBox}`}
-        style={{
-					display: "flex",
-          alignItems: "center",
-          gridRow: "1 / 2",
-          gridColumn: "2 / 4",
-        }}>
+      <br></br>
         <ul>
           {userProps.map(({ prop, value }) => {
-             return (
-							<li key={prop}>
-								{prop}: {value}
-							</li>
-						);
- 					})}
+            return (
+              <li className={styles.userProps} key={prop}>
+                {prop}: {value}
+              </li>
+            );
+          })}
           <br />
         </ul>
-      </div>
-			{isMyProfile &&
-				<ProfileUpdator 
-					uid={uid} 
-					name={profile.nickname} 
-					update={{setUpdate}}
-				></ProfileUpdator>}
-      <div
-        className={`centerItemBlock ${styles.infoBox}`}
-      >
-      최근 경기 기록
-      </div>
-      <div
-        className={`centerItemBlock ${styles.infoBox}`}
-      >
-      게임 전적
-      </div>
-      <div
-        className={`centerItemBlock ${styles.infoBox}`}
-      >
-      순위
-      </div>
-      <div
-        className={`centerItemBlock ${styles.infoBox}`}
-      >
-      업적
-      </div>
+      <ExpandableButtons></ExpandableButtons>
     </>
   );
 }
