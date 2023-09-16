@@ -229,6 +229,16 @@ export class ChatService {
         return null;
     }
 
+    async isAdminOfChannel(userId: number, channelId: number) {
+        const found = await this.ucbRepository.getUcbByIds(userId, channelId);
+        if (!found)
+            throw new NotFoundException(`user ${userId} not found in channel ${channelId}`);
+
+        if (found.user_type === UserType.ADMIN)
+            return true;
+        return null;
+    }
+
     async updatePassword(channelId: number, newPassword: string): Promise<Channel> {
         const channel = await this.getChannelById(channelId);
 

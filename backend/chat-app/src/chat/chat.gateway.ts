@@ -7,7 +7,7 @@ import { UserService } from 'src/user/user.service';
 import { AuthService } from 'src/auth/auth.service';
 import { ChannelDto } from './dto/channel-dto';
 import { NotFoundError } from 'rxjs';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserType } from './enum/user_type.enum';
 import { MessageDto } from './dto/message-dto';
 import { JoinChannelDto } from './dto/join-channel-dto';
@@ -316,7 +316,41 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
   }
 
-  // @SubscribeMessage('kickUser')
+  @SubscribeMessage('kickUser')
+  async onKickUser(client: Socket, ucbDto: UcbDto) {
+    await this.definePlayer(client);
+
+    if (this.currentUser) {
+      if (this.chatService.isOwnerOfChannel(ucbDto.user_id, ucbDto.channel_id)) {
+        throw new UnauthorizedException(`user ${this.currentUser.user_id} cannot kick user ${ucbDto.user_id}`);
+      }
+      
+      if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, ucbDto.channel_id) || 
+      this.chatService.isAdminOfChannel(this.currentUser.user_id, ucbDto.channel_id)) {
+        
+        await this.chatService.deleteUCBridge(ucbDto.channel_id, ucbDto.user_id);
+  
+        let kickedUserSocket = await this.getSocketId(ucbDto.user_id);
+        if (kickedUserSocket) {
+          let rooms = await this.chatService.getRoomsForUser(ucbDto.user_id);
+          let allRooms = await this.chatService.getAllRooms(ucbDto.user_id);
+          
+          this.server.to(kickedUserSocket.id).emit('rooms', rooms);
+          this.server.to(kickedUserSocket.id).emit('allRooms', allRooms);
+        }
+  
+        let members = await this.chatService.getMembersByChannelId(ucbDto.channel_id, this.currentUser.user_id);
+        for (let x of this.connectedUsers) {
+          let userId = await x.handshake.query.token;
+  
+          userId = await this.authService.verifyToken(userId);
+          if (await this.chatService.isMember(ucbDto.channel_id, userId.id)) {
+            this.server.to(x.id).emit('members', members);
+          }
+        }
+      }
+    }
+  }
   
   // @SubscribeMessage('banUser') 
   // @SubscribeMessage('unbanUser') <- 없어도 될듯?
