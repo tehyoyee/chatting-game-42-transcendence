@@ -27,3 +27,30 @@
 	border: solid 1.5px lightgray;
 	border-radius: 0.3rem;
 }
+
+#nameUpdateField {
+	border-color: black;
+	margin: 0.5rem;
+	border: solid 1px;
+	width: 14rem;
+}
+
+#nameUpdateField:invalid {
+	border-color: red;
+}
+
+#nameUpdateField + #nameValidity {
+	padding-right: 30px;
+}
+
+#nameUpdateField:invalid + #nameValidity::after {
+	position: absolute;
+	content: 'x';
+	padding-left: 5px;
+}
+
+#nameUpdateField:valid + #nameValidity::after {
+	position: absolute;
+	content: 'o';
+	padding-left: 5px;
+}

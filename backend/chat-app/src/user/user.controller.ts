@@ -44,8 +44,6 @@ export class UserController {
         await this.userService.updateAvatar(id, avatar);
     }
     
-		// NOTE: even if twoFactor is typed to boolean, typeof(twoFactor) is string.
-		// it should be typed to string to work properly.
     @Patch('/updateTFA/:id/:twoFactor')
     async updateTwoFactor(@Param('id', ParseIntPipe) id: number,
                        @Param('twoFactor', ParseBoolPipe) twoFactor: boolean): Promise<void> {

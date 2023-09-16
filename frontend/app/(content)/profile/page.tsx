@@ -7,7 +7,7 @@ export default function Page() {
 	const { user } = useAuthContext();
   return (
   <>
-    <Profile uid={user.id}></Profile>
+    <Profile uid={user.id} isMyProfile={true}></Profile>
   </>
   );
 }
