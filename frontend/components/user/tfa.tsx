@@ -79,8 +79,8 @@ export default function Tfa({ loginData }: { loginData: LoginData }) {
 			<hr></hr>
 			<div className={styles.tfa}>
 				<h1 className={styles.tfaLoading}>{message.length == 5 && message}</h1>
-				<h1 className={styles.tfaFail}>{message.length == 13 && message}</h1>
-				<h1 className={styles.tfaFailShake}>{message.length == 6 && message}</h1>
+				<h1 className={styles.tfaError}>{message.length == 13 && message}</h1>
+				<h1 className={styles.tfaFail}>{message.length == 6 && message}</h1>
 				<h1 className={styles.tfaLessThanSix}>{message.length == 14 && message}</h1>
 				<h1 className={styles.tfaFont}>{!message && '인증 코드 입력'}</h1>
 				<input className={styles.tfaInput}

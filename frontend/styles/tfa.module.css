@@ -40,7 +40,7 @@
   text-align: center;
 }
 
-.tfaFail {
+.tfaError {
   font-size: larger;
   color: rgb(201, 26, 26);
   text-align: center;
@@ -61,7 +61,7 @@
   color: #ffdd00;
 }
 
-.tfaFailShake {
+.tfaFail {
   font-size: larger;
   color: rgb(201, 26, 26);
   animation: shake 0.13s ease-in-out infinite;
