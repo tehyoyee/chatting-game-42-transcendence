@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import styles from '/styles/profile.module.css';
 import ProfileUpdator from '@/components/content/profile_updator';
 import ExpandableButtons from './expandableButtons';
+import BackToTop from './backToTop';
 
 // incomplete
 export interface IProfileType {
@@ -84,7 +85,9 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
           })}
           <br />
         </ul>
+        <hr></hr>
       <ExpandableButtons></ExpandableButtons>
+      <BackToTop></BackToTop>
     </>
   );
 }
