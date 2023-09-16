@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entity/user.entity';
 // import { getUser } from './decorator/get-user.decorator';
@@ -24,8 +24,6 @@ export class UserController {
     async getProfileByUserId(@Param('id', ParseIntPipe) id: number): Promise<User> {
 				if (g_debug)
 					console.log('/profile/:id');
-				const user = await this.userService.getProfileByUserId(id);
-				console.log(`user after update=${JSON.stringify(user)}`);
         return await this.userService.getProfileByUserId(id);
     }
 
@@ -50,10 +48,10 @@ export class UserController {
 		// it should be typed to string to work properly.
     @Patch('/updateTFA/:id/:twoFactor')
     async updateTwoFactor(@Param('id', ParseIntPipe) id: number,
-                       @Param('twoFactor') twoFactor: string): Promise<void> {
+                       @Param('twoFactor', ParseBoolPipe) twoFactor: boolean): Promise<void> {
 				if (g_debug)
 					console.log('/updateTFA/:id/:twoFactor');
-        await this.userService.updateTwoFactor(id, twoFactor === "true" ? true : false);
+        await this.userService.updateTwoFactor(id, twoFactor);
     }
     
 
