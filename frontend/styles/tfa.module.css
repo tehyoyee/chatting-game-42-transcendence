@@ -1,24 +1,61 @@
 .tfa {
-  background-color: #86e3ed;
-  /* width: 500px; */
-  height: 80px;
-  text-align: center;
-  border-radius: 0.2rem;
-  justify-content: center;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  height: 25vh;
 }
 
 .tfaInput {
-  border-radius: 0.2rem;
+  padding: 10px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+  margin-bottom: 10px;
 }
 
 .tfaConfirm {
-	/* width: 30px;
-	height: 30px; */
-	background-color: #1688a8;
-	/* height: 80px; */
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tfaConfirm:hover {
+  background-color: #0056b3;
+}
+
+.tfaFont {
+  font-size:larger;
+  color: rgb(255, 204, 0);
+}
+
+.tfaLoading {
+  font-size: larger;
+  color: rgb(21, 206, 83);
   text-align: center;
-  border-radius: 0.2rem;
-  justify-content: center;
-  align-items: center;
+}
+
+.tfaFail {
+  font-size: larger;
+  color: rgb(201, 26, 26);
+  text-align: center;
+}
+
+.tfaButton:hover {
+  background-color: #0056b3;
+}
+
+.tfaPhrase {
+  font-size: larger;
+  color: #ffdd00;
+}
+
+.tfaResult {
+  font-size: medium;
+  color:rgb(220, 60, 20);
 }

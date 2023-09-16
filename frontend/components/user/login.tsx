@@ -27,9 +27,12 @@ export default function Login() {
 
 
   return (
+    <>
+      <hr></hr>
     <div className="full-background centerItemFlex">
       <button onClick={ () => {window.location.assign(authUrl)} } className={styles.loginButton}>login with 42</button>
     </div>
+    </>
   );
 }
 
