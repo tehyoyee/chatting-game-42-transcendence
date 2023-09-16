@@ -48,7 +48,7 @@ export default function Matching() {
           <button className={styles.button} onClick={() => setReady(true)}>Ready</button>
         </div>
       )}
-      {countdown !== null && countdown > 0 && (
+      {countdown !== null && ready && countdown > 0 && (
         <div className={styles.countdownContainer}>
           <p className={styles.countdown}>{countdown}</p>
         </div>

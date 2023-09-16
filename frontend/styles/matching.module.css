@@ -1,13 +1,11 @@
-/* matching.module.css */
-
 .userProfileContainer {
 	display: flex;
 	justify-content: space-evenly;
 	align-items: center;
-  }
-  
-  .userProfile {
-	padding: 100px 160px 70px 160px;
+}
+
+.userProfile {
+	padding: 100px 100px 100px 100px;
 	text-align: center;
   }
   
@@ -16,12 +14,11 @@
   }
   
   .button {
-	background-color: #0b77ea;
-	font-size: 25px;
 	width: 300px;
 	height: 100px;
+	font-size: 25px;
+	background-color: #0b76e8;
 	color: #fff;
-	padding: 10px 20px;
 	border: none;
 	cursor: pointer;
   }
@@ -36,6 +33,23 @@
   }
   
   .bottomRight {
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
+  }
+  
+  .countdownContainer {
+	text-align: center;
+	margin-top: 20px;
+  }
+  
+  .countdown {
+	font-size: 80px;
+	font-weight: bold;
+	color: #007bff;
+  }
+
+  .bottomRight {
 	background-color: rgb(202, 15, 15);
 	font-size: 25px;
 	width: 300px;
@@ -43,7 +57,6 @@
 	text-align: center;
 	vertical-align: middle;
 	color: #fff;
-	/* padding: 10px 20px; */
 	border: none;
 	cursor: pointer;
 	position: absolute;
