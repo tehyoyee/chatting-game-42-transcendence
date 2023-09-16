@@ -1,5 +1,5 @@
 export enum ChannelType {
     PUBLIC = 'public',
     PRIVATE = 'private',
-    PROTECTED = 'password'
+    PROTECTED = 'protected'
 }
