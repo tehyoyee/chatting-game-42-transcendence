@@ -25,16 +25,16 @@
 .infoBox {
 	font-size: 18px;
 	border: 2px solid #ddd;
-	border-radius: 10px;
-	padding: 4px 56px;
-	margin: 22px;
+	border-radius: 30px;
+	padding: 4px 50px;
+	margin: 25px;
 	text-align: center;
-	box-shadow: 0 0 7px rgba(0, 0, 0, 0.3);
+	box-shadow: 3 3 3px rgba(0, 0, 0, 0.3);
 	background-color: #fff;
 }
 
 .infoBox:hover {
-	border-color: #75b5f9;
+	border-color: #5aaaff;
 	background-color: #f5f9ff;
 	cursor: pointer;
 	transition: all .2s ease;
