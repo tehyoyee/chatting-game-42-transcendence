@@ -25,12 +25,19 @@
 .infoBox {
 	font-size: 18px;
 	border: 2px solid #ddd;
-	border-radius: 10px;
-	padding: 30px;
-	margin: 20px;
+	border-radius: 30px;
+	padding: 4px 50px;
+	margin: 25px;
 	text-align: center;
-	box-shadow: 0 0 7px rgba(0, 0, 0, 0.3);
+	box-shadow: 3 3 3px rgba(0, 0, 0, 0.3);
 	background-color: #fff;
+}
+
+.infoBox:hover {
+	border-color: #5aaaff;
+	background-color: #f5f9ff;
+	cursor: pointer;
+	transition: all .2s ease;
 }
 
 .userProps {
@@ -141,7 +148,7 @@
 	border: 1px solid #ddd;
 	border-radius: 5px;
 	margin-top: 10px;
-	opacity: 0;
+	opacity: 100;
   }
   
   .buttonWrapper.active .buttonContent {
@@ -150,9 +157,8 @@
 	margin-top: 10px;
 	opacity: 1;
 	transition: max-height 0.3s ease, opacity 0.3s ease;
-	animation: cubic-bezier(0.55, 0.055, 0.675, 0.19);
   }
-  
+
 .backToTop {
 	position: fixed;
 	bottom: 20px;
@@ -173,6 +179,6 @@
   }
   
   .backToTop:hover {
-	background-color: #1a189c;
+	background-color: #17156e;
   }
   
