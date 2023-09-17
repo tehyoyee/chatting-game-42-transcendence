@@ -6,7 +6,7 @@ import defaultImage from '../../public/default.png';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '@/styles/matching.module.css';
-import DotLoader from './dodLoader';
+import DotLoader from './dotLoader';
 
 export default function Matching() {
   const router = useRouter();
