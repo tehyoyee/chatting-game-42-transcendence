@@ -263,6 +263,29 @@ export class ChatService {
         await channel.save();
     }
 
+    async updateBanStatus(userId: number, channelId: number, newBanStatus: boolean): Promise<UserChannelBridge> {
+        const found = await this.ucbRepository.getUcbByIds(userId, channelId);
+        if (!found) {
+            throw new NotFoundException(`user ${userId} not found in channel ${channelId}`);
+        }
+        found.is_banned = newBanStatus;
+        await found.save();
+
+        return found;
+    }
+
+    async updateMuteStatus(userId: number, channelId: number, newMuteStatus: boolean): Promise<UserChannelBridge> {
+        const found = await this.ucbRepository.getUcbByIds(userId, channelId);
+        if (!found) {
+            throw new NotFoundException(`user ${userId} not found in channel ${channelId}`);
+        }
+        found.is_banned = newMuteStatus;
+        await found.save();
+
+        return found;
+    }
+
+
     async getChannelByName(name: string): Promise<Channel> {
         return await this.channelRepository.getChannelByName(name);
     }

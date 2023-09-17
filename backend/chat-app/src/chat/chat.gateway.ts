@@ -352,11 +352,97 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
   }
   
-  // @SubscribeMessage('banUser') 
+  @SubscribeMessage('banUser') 
+  async onBanUser(client: Socket, ucbDto: UcbDto) {
+    await this.definePlayer(client);
+
+    if (this.currentUser) {
+      if (this.chatService.isOwnerOfChannel(ucbDto.user_id, ucbDto.channel_id)) {
+        throw new UnauthorizedException(`user ${this.currentUser.user_id} cannot kick user ${ucbDto.user_id}`);
+      }
+      
+      if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, ucbDto.channel_id) || 
+      this.chatService.isAdminOfChannel(this.currentUser.user_id, ucbDto.channel_id)) {
+
+        await this.chatService.updateBanStatus(this.currentUser.user_id, ucbDto.channel_id, true);
+
+        let bannedSocket = await this.getSocketId(ucbDto.user_id);
+        if (bannedSocket) {
+          let rooms = await this.chatService.getRoomsForUser(ucbDto.user_id);
+          let allRooms = await this.chatService.getAllRooms(ucbDto.user_id);
+          
+          this.server.to(bannedSocket.id).emit('message', rooms);
+          this.server.to(bannedSocket.id).emit('allRooms', allRooms);
+        }
+      
+        let members = await this.chatService.getMembersByChannelId(ucbDto.channel_id, this.currentUser.user_id);
+        for (let x of this.connectedUsers) {
+          let userId = await x.handshake.query.token;
+          userId = await this.getSocketId(userId);
+          if (await this.chatService.isMember(ucbDto.channel_id, userId.id)) {
+            this.server.to(x.id).emit('members', members);
+          }
+        }
+      }
+    }
+  }
+
   // @SubscribeMessage('unbanUser') <- 없어도 될듯?
   
-  // @SubscribeMessage('muteUser')
-  // @SubscribeMessage('unmuteUser')
+  @SubscribeMessage('muteUser')
+  async onMuteUser(client: Socket, ucbDto: UcbDto) {
+    await this.definePlayer(client);
+
+    if (this.currentUser) {
+      if (this.chatService.isOwnerOfChannel(ucbDto.user_id, ucbDto.channel_id)) {
+        throw new UnauthorizedException(`user ${this.currentUser.user_id} cannot kick user ${ucbDto.user_id}`);
+      }
+
+      if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, ucbDto.channel_id) || 
+      this.chatService.isAdminOfChannel(this.currentUser.user_id, ucbDto.channel_id)) {
+        await this.chatService.updateMuteStatus(ucbDto.user_id, ucbDto.channel_id, true);
+
+        //let mutedSocket = await this.getSocketId(ucbDto.user_id);
+        let members = await this.chatService.getMembersByChannelId(ucbDto.channel_id, this.currentUser.user_id);
+        for (let x of this.connectedUsers) {
+          let userId = await x.handshake.query.token;
+          userId = await this.getSocketId(userId);
+          if (await this.chatService.isMember(ucbDto.channel_id, userId.id)) {
+            this.server.to(x.id).emit('members', members);
+            let membership = {
+              channel_id: ucbDto.channel_id, 
+              user_id: ucbDto.user_id };
+            setTimeout(() => {
+              this.server.to(x.id).emit('unMuteUser', membership);
+            }, 10 * 1000);
+          }
+        }
+      }
+    }
+  }
+  
+  @SubscribeMessage('unMuteUser')
+  async onUnMuteUser(client: Socket, ucbDto: UcbDto) {
+    await this.definePlayer(client);
+
+    if (this.currentUser) {
+      await this.chatService.updateMuteStatus(ucbDto.user_id, ucbDto.channel_id, false);
+
+      let unMutedSocket = await this.getSocketId(ucbDto.user_id);
+      let members = await this.chatService.getMembersByChannelId(ucbDto.channel_id, ucbDto.user_id);
+      if (unMutedSocket) {
+        this.server.to(unMutedSocket.id).emit('members', members);
+      }
+
+      for (let x of this.connectedUsers) {
+        let userId = await x.handshake.query.token;
+        userId = await this.authService.verifyToken(userId);
+        if (await this.chatService.isMember(ucbDto.channel_id, userId.id)) {
+          this.server.to(x.id).emit('members', members);
+        }
+      }
+    }
+  }
 
   // @SubscribeMessage('inviteGame')
 

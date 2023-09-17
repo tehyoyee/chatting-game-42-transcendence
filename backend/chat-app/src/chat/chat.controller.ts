@@ -7,12 +7,6 @@ import { User } from 'src/user/entity/user.entity';
 export class ChatController {
     constructor(private chatService: ChatService) {}
 
-    // @Post('/channel/create')
-    // async createChannel(@getUser() user: User, @Body() createChannelDto: CreateChannelDto) {
-    //     console.log('createchannel controller in');
-    //     const newChannel = await this.chatService.createChannel(user, createChannelDto);
-    // }
-
     @Get('/channel/list/join')
     getJoinChannelList() {
 
