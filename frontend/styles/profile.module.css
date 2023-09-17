@@ -197,7 +197,7 @@
 	position: fixed;
 	bottom: 20px;
 	right: 20px;
-	background-color: #1c1c1c;
+	background-color: rgb(211, 211, 211);
 	color: #fff;
 	border: none;
 	border-radius: 50%;
@@ -209,10 +209,24 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.backToTop:hover {
+	color: #5aaaff;
+	background-color: rgb(211, 211, 211);
+	border-color: #5aaaff;
+	cursor: pointer;
+	transition: all .2s ease;
+	/* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
   }
-  
-  .backToTop:hover {
-	background-color: #17156e;
+
+.backToTop:active {
+	color: rgb(11, 27, 255);
+	/* transition: all .2s ease; */
+	/* background-color: #fff;
+	border-color: #5aaaff; */
+	cursor: pointer;
+	/* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
   }
+
   
