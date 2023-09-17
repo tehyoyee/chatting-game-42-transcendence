@@ -221,8 +221,7 @@
   }
 
 .backToTop:active {
-	color: rgb(11, 27, 255);
-	/* transition: all .2s ease; */
+	color: rgb(0, 16, 242);
 	/* background-color: #fff;
 	border-color: #5aaaff; */
 	cursor: pointer;
