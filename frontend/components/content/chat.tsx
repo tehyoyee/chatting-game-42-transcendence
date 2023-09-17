@@ -4,14 +4,15 @@ import { useState, useEffect, ReactNode } from 'react';
 import SideBar from "@/components/structure/sidebar";
 import styles from "@/styles/chat.module.css";
 import { useFetch } from "@/lib/hook";
+import useSocketContext from '@/lib/socket';
 
 // test interface
-interface ChatRoom {
+type ChatRoom = {
   id: number,
   name: string,
 };
 
-interface ChatRooms {
+type ChatRooms = {
   curRoomId: number, // -1 for not joining
   chatRoomArr: ChatRoom[],
 };
@@ -19,6 +20,11 @@ interface ChatRooms {
 const chatReqUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/channel/list/all`; // path to fetch chat info
 
 export default function Chat() {
+	const [chatRooms, setChatRooms] = useState<ChatRooms>({
+		curRoomId: -1,
+		chatRoomArr: [],
+	});
+	/*
   const test: ChatRooms = {
     curRoomId: 2,
     chatRoomArr: [
@@ -27,13 +33,15 @@ export default function Chat() {
       { id: 3, name: "ijk" },
     ]
   };
-// socketIO must be used
+	*/
+	useEffect(() => {
+// fetch channel list and update state
 //  const [chatRooms, setChatRooms] = useFetch(chatReqUrl, test);
-	const chatRooms = test;
+	}, []);
 	const [curRoomId, setCurRoomId] = useState(chatRooms?.curRoomId);
 
-  const joined = chatRooms?.chatRoomArr.find(data => data.id === curRoomId);
-  const list = chatRooms?.chatRoomArr.filter(data => data.id !== curRoomId);
+  const joined = chatRooms.chatRoomArr.find(data => data.id === curRoomId);
+  const list = chatRooms.chatRoomArr.filter(data => data.id !== curRoomId);
   joined && list.unshift(joined);
 
 	// MouseEvent<HTMLButtonElement, MouseEvent> does not work
@@ -63,7 +71,7 @@ export default function Chat() {
 	}
 
   return (
-    <div>
+		<>
       <SideBar 
         className={"full-background-color"}>
         <ul>
@@ -90,32 +98,70 @@ export default function Chat() {
         </ul>
       </SideBar>
 			<ChatBox></ChatBox>
-    </div>
+    </>
   );
 }
 
 function ChatBox() {
-	useEffect(() => {
-		const form = document.querySelector('#chat_form') as HTMLFormElement;
-		const input = document.querySelector('#chat_input') as HTMLInputElement;
+	const { chatSocket } = useSocketContext();
+	const [chatLog, setChatLog] = useState<string[]>([]);
 
-		form?.addEventListener('submit', (event) => {
-			event.preventDefault();
-			if (input.value) {
-				console.log(input.value);
-				input.value = "";
-			}
-			// socketio
-		});
-	}, []);
+	useEffect(() => {
+		const chatLogList = document.querySelector('#chatLogList') as HTMLDivElement;
+		chatLogList && (chatLogList.scrollTop = chatLogList.scrollHeight);
+	}, [chatLog]);
+
+	const sendMsg = () => {
+		const inputField = document.querySelector('#chatInputField') as HTMLInputElement;
+
+		if (!inputField?.value || !chatLog) return;
+		setChatLog([
+			...chatLog,
+			inputField.value
+		]);
+		inputField.focus();
+		inputField.value = '';
+	};
 	
 	return (
-		<>
-			<ul>
-			</ul>
-			<form id={"chat_form"}>
-				<input id={"chat_input"}/><button>Enter</button>
+		<div className={styles.chatBox}>
+			<div
+				id="chatLogList"
+				style={{
+					height: '96%',
+					overflowY: 'scroll',
+				}}>
+				<ul>
+					{chatLog.map((log, key) => {
+						return (
+							<li key={key}>
+								{`: ${log}`}
+							</li>
+						);
+					})}
+				</ul>
+			</div>
+			<form 
+				className={styles.chatBar}
+				id={"chat_form"} 
+				onSubmit={e => {e.preventDefault(); sendMsg()}}>
+				<button
+					style={{
+						padding: '5px',
+						border: 'solid 1px black',
+						backgroundColor: 'lightcyan',
+					}}
+					>Enter</button>
+				<input 
+					id="chatInputField"
+					style={{
+						width: '85%',
+						height: '2rem',
+					}}
+					max={256}
+					required
+				/>
 			</form>
-		</>
+		</div>
 	);
 }

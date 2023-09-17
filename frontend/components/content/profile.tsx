@@ -62,6 +62,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
   return (
     <>
     {isMyProfile &&
+				// NOTE: it doesn't re-render when setProfile is called.
       <ProfileUpdator
         uid={uid} 
         name={profile.nickname} 
