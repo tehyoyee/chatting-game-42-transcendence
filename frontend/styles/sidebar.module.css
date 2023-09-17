@@ -1,6 +1,6 @@
 .sideBar {
-  width: 220px;
-  height: 100%;
+  width: 220px; /* sync with .chatBox left */
+  height: 85%;
   position: absolute;
 	left: 0;
 }

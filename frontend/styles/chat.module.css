@@ -18,3 +18,17 @@
 	filter: contrast(0.8);
 	border-width: 2px;
 }
+
+.chatBox {
+	height: 85%;
+	width: 100%;
+	position: absolute;
+	left: 220px; /* sync with .sideBar width */
+}
+
+.chatBar {
+	position: absolute;
+	bottom: 0;
+	min-width: 500px;
+	width: 100%;
+}

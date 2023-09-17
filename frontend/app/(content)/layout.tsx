@@ -1,6 +1,7 @@
 import ComponentProtector from "@/components/user/protector";
 import NavBar from '@/components/structure/navbar';
 import Logout from '@/components/user/logout';
+import { SocketContextProvider } from '@/lib/socket';
 
 export default function Layout({
   children,
@@ -11,11 +12,13 @@ export default function Layout({
     <>
       <NavBar></NavBar>
       <Logout></Logout>
-      <ComponentProtector>
-        <div className="contentBox">
-          {children}
-        </div>
-      </ComponentProtector>
+			<SocketContextProvider>
+				<ComponentProtector>
+					<div className="contentBox">
+						{children}
+					</div>
+				</ComponentProtector>
+			</SocketContextProvider>
     </>
   );
 }

@@ -24,28 +24,28 @@ function UploadBtn({ children, title }: { children: React.ReactNode, title: stri
   
 	return (
 	  <>
-		<button
-		  className={`${styles.profileUpdateBtn}`}
-		  type="button"
-		  onClick={(e) => {
-			e.preventDefault();
-			setShowModal(true);
-		  }}>
-		  {title}
-		</button>
-		{showModal && (
-		  <Modal
-			style={{
-			  height: '200px',
-			  width: '400px',
-			}}
-			onClose={() => setShowModal(false)}>
-			{children}
-		  </Modal>
-		)}
+			<button
+				className={`${styles.profileUpdateBtn}`}
+				type="button"
+				onClick={(e) => {
+				e.preventDefault();
+				setShowModal(true);
+				}}>
+				{title}
+			</button>
+			{showModal && (
+				<Modal
+				style={{
+					height: '200px',
+					width: '400px',
+				}}
+				onClose={() => setShowModal(false)}>
+				{children}
+				</Modal>
+			)}
 	  </>
 	);
-  }
+}
 
 export default function ProfileUpdator({
   uid,
@@ -130,6 +130,9 @@ function TfaUpdator({ uid }: { uid: number }) {
 }
 
 function NameUpdator({ uid, name }: { uid: number; name: string }) {
+	const [newName, setNewName] = useState(name);
+	const [updated, setUpdated] = useState(false);
+	
   const requestNameUpdate = async () => {
     const field = document.querySelector('#nameUpdateField') as HTMLInputElement;
     const updateUrl = `${serverUrl}/updateName/${uid}/${field.value}`;
@@ -141,6 +144,8 @@ function NameUpdator({ uid, name }: { uid: number; name: string }) {
     })
       .then((res) => {
         if (!res.ok) throw new Error(`invalid response: ${res.status}`);
+				setUpdated(true);
+				setNewName(field.value);
       })
       .catch((err) => {
         console.log(`${updateUrl}: fetch error: ${err}`);
@@ -156,7 +161,7 @@ function NameUpdator({ uid, name }: { uid: number; name: string }) {
             e.preventDefault();
             requestNameUpdate();
           }}>
-          <p>{`현재 닉네임: ${name}`}</p>
+          <p>{`현재 닉네임: ${updated ? newName : name}`}</p>
           <label htmlFor="nameUpdateField">새 닉네임:</label>
           <input
             style={{
@@ -167,6 +172,7 @@ function NameUpdator({ uid, name }: { uid: number; name: string }) {
             type="text"
             id="nameUpdateField"
             pattern="[a-zA-Z0-9]{4,16}"
+						onInvalid={() => {console.log("invalid")}}
             required
           />
           <button
@@ -179,6 +185,9 @@ function NameUpdator({ uid, name }: { uid: number; name: string }) {
             type="submit">
             확인
           </button>
+					<p>
+						{"영어 소문자, 대문자, 숫자 4~16자리로 이뤄져야 합니다."}
+					</p>
         </form>
       </UploadBtn>
     </>
