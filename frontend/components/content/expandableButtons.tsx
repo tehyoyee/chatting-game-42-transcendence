@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 import styles from '../../styles/profile.module.css';
 
 const ExpandableButtons = () => {
-  const [activeButton1, setActiveButton1] = useState('');
-  const [activeButton2, setActiveButton2] = useState('');
-  const [activeButton3, setActiveButton3] = useState('');
-  const [activeButton4, setActiveButton4] = useState('');
+  const [activeButton1, setActiveButton1] = useState('최근 경기 기록');
+  const [activeButton2, setActiveButton2] = useState('게임 전적');
+  const [activeButton3, setActiveButton3] = useState('순위');
+  const [activeButton4, setActiveButton4] = useState('업적');
 
   const toggleButton1 = (buttonText: any) => {
     if (activeButton1 === buttonText) {
