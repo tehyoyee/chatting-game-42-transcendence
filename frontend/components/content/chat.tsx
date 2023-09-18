@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, ReactNode } from 'react';
-import SideBar from "@/components/structure/sidebar";
-import styles from "@/styles/chat.module.css";
-import { useFetch } from "@/lib/hook";
 import useSocketContext from '@/lib/socket';
+import styles from "@/styles/chat.module.css";
+import SideBar from "@/components/structure/sidebar";
+import Modal from '@/components/structure/modal';
+import { ChatMenu } from '@/components/content/chat_manage';
 
 // test interface
 type ChatRoom = {
@@ -24,27 +25,17 @@ export default function Chat() {
 		curRoomId: -1,
 		chatRoomArr: [],
 	});
-	/*
-  const test: ChatRooms = {
-    curRoomId: 2,
-    chatRoomArr: [
-      { id: 1, name: "abc" },
-      { id: 2, name: "XYZ" },
-      { id: 3, name: "ijk" },
-    ]
-  };
-	*/
+	const [curRoomId, setCurRoomId] = useState<number>(chatRooms?.curRoomId);
+	const [menuModal, setMenuModal] = useState<boolean>(false);
+
 	useEffect(() => {
-// fetch channel list and update state
-//  const [chatRooms, setChatRooms] = useFetch(chatReqUrl, test);
 	}, []);
-	const [curRoomId, setCurRoomId] = useState(chatRooms?.curRoomId);
 
   const joined = chatRooms.chatRoomArr.find(data => data.id === curRoomId);
   const list = chatRooms.chatRoomArr.filter(data => data.id !== curRoomId);
   joined && list.unshift(joined);
 
-	// MouseEvent<HTMLButtonElement, MouseEvent> does not work
+	// NOTE: typing issue
 	const toggleChat = (event: any) => {
 		const target = event.target;
 		const clickedId = Number(target.getAttribute("data-key"));
@@ -77,12 +68,19 @@ export default function Chat() {
         <ul>
           <li>
             <button
+							type='button'
+							onClick={(e) => {e.preventDefault(); setMenuModal(true);}}
               className={`${styles.button}`}
               style={{
-                backgroundColor: 'crimson',
+                backgroundColor: 'lightgreen',
               }}>
-							{curRoomId === 0 ? ' ' : 'quit'} 
+							{curRoomId === 0 ? ' ' : '채널 만들기'} 
             </button>
+						{menuModal &&
+							<Modal onClose={setMenuModal}>
+								<ChatMenu></ChatMenu>
+							</Modal>
+						}
           </li>
 					{
 						list.map(info => {
@@ -97,7 +95,7 @@ export default function Chat() {
 					}
         </ul>
       </SideBar>
-			<ChatBox></ChatBox>
+			{joined && <ChatBox></ChatBox>}
     </>
   );
 }
@@ -154,6 +152,7 @@ function ChatBox() {
 					>Enter</button>
 				<input 
 					id="chatInputField"
+					autoComplete='off'
 					style={{
 						width: '85%',
 						height: '2rem',

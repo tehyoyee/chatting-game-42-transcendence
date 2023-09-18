@@ -4,6 +4,7 @@ import React, { createContext, useContext, Dispatch, SetStateAction } from 'reac
 import { useState, useEffect } from 'react';
 import styles from '@/styles/profile.module.css';
 import Modal from '@/components/structure/modal';
+import TextInputForm from '@/components/structure/textinput';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 
@@ -88,12 +89,12 @@ function TfaUpdator({ uid }: { uid: number }) {
   }, [setState]);
 
   const handleToggle = async () => {
-    const checkBox = document.querySelector('input');
-    const checkedTo = checkBox?.checked;
+    const checkBox = document.querySelector('#tfaCheckbox') as HTMLInputElement;
+    const checkedTo: boolean = checkBox.checked;
     console.log(`checked=${checkedTo}`);
     if (!confirm(`2차 인증을 ${checkedTo ? '활성화' : '비활성화'}합니다.`)) {
       setState(!checkedTo);
-      checkBox && (checkBox.checked = !checkedTo);
+      checkBox.checked = !checkedTo;
       return;
     }
     await fetch(`${tfaUpdateUrl}/${checkedTo ? 'true' : 'false'}`, {
@@ -102,13 +103,14 @@ function TfaUpdator({ uid }: { uid: number }) {
     })
       .then((res) => {
         if (!res.ok) throw new Error(`invalid response: ${res.status}`);
-        localStorage.setItem('tfa', checkedTo ? 'true' : 'false');
+        sessionStorage.setItem('tfa', checkedTo ? 'true' : 'false');
         setState(!!checkedTo);
-        checkBox && (checkBox.checked = !!checkedTo);
+        checkBox.checked = !!checkedTo;
         console.log(`tfa updated result=${checkedTo}`);
       })
       .catch((err) => {
         console.log(`${tfaUpdateUrl}: fetch error: ${err}`);
+			// rerender?
       });
   };
 
@@ -119,7 +121,8 @@ function TfaUpdator({ uid }: { uid: number }) {
         style={{
           margin: '4px',
         }}
-        onChange={() => {
+        onChange={(e) => {
+					e.preventDefault();
           handleToggle();
         }}
         defaultChecked={!!state}
@@ -133,8 +136,8 @@ function NameUpdator({ uid, name }: { uid: number; name: string }) {
 	const [newName, setNewName] = useState(name);
 	const [updated, setUpdated] = useState(false);
 	
-  const requestNameUpdate = async () => {
-    const field = document.querySelector('#nameUpdateField') as HTMLInputElement;
+  const requestNameUpdate = async (uid: number) => {
+    const field = document.querySelector('#inputField') as HTMLInputElement;
     const updateUrl = `${serverUrl}/updateName/${uid}/${field.value}`;
 
     console.log(`field.value=${field.value}`);
@@ -153,6 +156,21 @@ function NameUpdator({ uid, name }: { uid: number; name: string }) {
       });
   };
 
+	return (
+		<>
+			<UploadBtn title={'Update Name'}>
+				<TextInputForm 
+					onSubmit={() => {requestNameUpdate(uid)}}
+					label="새 닉네임:"
+					pattern="[a-zA-Z0-9]{4,16}"
+					tailMassage="영어 소문자, 대문자, 숫자 4~16자리로 이뤄져야 합니다."
+					>
+          <p>{`현재 닉네임: ${updated ? newName : name}`}</p>
+				</TextInputForm>
+			</UploadBtn>
+		</>
+	);
+	/*
   return (
     <>
       <UploadBtn title={'Update Name'}>
@@ -192,6 +210,7 @@ function NameUpdator({ uid, name }: { uid: number; name: string }) {
       </UploadBtn>
     </>
   );
+		*/
 }
 
 function ImgUpdator({ uid }: { uid: number }) {

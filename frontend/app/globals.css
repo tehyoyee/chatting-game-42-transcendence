@@ -67,3 +67,21 @@ body {
   display: block;
   margin: auto;
 }
+
+fieldset {
+	border: solid 1px black;
+	padding: 4px;
+}
+
+fieldset legend {
+	padding: 2px;
+	color: black;
+}
+
+fieldset input[type='radio'] {
+	margin: 3px;
+}
+
+fieldset label {
+	margin: 4px;
+}
