@@ -64,8 +64,8 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
     {isMyProfile &&
 				// NOTE: it doesn't re-render when setProfile is called.
       <ProfileUpdator
-        uid={uid} 
-        name={profile.nickname} 
+        uid={uid}
+        name={profile.nickname}
         update={{setUpdate}}
       ></ProfileUpdator>}
       <div className={`${"centerItemBlock gridRow1_2 gridCol1_2"} ${styles.profileImage}`}>

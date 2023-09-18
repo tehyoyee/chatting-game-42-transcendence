@@ -132,7 +132,7 @@ export class AuthService {
 		res.clearCookie('token').json({ message: "Signned Out" });
 	}
 
-	async verifyToken(token: string): Promise<User> {
+	async verifyToken(token: string) {
 		try {
 			const { verified }  = await this.jwtService.verify(token);
 			if (verified)

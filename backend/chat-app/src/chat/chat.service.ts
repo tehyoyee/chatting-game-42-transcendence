@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Channel } from './entity/channel.entity';
 import { User } from 'src/user/entity/user.entity';
 import { ChannelRepository } from './channel.repository';
 import { MessageRepository } from './message.repository';
 import { ChatGateway } from './chat.gateway';
-import { ChannelDto } from './dto/channel-dto';
+import { ChannelDto, GroupChannelDto } from './dto/channel-dto';
 import { UcbRepository } from './ucb.repository';
 import { UserType } from './enum/user_type.enum';
 import { MemberDto } from './dto/member-dto';
@@ -17,6 +17,7 @@ import * as bcrypt from 'bcrypt';
 import { channel } from 'diagnostics_channel';
 import { DmDto } from './dto/dm-dto';
 import { JoinChannelDto } from './dto/join-channel-dto';
+import { ChannelType } from './enum/channel_type.enum';
 
 @Injectable()
 export class ChatService {
@@ -31,13 +32,43 @@ export class ChatService {
         const newChannel =  await this.channelRepository.createChannel(channelDto, channelMembers);
     
         for (let user of channelMembers)
-            await this.createUCBridge(user.user_id, newChannel.channel_id, newChannel, user);
+            //await this.createUCBridge(user.user_id, newChannel.channel_id, newChannel, user);
 
         return newChannel;
     }
 
-    async createUCBridge(userId: number, channelId: number, channel: Channel, user: User) {
-        await this.ucbRepository.createUCBridge(userId, channelId, channel, user);
+    async createGroupChannel(user: User, groupChannelDto: GroupChannelDto): Promise<Channel> {
+        const duplicate = this.getChannelByName(groupChannelDto.channelName);
+        if (duplicate)
+            throw new ConflictException(`channel ${groupChannelDto.channelName} already exists.`);
+    
+        const newChannel = await this.channelRepository.createGroupChannel(groupChannelDto);
+        await this.createUCBridge(user, newChannel, UserType.OWNER);
+        
+        return newChannel;
+    }
+
+    async createDmChannel(senderId: number, receiverId: number): Promise<Channel> {
+        const newDMRoom = await this.channelRepository.createDmChannel(senderId, receiverId);
+        
+        const sender = await this.userService.getProfileByUserId(senderId);
+        const receiver = await this.userService.getProfileByUserId(receiverId);
+        
+        await this.addMember(sender, newDMRoom, UserType.MEMBER);
+        await this.addMember(receiver, newDMRoom, UserType.MEMBER);
+        
+        return newDMRoom;
+    }
+
+    async createPrivateChannel(user: User, user_id: number, channelName: string): Promise<Channel> {
+        const newChannel = await this.channelRepository.createPrivateChannel(channelName);
+        await this.createUCBridge(user, newChannel, UserType.OWNER);
+
+        return newChannel;
+    }
+
+    async createUCBridge(user: User, channel: Channel, userType: UserType) {
+        await this.ucbRepository.createUCBridge(user, channel, userType);
     }
 
     async addMember(user: User, channel: Channel, type: UserType): Promise<void> {
@@ -72,6 +103,7 @@ export class ChatService {
         return membersObject; 
     }
 
+    //아래함수와 중복
     async getRoomsForUser(userId: number): Promise<Channel[]> {
         const is_banned = false;
         const roomsId = await this.ucbRepository
@@ -88,6 +120,44 @@ export class ChatService {
         }  
         
         return rooms;
+    }
+
+    async getJoinedGroupChannelsOfUser(userId: number) {
+        const isBanned = false;
+        const channelIds = await this.ucbRepository
+        .createQueryBuilder('b')
+        .where('b.user_id = :userId', {userId})
+        .andWhere('b.is_banned = :isBanned', {isBanned})
+        .select(['b.channel_id'])
+        .getMany();
+
+        let joinedChannels = [];
+        for (let c of channelIds) {
+            let tmp = await this.channelRepository.getChannelById(c.channel_id);
+            if (tmp.channel_type === ChannelType.PUBLIC || tmp.channel_type === ChannelType.PROTECTED) {
+                joinedChannels.push(tmp);
+            }
+        }
+
+        return joinedChannels;
+    }
+
+    async getJoinedDmChannelsOfUser(userId: number) {
+        const channels = await this.ucbRepository
+        .createQueryBuilder('b')
+        .where('b.user_id = :userId', {userId})
+        .select(['b.channel_id'])
+        .getMany();
+
+        let joinedChannels = [];
+        for (let c of channels) {
+            let tmp = await this.channelRepository.getChannelById(c.channel_id);
+            if (tmp.channel_type === ChannelType.DM) {
+                joinedChannels.push(tmp);
+            }
+        }
+
+        return joinedChannels;
     }
 
     async getAllRooms(userId: number): Promise<Channel[]> {
@@ -179,17 +249,7 @@ export class ChatService {
         return null;
     }
 
-    async createDMRoom(senderId: number, receiverId: number): Promise<Channel> {
-        const newDMRoom = await this.channelRepository.createDMRoom(senderId, receiverId);
 
-        const sender = await this.userService.getProfileByUserId(senderId);
-        const receiver = await this.userService.getProfileByUserId(receiverId);
-
-        await this.addMember(sender, newDMRoom, UserType.GENERAL);
-        await this.addMember(receiver, newDMRoom, UserType.GENERAL);
-
-        return newDMRoom;
-    }
 
     async createDM(dmDto: DmDto, sender: User, channel_id: number): Promise<Message> {
         const {receiver_id, content} = dmDto;
@@ -286,8 +346,8 @@ export class ChatService {
     }
 
 
-    async getChannelByName(name: string): Promise<Channel> {
-        return await this.channelRepository.getChannelByName(name);
+    async getChannelByName(channelName: string): Promise<Channel> {
+        return await this.channelRepository.getChannelByName(channelName);
     }
 
     async getChannelById(id: number): Promise<Channel> {
