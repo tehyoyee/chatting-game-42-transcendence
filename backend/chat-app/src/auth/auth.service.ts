@@ -28,7 +28,7 @@ export class AuthService {
 	) {}
 	
 	async signUp(code: string, res: Response) {
-		// try {
+		try {
 			// throw new HttpException('message', 400);
 			const generateRandomString = async ( len: number) => {
 				const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
@@ -94,9 +94,9 @@ export class AuthService {
 				two_factor: false
 			})
 			return;
-		// } catch (err) {
-		// 	console.log(`signUp error: ${err}`);
-		// }
+		} catch (err) {
+			console.log(`signUp error: ${err}`);
+		}
 		return ;
 	}
 
@@ -107,18 +107,15 @@ export class AuthService {
 			  res.json({ loggedIn: false });
 				return;
 			}
-			console.log("asdf");
 			try {
 				const { payload } = this.jwtService.verify(token);
-				console.log(payload);
-				console.log("asdf");
 			} catch (err) {
-				throw new HttpException('잘못된 토큰 !', 401);
+				throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
 			}
 			const { payload } = this.jwtService.verify(token);
 			const found = await this.userService.getProfileByUserId(payload.id);	// 토큰에 해당하는 유저찾기
 			if (!found) { // 유저정보 없음.
-				throw new HttpException('no user', 401);
+				throw new HttpException('Unregistered User', HttpStatus.UNAUTHORIZED);
 			}
 
 			const newToken = this.jwtService.sign({ payload });

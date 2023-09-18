@@ -7,7 +7,7 @@ import { User } from './user/entity/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { typeORMConfig } from './configs/typeorm.config';
 import { ChatModule } from './chat/chat.module';
-// import { GameModule } from './game/game.module';
+import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
