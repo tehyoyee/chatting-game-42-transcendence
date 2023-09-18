@@ -4,7 +4,7 @@ import { Channel } from "./entity/channel.entity";
 import { User } from "src/user/entity/user.entity";
 import * as bcrypt from 'bcrypt';
 import { UserType } from "./enum/user_type.enum";
-import { ChannelDto } from "./dto/channel-dto";
+import { ChannelDto, GroupChannelDto } from "./dto/channel-dto";
 import { ChannelType } from "./enum/channel_type.enum";
 
 @Injectable()
@@ -32,8 +32,23 @@ export class ChannelRepository extends Repository<Channel> {
 
         return await newChannel;
     }
+
+    async createGroupChannel(groupChannelDto: GroupChannelDto): Promise<Channel> {
+        const {channelName, channelType, password} = groupChannelDto;
+
+        const newChannel = new Channel();
+        newChannel.channel_name = channelName;
+        newChannel.channel_type = channelType;
+        if (channelType === ChannelType.PROTECTED && password) {
+            newChannel.salt = await bcrypt.genSalt();
+            newChannel.channel_pwd = await bcrypt.hash(password, newChannel.salt);
+        }
+        await newChannel.save();
+
+        return newChannel;
+    }
     
-    async createDMRoom(senderId: number, receiverId: number): Promise<Channel> {
+    async createDmChannel(senderId: number, receiverId: number): Promise<Channel> {
         const newRoom = new Channel();
 
         newRoom.channel_name = "[DM]" + senderId + "&" + receiverId;
@@ -47,18 +62,33 @@ export class ChannelRepository extends Repository<Channel> {
         return newRoom;
     }
 
+    async createPrivateChannel(channelName: string): Promise<Channel> {
+        const newChannel = new Channel();
 
-    async getChannelByName(name: string): Promise<Channel> {
+        newChannel.channel_name = channelName;
+        newChannel.channel_type = ChannelType.PRIVATE;
+        // newChannel.is_channel = false;
+        // newChannel.is_public = false;
+        newChannel.salt = '';
+        newChannel.channel_pwd = '';
+
+        await newChannel.save();
+    
+        return newChannel;
+    }
+
+
+    async getChannelByName(channelName: string): Promise<Channel> {
         const found = await this.findOne({
-            where: {channel_name: name},
+            where: {channel_name: channelName},
         });
 
         return found;
     }
 
-    async getChannelById(id: number): Promise<Channel> {
+    async getChannelById(channelId: number): Promise<Channel> {
         const found = await this.findOne({
-            where: {channel_id: id},
+            where: {channel_id: channelId},
         });
 
         return found;
