@@ -9,4 +9,4 @@ mail:
   pass: 'icfdxuzxjlstesqx'
   
 jwt:
-  secret: 'Secret1234'
+  secret: 'Secret12345'
