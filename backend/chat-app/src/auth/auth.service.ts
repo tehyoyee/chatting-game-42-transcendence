@@ -10,6 +10,7 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { User } from 'src/user/entity/user.entity';
 import { MailService } from './mail.service';
 import { Res } from '@nestjs/common';
+import { compareSync } from 'bcrypt';
 
 const dbconfig = config.get('intra');
 const grant_type = dbconfig.get('grant_type');
@@ -27,7 +28,8 @@ export class AuthService {
 	) {}
 	
 	async signUp(code: string, res: Response) {
-		try {
+		// try {
+			// throw new HttpException('message', 400);
 			const generateRandomString = async ( len: number) => {
 				const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
 				let randomString: string = '';
@@ -50,6 +52,7 @@ export class AuthService {
 			}
 			const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
 			const payload = { username: user.data.login, id: user.data.id };
+			console.log(config.jwt.secret);
 			const newAccessToken = this.jwtService.sign({ payload });
 			const found = await this.userService.getProfileByUserId(user.data.id);
 
@@ -91,26 +94,31 @@ export class AuthService {
 				two_factor: false
 			})
 			return;
-		} catch (err) {
-			console.log(`signUp error: ${err}`);
-		}
+		// } catch (err) {
+		// 	console.log(`signUp error: ${err}`);
+		// }
 		return ;
 	}
 
 	async checkLoginState(req: Request, res: Response) {
-		try {
 			const token = req.cookies['token'];
 
 			if (!token) {
 			  res.json({ loggedIn: false });
 				return;
 			}
+			console.log("asdf");
+			try {
+				const { payload } = this.jwtService.verify(token);
+				console.log(payload);
+				console.log("asdf");
+			} catch (err) {
+				throw new HttpException('잘못된 토큰 !', 401);
+			}
 			const { payload } = this.jwtService.verify(token);
-			
 			const found = await this.userService.getProfileByUserId(payload.id);	// 토큰에 해당하는 유저찾기
-			if (!found) { // 잘못된 토큰 -> 토큰 삭제
-				res.json({ loggedIn: false});
-				return;
+			if (!found) { // 유저정보 없음.
+				throw new HttpException('no user', 401);
 			}
 
 			const newToken = this.jwtService.sign({ payload });
@@ -120,10 +128,6 @@ export class AuthService {
 				sameSite: 'lax',
 			});
 			res.json({ loggedIn: true, user: payload });
-		} catch (err) {
-			console.log(`checkLoginState error: ${err}`);
-			res.json({ loggedIn: false, error: true});
-		}
 		return;
 	}
 

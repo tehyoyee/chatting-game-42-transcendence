@@ -1,4 +1,4 @@
-import { Param, Get, Body, Controller, Post, Req, UseGuards, ValidationPipe, Res } from '@nestjs/common';
+import { Param, Get, Body, Controller, Post, Req, UseGuards, ValidationPipe, Res, HttpException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Query } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -44,6 +44,10 @@ export class AuthController {
 		console.log('authguard passed');
 	}
 
+	// @Get('test2')
+	// test2() {
+	// 	throw new HttpException("test2 Error", 400);
+	// }
 	// @Get('/2fa')
 	// twofactorVarify(@Res() res:)
 
