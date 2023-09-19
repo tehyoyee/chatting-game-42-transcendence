@@ -32,6 +32,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     async handleConnection(client: Socket) {
       const user = await this.socketToUser(client);
       if (!user) {
+			// NOTE: exception is not handled and program stops
         throw new ForbiddenException('client not identified.');
         return;
       }
@@ -74,7 +75,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
         return user;
       }
       catch (error) {
-        return undefined;
+					console.log(error);
       }
     }
 
