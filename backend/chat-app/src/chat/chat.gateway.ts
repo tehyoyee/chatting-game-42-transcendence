@@ -7,7 +7,7 @@ import { UserService } from 'src/user/user.service';
 import { AuthService } from 'src/auth/auth.service';
 import { ChannelDto, DmChannelDto, GroupChannelDto } from './dto/channel-dto';
 import { NotFoundError } from 'rxjs';
-import { ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserType } from './enum/user_type.enum';
 import { MessageDto } from './dto/message-dto';
 import { JoinChannelDto } from './dto/join-channel-dto';
@@ -17,87 +17,112 @@ import { DmDto } from './dto/dm-dto';
 
 @WebSocketGateway( {namespace: '/chat'} )
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
-
+  
   @WebSocketServer() server: Server;
   
   constructor(
     private authService: AuthService,
     private userService: UserService,
     private chatService: ChatService) {}
-    
-  accessToken: any;
-  currentUser: User;
 
-  connectedUsers: any[] = [];
-  channelMembers: User[] = [];
-  
-  // async handleConnection(client: Socket) {
-    //   await this.definePlayer(client);
+    //onGatewayConnection의 메소드, 소켓이 연결되면 호출된다.
+    async handleConnection(client: Socket) {
+      const user = await this.socketToUser(client);
+      if (!user) {
+        throw new ForbiddenException('client is not identified.');
+        return;
+      }
     
-    //   if (this.currentUser) {
-      //     client.data.currentUser = this.currentUser;
-      //     this.connectedUsers.push(client);
-      //   }
-      // }
+      client.data.user = user;
+    
+      const privateChannelName = 'user' + user.user_id.toString();
+      const privateChannel = await this.chatService.getChannelByName(privateChannelName)
+      if (!privateChannel) {
+        await this.chatService.createPrivateChannel(user, user.user_id, privateChannelName);
+      }
+      client.join(privateChannelName);
       
-  //onGatewayConnection의 메소드, 소켓이 연결되면 호출된다.
-  async handleConnection(client: Socket) {
-    const user = await this.socketToUser(client);
-    if (!user) {
-      throw new ForbiddenException('client is not identified.');
-      return;
-    }
-
-    client.data.user = user;
-
-    const privateChannelName = 'user' + user.user_id.toString();
-    const privateChannel = await this.chatService.getChannelByName(privateChannelName)
-    if (!privateChannel) {
-      await this.chatService.createPrivateChannel(user, user.user_id, privateChannelName);
-    }
-    client.join(privateChannelName);
+      const joinedGroupChannels = await this.chatService.getJoinedGroupChannelsOfUser(user.user_id);
+      for (let c of joinedGroupChannels) {
+        client.join('channel' + c.channel_id.toString());
+      }
     
-    const joinedGroupChannels = await this.chatService.getJoinedGroupChannelsOfUser(user.user_id);
-    for (let c of joinedGroupChannels) {
-      client.join('channel' + c.channel_id.toString());
+      const joinedDmChannels = await this.chatService.getJoinedDmChannelsOfUser(user.user_id);
+      for (let c of joinedDmChannels) {
+        client.join('channel' + c.channel_id.toString());
+      }
+      //socket.except()를 쓰기 위해 blocked와 banned도 있어야 할듯
     }
-    const joinedDmChannels = await this.chatService.getJoinedDmChannelsOfUser(user.user_id);
-    for (let c of joinedDmChannels) {
-      client.join('channel' + c.channel_id.toString());
-    }
-    //socket.except()를 쓰기 위해 blocked와 banned도 있어야 할듯
-  }
-  
-  //OnGatewayDosconnect의 메소드, 소켓 연결이 종료되면 호출된다.
-  handleDisconnect(client: any) {
-    this.connectedUsers = this.connectedUsers.filter(user => user.id !== client.id);
-  }
-  
-  private async socketToUser(client: Socket): Promise<User> {
-    try {
-      const token: any = client.handshake.query.token;
-      if (!token)
-        return null;
-
-      const decoded = await this.authService.verifyToken(token);
-      const user: User = await this.userService.getProfileByUserId(decoded.id);
-      return user;
-    }
-    catch (error) {
-      return undefined;
-    }
-  }
-
-  @SubscribeMessage('create-group-channel')
-  async onCreateGroupChannel(client: Socket, groupChannelDto: GroupChannelDto) {
     
-  }
-
-  @SubscribeMessage('create-dm-channel')
-  async onCreateDMhannel(client: Socket, dmChannelDto: DmChannelDto) {
-
-  }
-
+    //OnGatewayDosconnect의 메소드, 소켓 연결이 종료되면 호출된다.
+    handleDisconnect(client: any) {
+      
+    }
+    
+    private async socketToUser(client: Socket): Promise<User> {
+      try {
+        const token: any = client.handshake.query.token;
+        if (!token)
+          return null;
+    
+        const decoded = await this.authService.verifyToken(token);
+        const user: User = await this.userService.getProfileByUserId(decoded.id);
+        return user;
+      }
+      catch (error) {
+        return undefined;
+      }
+    }
+    
+    @SubscribeMessage('create-group-channel')
+    async onCreateGroupChannel(client: Socket, groupChannelDto: GroupChannelDto) {
+      const user = await this.socketToUser(client);
+      if (!user) {
+        throw new ForbiddenException('client is not identified.');
+      }
+    
+      const duplicate = await this.chatService.getChannelByName(groupChannelDto.channelName);
+      if (duplicate)
+          throw new ConflictException(`channel name ${groupChannelDto.channelName} already exists.`);
+    
+      const newChannel = await this.chatService.createGroupChannel(user, groupChannelDto);
+    
+      client.join(newChannel.channel_name);
+      this.server.to(newChannel.channel_name).emit("join", user.username);
+    
+      return newChannel;
+    }
+    
+    @SubscribeMessage('create-dm-channel')
+    async onCreateDMhannel(client: Socket, dmChannelDto: DmChannelDto) {
+      const user = await this.socketToUser(client);
+      if (!user) {
+        throw new ForbiddenException('client is not identified.');
+      }
+      
+      const exist = await this.chatService.checkDmRoomExists(user.user_id, dmChannelDto.receiverId);
+      if (exist)
+        return exist;
+    
+      const newChannel = await this.chatService.createDmChannel(user, user.user_id, dmChannelDto.receiverId);
+    
+      client.join(newChannel.channel_name);
+      this.server.to(newChannel.channel_name).emit("join", user.username);
+    
+      return newChannel;
+    }
+    
+    @SubscribeMessage('join-channel')
+    async onJoinChannel(client: Socket) {
+    
+    }
+    
+  // accessToken: any;
+  // currentUser: User;
+  
+  // connectedUsers: any[] = [];
+  // channelMembers: User[] = [];
+  
   // private async definePlayer(client: Socket) {
   //   try {
   //     this.accessToken = client.handshake.query.token;
@@ -124,51 +149,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   //   return null;
   // }
 
-
-
-
-
-  // @SubscribeMessage('createChannel')
-  // async onCreateChannel(client: Socket, channelDto: ChannelDto) {
-  //   await this.definePlayer(client);
+  // async handleConnection(client: Socket) {
+    //   await this.definePlayer(client);
     
-  //   if (this.currentUser) {
-  //     const found = await this.chatService.getChannelByName(channelDto.name);
-  //     if (found)
-  //       this.server.to(client.id).emit('channel-exist', channelDto.name);
-  //     else {
-  //       const userNames = channelDto.members;
+    //   if (this.currentUser) {
+      //     client.data.currentUser = this.currentUser;
+      //     this.connectedUsers.push(client);
+      //   }
+      // }
 
-  //       for (let userName of userNames) {
-  //         const user: User = await this.userService.getProfileByUserName(userName);
+  // handleDisconnect(client: any) {
+    //   this.connectedUsers = this.connectedUsers.filter(user => user.id !== client.id);
+    // }
+      
 
-  //         if (!user)
-  //           throw new NotFoundException(`cannot find user ${user.username}`);
-
-  //         this.channelMembers.push(user);
-  //       }
-
-  //       const room = await this.chatService.createChannel(channelDto, this.channelMembers);
-  //       await this.chatService.addMember(client.data.currentUser, room, UserType.OWNER);
-
-  //       let userId: any;
-  //       let rooms: any;
-  //       let allRooms: any;
-  //       let members = await this.chatService.getMembersByChannelId(room.channel_id, this.currentUser.user_id);
-  //       for (let x of this.connectedUsers) {
-  //         userId = await x.handshake.query.token;
-  //         userId = await this.authService.verifyToken(userId);
-  //         rooms = await this.chatService.getRoomsForUser(userId.id);
-  //         allRooms = await this.chatService.getAllRooms(userId.id);
-
-  //         this.server.to(x.id).emit('message', rooms);
-  //         this.server.to(x.id).emit('members', members);
-  //         this.server.to(x.id).emit('allRooms', allRooms);
-  //       }
-  //     }
-  //     this.channelMembers.splice(0);
-  //   }
-  // }
 
   // @SubscribeMessage('createMessage')
   // async onCreateMessage(client: Socket, messageDto: MessageDto) {

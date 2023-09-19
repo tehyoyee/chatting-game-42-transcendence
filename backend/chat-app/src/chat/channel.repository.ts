@@ -49,17 +49,18 @@ export class ChannelRepository extends Repository<Channel> {
     }
     
     async createDmChannel(senderId: number, receiverId: number): Promise<Channel> {
-        const newRoom = new Channel();
+        const newChannel = new Channel();
 
-        newRoom.channel_name = "[DM]" + senderId + "&" + receiverId;
-        newRoom.is_channel = false;
-        newRoom.is_public = false;
-        newRoom.salt = '';
-        newRoom.channel_pwd = '';
+        newChannel.channel_name = 'user' + senderId + ":" + 'user' + receiverId;
+        newChannel.channel_type = ChannelType.DM;
+        // newChannel.is_channel = false;
+        // newChannel.is_public = false;
+        newChannel.salt = '';
+        newChannel.channel_pwd = '';
 
-        await newRoom.save();
+        await newChannel.save();
 
-        return newRoom;
+        return newChannel;
     }
 
     async createPrivateChannel(channelName: string): Promise<Channel> {
@@ -94,10 +95,10 @@ export class ChannelRepository extends Repository<Channel> {
         return found;
     }
 
-    async getDMRoomByName(name: string, isChannel: boolean): Promise<Channel> {
+    async getDmRoomByName(channelName: string): Promise<Channel> {
         const found = await this.findOne({
-            where: {channel_name: name,
-                is_channel: isChannel}
+            where: {channel_name: channelName,
+                channel_type: ChannelType.DM}
         });
 
         return found;
