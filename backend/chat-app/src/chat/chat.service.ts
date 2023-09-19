@@ -16,7 +16,7 @@ import { Message } from './entity/message.entity';
 import * as bcrypt from 'bcrypt';
 import { channel } from 'diagnostics_channel';
 import { DmDto } from './dto/dm-dto';
-import { JoinChannelDto } from './dto/join-channel-dto';
+import { JoinChannelDto } from './dto/channel-dto';
 import { ChannelType } from './enum/channel_type.enum';
 
 @Injectable()
@@ -226,10 +226,9 @@ export class ChatService {
 
 
     async checkChannelPassword(channel: Channel, inputPwd: string): Promise<boolean> {
-        const hashed = await bcrypt.hash(inputPwd, channel.salt);
-        
-        if (channel.channel_pwd === hashed)
+        if (await bcrypt.compare(inputPwd, channel.channel_pwd))
             return true;
+
         return false;
     }
 

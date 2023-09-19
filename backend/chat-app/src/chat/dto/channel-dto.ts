@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength } from "class-validator";
 import { ChannelType } from "../enum/channel_type.enum";
 
 export class ChannelDto {
@@ -16,7 +16,7 @@ export class ChannelDto {
 
 }
 
-
+//--------------
 export class GroupChannelDto {
     @IsNotEmpty()
     @MaxLength(10)
@@ -31,6 +31,16 @@ export class GroupChannelDto {
 
 export class DmChannelDto {
     @IsNumber()
+    @IsPositive()
     @IsNotEmpty()
     receiverId: number;
+}
+
+export class JoinChannelDto {
+    @IsNumber()
+    @IsPositive()
+    channel_id: number;
+
+    @IsOptional()
+    password: string;
 }

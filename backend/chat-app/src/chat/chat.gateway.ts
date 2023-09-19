@@ -6,13 +6,14 @@ import { ChatService } from './chat.service';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from 'src/auth/auth.service';
 import { ChannelDto, DmChannelDto, GroupChannelDto } from './dto/channel-dto';
-import { NotFoundError } from 'rxjs';
+import { NotFoundError, map } from 'rxjs';
 import { ConflictException, ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserType } from './enum/user_type.enum';
 import { MessageDto } from './dto/message-dto';
-import { JoinChannelDto } from './dto/join-channel-dto';
+import { JoinChannelDto } from './dto/channel-dto';
 import { UcbDto } from './dto/ucb-dto';
 import { DmDto } from './dto/dm-dto';
+import { ChannelType } from './enum/channel_type.enum';
 
 
 @WebSocketGateway( {namespace: '/chat'} )
@@ -25,15 +26,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     private userService: UserService,
     private chatService: ChatService) {}
 
+    private userSocketMap = new Map();
+
     //onGatewayConnection의 메소드, 소켓이 연결되면 호출된다.
     async handleConnection(client: Socket) {
       const user = await this.socketToUser(client);
       if (!user) {
-        throw new ForbiddenException('client is not identified.');
+        throw new ForbiddenException('client not identified.');
         return;
       }
     
       client.data.user = user;
+      this.userSocketMap.set(user.user_id, client);
     
       const privateChannelName = 'user' + user.user_id.toString();
       const privateChannel = await this.chatService.getChannelByName(privateChannelName)
@@ -56,7 +60,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     
     //OnGatewayDosconnect의 메소드, 소켓 연결이 종료되면 호출된다.
     handleDisconnect(client: any) {
-      
+      //내용없음
     }
     
     private async socketToUser(client: Socket): Promise<User> {
@@ -73,12 +77,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
         return undefined;
       }
     }
+
+    private userIdToSocket(userId: number): Socket {
+      return this.userSocketMap.get(userId);
+    }
     
     @SubscribeMessage('create-group-channel')
     async onCreateGroupChannel(client: Socket, groupChannelDto: GroupChannelDto) {
       const user = await this.socketToUser(client);
       if (!user) {
-        throw new ForbiddenException('client is not identified.');
+        throw new ForbiddenException('client not identified.');
       }
     
       const duplicate = await this.chatService.getChannelByName(groupChannelDto.channelName);
@@ -97,72 +105,57 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     async onCreateDMhannel(client: Socket, dmChannelDto: DmChannelDto) {
       const user = await this.socketToUser(client);
       if (!user) {
-        throw new ForbiddenException('client is not identified.');
+        throw new ForbiddenException('client not identified.');
       }
       
       const exist = await this.chatService.checkDmRoomExists(user.user_id, dmChannelDto.receiverId);
-      if (exist)
+      if (exist) {
         return exist;
+      }
     
       const newChannel = await this.chatService.createDmChannel(user, user.user_id, dmChannelDto.receiverId);
+      const receiver = await this.userService.getProfileByUserId(dmChannelDto.receiverId);
+      if (!receiver) {
+        throw new NotFoundException('receiver not found.');
+      }
+      const receiverSocket = this.userIdToSocket(receiver.user_id);
+      if (!receiverSocket) {
+        throw new ForbiddenException('receiver not identified.');
+      }
     
       client.join(newChannel.channel_name);
-      this.server.to(newChannel.channel_name).emit("join", user.username);
+      receiverSocket.join(newChannel.channel_name);
+      this.server.to(newChannel.channel_name).emit("join", user.nickname);
+      this.server.to(newChannel.channel_name).emit("join", receiver.nickname);
     
       return newChannel;
     }
     
-    @SubscribeMessage('join-channel')
-    async onJoinChannel(client: Socket) {
-    
+    @SubscribeMessage('join-group-channel')
+    async onJoinChannel(client: Socket, joinChannelDto: JoinChannelDto) {
+      const user = await this.socketToUser(client);
+      if (!user) {
+        throw new ForbiddenException('client not identified.');
+      }
+
+      const channel = await this.chatService.getChannelById(joinChannelDto.channel_id);
+      if (!channel) {
+        throw new NotFoundException(`channel not found.`);
+      }
+
+      if (channel.channel_type === ChannelType.PROTECTED) {
+        if (!(await this.chatService.checkChannelPassword(channel, joinChannelDto.password))) {
+          throw new ForbiddenException('password incorrect');
+        }
+      }
+
+      await this.chatService.createUCBridge(user, channel, UserType.MEMBER);
+
+      client.join(channel.channel_name);
+      this.server.to(channel.channel_name).emit("join", user.nickname);
     }
     
-  // accessToken: any;
-  // currentUser: User;
   
-  // connectedUsers: any[] = [];
-  // channelMembers: User[] = [];
-  
-  // private async definePlayer(client: Socket) {
-  //   try {
-  //     this.accessToken = client.handshake.query.token;
-  //     this.accessToken = await this.authService.verifyToken(this.accessToken);
-  //     this.currentUser = null;
-  //     this.currentUser = await this.userService.getProfileByUserId(this.accessToken.id);
-
-  //     if (!this.currentUser) {
-  //     }
-      
-  //   } catch (error) {
-  //   }
-  // }
-  
-  // private async getSocketId(id: number): Promise<Socket> {
-  //   for (let user of this.connectedUsers) {
-  //     let decoded = user.handshake.query.token;
-  //     decoded = await this.authService.verifyToken(decoded);
-
-  //     if (decoded.id === id)
-  //       return user;
-  //   }
-
-  //   return null;
-  // }
-
-  // async handleConnection(client: Socket) {
-    //   await this.definePlayer(client);
-    
-    //   if (this.currentUser) {
-      //     client.data.currentUser = this.currentUser;
-      //     this.connectedUsers.push(client);
-      //   }
-      // }
-
-  // handleDisconnect(client: any) {
-    //   this.connectedUsers = this.connectedUsers.filter(user => user.id !== client.id);
-    // }
-      
-
 
   // @SubscribeMessage('createMessage')
   // async onCreateMessage(client: Socket, messageDto: MessageDto) {
@@ -221,37 +214,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   //   }
   // }
 
-  // @SubscribeMessage('joinChannel')
-  // async onJoinChannel(client: Socket, joinChannelDto: JoinChannelDto) {
-  //   await this.definePlayer(client);
-
-  //   if (this.currentUser) {
-  //     const found = await this.chatService.getChannelById(joinChannelDto.channel_id);
-  //     if (await this.chatService.checkChannelPassword(found, joinChannelDto.password)) {
-  //       //await this.chatService.createUCBridge(this.currentUser.user_id, found.channel_id, found, this.currentUser);
-
-  //       let rooms = await this.chatService.getRoomsForUser(this.currentUser.user_id);
-  //       this.server.to(client.id).emit('message', rooms);
-
-  //       let members = await this.chatService.getMembersByChannelId(found.channel_id, this.currentUser.user_id);
-  //       this.server.to(client.id).emit('members', members);
-
-  //       let messages = await this.chatService.getMessagesByChannelId(joinChannelDto.channel_id, this.currentUser.user_id);
-  //       this.server.to(client.id).emit('sendMessages', messages);
-
-  //       for (let x of this.connectedUsers) {
-  //         let userId = await x.handshake.query.token;
-  //         userId = await this.authService.verifyToken(userId);
-
-  //         if (await this.chatService.isMember(joinChannelDto.channel_id, userId)) {
-  //           this.server.to(x.id).emit('members', members);
-  //         }
-  //       }
-  //    }
-  //    else
-  //     throw new ForbiddenException('password incorrect');
-  //   }
-  // }
 
   // @SubscribeMessage('setAdmin')
   // async onSetAdmin(client: Socket, ucbDto: UcbDto) {
