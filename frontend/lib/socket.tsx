@@ -32,19 +32,20 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		const userToken = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
 		const socketOpt = {
-			auth: {
+			query: {
 				token: userToken,
 			},
 		}
 		const chatSocket = io(chatUrl, socketOpt);
-		const gameSocket = io(gameUrl, socketOpt);
+//		const gameSocket = io(gameUrl, socketOpt);
 
 		initChatSocket(chatSocket);
-		initGameSocket(gameSocket);
+//		initGameSocket(gameSocket);
 
 		setSocketContext({
 			chatSocket: chatSocket,
-			gameSocket: gameSocket,
+//			gameSocket: gameSocket,
+			gameSocket: null,
 		});
 	}, []);
 

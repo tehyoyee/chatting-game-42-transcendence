@@ -18,10 +18,10 @@ export default function Page() {
     if (loggedIn === true) {
       router.push('/');
     }
-  }, [loggedIn]);
+  }, [router, loggedIn]);
   return (
     <>
-      { updated && !loggedIn && <Login></Login>}
+      { updated && !loggedIn && <Login></Login> }
     </>
   );
 }
