@@ -68,7 +68,7 @@ export class AuthService {
 						two_factor: true
 					})
 				} else {
-					res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
+					res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: false, sameSite: 'lax' });
 					res.send({
 						id: payload.id,
 						firstLogin: false,
@@ -87,7 +87,7 @@ export class AuthService {
 			};
 
 			this.userService.createUser(createUserDto);
-			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
+			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: false, sameSite: 'lax' });
 			res.send({
 				id: createUserDto.user_id,
 				firstLogin: true,
@@ -119,7 +119,7 @@ export class AuthService {
 
 			const newToken = this.jwtService.sign({ payload });
 			res.cookie('token', newToken, {
-				httpOnly: true,
+				httpOnly: false,
 				maxAge: 60 * 60 * 1000,// milli seconds
 				sameSite: 'lax',
 			});
@@ -131,15 +131,15 @@ export class AuthService {
 		res.clearCookie('token').json({ message: "Signned Out" });
 	}
 
-	async verifyToken(token: string): Promise<User> {
+	async verifyToken(token: string) {
 		try {
-			const { verified }  = await this.jwtService.verify(token);
-			if (verified)
-				return verified;
+			const { payload }  = await this.jwtService.verify(token);
+			if (payload)
+				return payload;
 		
 			throw new UnauthorizedException('token is not verified');
 		} catch (error) {
-			throw new HttpException('Invalid Token', HttpStatus.UNAUTHORIZED)
+			throw new HttpException(`Invalid Token: ${error}`, HttpStatus.UNAUTHORIZED)
 		}
 	}
 
@@ -148,7 +148,7 @@ export class AuthService {
 		if (thisUser.auth_code === inputCode) {
 			const payload = { username: thisUser.username, id: thisUser.user_id };
 			const newAccessToken = this.jwtService.sign({ payload });
-			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: true, sameSite: 'lax' });
+			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: false, sameSite: 'lax' });
 			res.send({state: true});
 			return ;
 		} else {

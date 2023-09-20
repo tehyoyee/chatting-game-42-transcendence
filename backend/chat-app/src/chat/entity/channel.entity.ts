@@ -11,8 +11,8 @@ export class Channel extends BaseEntity {
     @Column({ unique: true })
     channel_name: string;
 
-    // @Column({ default: ChannelType.PUBLIC })
-    // channel_type: ChannelType;
+    @Column()
+    channel_type: ChannelType;
 
     @Column({ default: true })
     is_channel: boolean;

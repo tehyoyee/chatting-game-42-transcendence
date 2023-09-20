@@ -11,30 +11,29 @@ export class UcbRepository extends Repository<UserChannelBridge> {
         super(UserChannelBridge, dataSource.createEntityManager())
     }
 
-    async getUcbByIds(user_id: number, channel_id: number): Promise<UserChannelBridge> {
+    async getUcbByIds(userId: number, channelId: number): Promise<UserChannelBridge> {
         const found = await this.findOne({
-            where: { user_id: user_id,
-                channel_id: channel_id }
+            where: {user_id: userId,
+                    channel_id: channelId}
         });
 
         return found;
     }
 
-    async createUCBridge(user_id: number, channel_id: number, channel: Channel, user: User) {
-        const found = this.getUcbByIds(user_id, channel_id);
-
+    async createUCBridge(user: User, channel: Channel, userType: UserType) {
+        const found = this.getUcbByIds(user.user_id, channel.channel_id);
         if (!found)
         {
-            const newMembership = new UserChannelBridge();
-            newMembership.user = user;
-            newMembership.channel = channel;
-            newMembership.user_type = UserType.GENERAL;
+            const newBridge = new UserChannelBridge();
+            newBridge.user = user;
+            newBridge.channel = channel;
+            newBridge.user_type = userType;
 
-            await newMembership.save();
+            await newBridge.save();
         }
     }
 
-    async deleteUCBridge(channelId: number, userId: number) {
+    async deleteUCBridge(userId: number, channelId: number) {
         await this.delete({ channel_id: channelId, user_id: userId });
     }
 
