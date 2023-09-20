@@ -14,11 +14,11 @@ export class Channel extends BaseEntity {
     @Column()
     channel_type: ChannelType;
 
-    @Column({ default: true })
-    is_channel: boolean;
+    // @Column({ default: true })
+    // is_channel: boolean;
     
-    @Column({ default: true })
-    is_public: boolean;
+    // @Column({ default: true })
+    // is_public: boolean;
 
     @Column()
     salt: string;

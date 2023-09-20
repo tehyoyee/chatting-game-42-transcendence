@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Channel } from './entity/channel.entity';
 import { User } from 'src/user/entity/user.entity';
 import { ChannelRepository } from './channel.repository';
@@ -11,7 +11,6 @@ import { UserChannelBridge } from './entity/user-channel-bridge.entity';
 import { AuthService } from 'src/auth/auth.service';
 import { Message } from './entity/message.entity';
 import * as bcrypt from 'bcrypt';
-import { channel } from 'diagnostics_channel';
 import { JoinChannelDto, GroupChannelDto } from './dto/channel-dto';
 import { ChannelType } from './enum/channel_type.enum';
 import { DmDto, GroupMessageDto } from './dto/message-dto';
@@ -26,10 +25,6 @@ export class ChatService {
         private authService: AuthService) { }
 
     async createGroupChannel(user: User, groupChannelDto: GroupChannelDto): Promise<Channel> {
-        // const duplicate = this.getChannelByName(groupChannelDto.channelName);
-        // if (duplicate)
-        //     throw new ConflictException(`channel ${groupChannelDto.channelName} already exists.`);
-    
         const newChannel = await this.channelRepository.createGroupChannel(groupChannelDto);
         await this.createUCBridge(user, newChannel, UserType.OWNER);
         
@@ -57,7 +52,21 @@ export class ChatService {
         await this.ucbRepository.createUCBridge(user, channel, userType);
     }
 
-    async getJoinedGroupChannelsOfUser(userId: number) {
+    async getAllGroupChannelsByChannelType(channelType: ChannelType): Promise<Channel[]> {
+        let channels: Channel[] = [];
+        
+        const channel = await this.channelRepository
+        .createQueryBuilder('c')
+        .select(['c.channel_id', 'c.channel_name', 'c.channel_type'])
+        .where('c.channel_type = :channelType', {channelType})
+        .orderBy('c.channel_id');
+
+        channels = await channel.getMany();
+
+        return channels;
+    }
+
+    async getJoinedGroupChannelsByUserId(userId: number) {
         const isBanned = false;
         const channelIds = await this.ucbRepository
         .createQueryBuilder('b')
@@ -77,7 +86,7 @@ export class ChatService {
         return joinedChannels;
     }
 
-    async getJoinedDmChannelsOfUser(userId: number) {
+    async getJoinedDmChannelsByUserId(userId: number) {
         const channels = await this.ucbRepository
         .createQueryBuilder('b')
         .where('b.user_id = :userId', {userId})
@@ -93,6 +102,19 @@ export class ChatService {
         }
 
         return joinedChannels;
+    }
+
+    async getPrivateChannelByUserId(userId: number): Promise<Channel> {
+        const user = await this.userService.getProfileByUserId(userId);
+        if (!user) {
+            //exception handler
+            throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+        }
+            
+        const channelName = 'user' + user.user_id.toString();
+        const channel = await this.getChannelByName(channelName);
+
+        return channel;
     }
 
     async createGroupMessage(sender: User, channel: Channel, content: string): Promise<Message> {

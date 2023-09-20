@@ -57,12 +57,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
     client.join(privateChannelName);
     
-    const joinedGroupChannels = await this.chatService.getJoinedGroupChannelsOfUser(user.user_id);
+    const joinedGroupChannels = await this.chatService.getJoinedGroupChannelsByUserId(user.user_id);
     for (let c of joinedGroupChannels) {
       client.join('channel' + c.channel_id.toString());
     }
   
-    const joinedDmChannels = await this.chatService.getJoinedDmChannelsOfUser(user.user_id);
+    const joinedDmChannels = await this.chatService.getJoinedDmChannelsByUserId(user.user_id);
     for (let c of joinedDmChannels) {
       client.join('channel' + c.channel_id.toString());
     }

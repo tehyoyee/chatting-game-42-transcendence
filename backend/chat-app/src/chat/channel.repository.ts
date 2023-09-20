@@ -59,7 +59,6 @@ export class ChannelRepository extends Repository<Channel> {
         return newChannel;
     }
 
-
     async getChannelByName(channelName: string): Promise<Channel> {
         const found = await this.findOne({
             where: {channel_name: channelName},
