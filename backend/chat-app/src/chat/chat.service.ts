@@ -4,20 +4,19 @@ import { User } from 'src/user/entity/user.entity';
 import { ChannelRepository } from './channel.repository';
 import { MessageRepository } from './message.repository';
 import { ChatGateway } from './chat.gateway';
-import { ChannelDto, GroupChannelDto } from './dto/channel-dto';
+import { GroupChannelDto } from './dto/channel-dto';
 import { UcbRepository } from './ucb.repository';
 import { UserType } from './enum/user_type.enum';
 import { MemberDto } from './dto/member-dto';
 import { UserService } from 'src/user/user.service';
 import { UserChannelBridge } from './entity/user-channel-bridge.entity';
 import { AuthService } from 'src/auth/auth.service';
-import { MessageDto } from './dto/message-dto';
 import { Message } from './entity/message.entity';
 import * as bcrypt from 'bcrypt';
 import { channel } from 'diagnostics_channel';
-import { DmDto } from './dto/dm-dto';
 import { JoinChannelDto } from './dto/channel-dto';
 import { ChannelType } from './enum/channel_type.enum';
+import { DmDto, GroupMessageDto } from './dto/message-dto';
 
 @Injectable()
 export class ChatService {
@@ -25,17 +24,7 @@ export class ChatService {
         private messageRepository: MessageRepository,
         private ucbRepository: UcbRepository,
         private userService: UserService,
-        private authService: AuthService) {}
-    
-
-    // async createChannel(channelDto: ChannelDto, channelMembers: User[]): Promise<Channel> {
-    //     const newChannel =  await this.channelRepository.createChannel(channelDto, channelMembers);
-    
-    //     for (let user of channelMembers)
-    //         //await this.createUCBridge(user.user_id, newChannel.channel_id, newChannel, user);
-
-    //     return newChannel;
-    // }
+        private authService: AuthService) { }
 
     async createGroupChannel(user: User, groupChannelDto: GroupChannelDto): Promise<Channel> {
         // const duplicate = this.getChannelByName(groupChannelDto.channelName);
@@ -69,14 +58,7 @@ export class ChatService {
         await this.ucbRepository.createUCBridge(user, channel, userType);
     }
 
-    // async addMember(user: User, channel: Channel, type: UserType): Promise<void> {
-    //     const found = await this.ucbRepository.getUcbByIds(user.user_id, channel.channel_id);
-    //     if (!found)
-    //     {
-    //         await this.ucbRepository.addMember(user, channel, type, found);
-    //     }
-    // }
-
+    //
     async getMembersByChannelId(channelId: number, userId: number): Promise<MemberDto[]> {
         let membersObject: MemberDto[] = [];
 
@@ -100,25 +82,6 @@ export class ChatService {
         }
         return membersObject; 
     }
-
-    //아래함수와 중복
-    // async getRoomsForUser(userId: number): Promise<Channel[]> {
-    //     const is_banned = false;
-    //     const roomsId = await this.ucbRepository
-    //     .createQueryBuilder('m')
-    //     .where('m.user_id = :userId', {userId})
-    //     .andWhere('m.is_banned = :is_banned', {is_banned})
-    //     .select(['m.channel_id'])
-    //     .getMany();
-
-    //     let rooms = [];
-
-    //     for (let id of roomsId) {
-    //         rooms.push(await this.channelRepository.getChatRoomById(id.channel_id));
-    //     }  
-        
-    //     return rooms;
-    // }
 
     async getJoinedGroupChannelsOfUser(userId: number) {
         const isBanned = false;
@@ -158,6 +121,27 @@ export class ChatService {
         return joinedChannels;
     }
 
+    async createGroupMessage(sender: User, channel: Channel, content: string): Promise<Message> {
+        return await this.messageRepository.createGroupMessage(sender, channel, content);
+    }
+
+    async getMessagesByChannelId(channelId: number, userId: number): Promise<Message[]> {
+        let messages: Message[] = [];
+        if (await this.isMember(channelId, userId)) {
+            const query = await this.messageRepository.createQueryBuilder('m')
+            .select(['m.content', 'm.user_id', 'm.channel_id'])
+            .where('m.channel_id = :channelId', {channelId})
+            .orderBy('m.created_at');
+
+            messages = await query.getMany();
+
+            //block 유저의 메세지 지우는 부분 필요
+        }
+    
+        return messages;
+    }
+
+    //
     async getAllRooms(userId: number): Promise<Channel[]> {
         const rooms = await this.channelRepository
         .createQueryBuilder('r')
@@ -176,7 +160,12 @@ export class ChatService {
         return rooms;
     }
 
+    //
     async isMember(channelId: number, userId: number): Promise<UserChannelBridge> {
+        return await this.ucbRepository.getUcbByIds(userId, channelId);
+    }
+    
+    async isMemberOfChannel(userId: number, channelId: number): Promise<UserChannelBridge> {
         return await this.ucbRepository.getUcbByIds(userId, channelId);
     }
 
@@ -186,34 +175,6 @@ export class ChatService {
         if (membership && membership.is_banned === true)
             return true;
         return false;
-    }
-
-    async createMessage(messageDto: MessageDto, sender: User): Promise<Message> {
-        const {channel_id, content} = messageDto;
-        
-        const newMessage = new Message();
-        newMessage.content = content;
-        newMessage.user = sender;
-        newMessage.channel = await this.channelRepository.getChannelById(channel_id);
-        await newMessage.save();
-        
-        return newMessage;
-    }
-
-    async getMessagesByChannelId(channelId: number, userId: number): Promise<Message[]> {
-        let messages: Message[] = [];
-        if (await this.isMember(channelId, userId)) {
-            const query = await this.messageRepository.createQueryBuilder('m')
-            .select(['m.content', 'm.user_id', 'm.channel_id'])
-            .where('m.channel_id = :channelId', {channelId})
-            .orderBy('m.created_at');
-
-            messages = await query.getMany();
-
-            //block 유저의 메세지 지우는 부분 필요
-        }
-    
-        return messages;
     }
 
     async deleteUCBridge(channelId: number, userId: number) {

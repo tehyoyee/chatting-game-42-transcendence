@@ -4,33 +4,13 @@ import { Channel } from "./entity/channel.entity";
 import { User } from "src/user/entity/user.entity";
 import * as bcrypt from 'bcrypt';
 import { UserType } from "./enum/user_type.enum";
-import { ChannelDto, GroupChannelDto } from "./dto/channel-dto";
+import { GroupChannelDto } from "./dto/channel-dto";
 import { ChannelType } from "./enum/channel_type.enum";
 
 @Injectable()
 export class ChannelRepository extends Repository<Channel> {
     constructor(dataSource: DataSource) {
         super(Channel, dataSource.createEntityManager())
-    }
-
-    async createChannel(channelDto: ChannelDto, channelMembers: User[]): Promise<Channel> {
-        const {name, type, password} = channelDto;
-
-        //type.toUpperCase();
-        const newChannel = new Channel();
-        newChannel.channel_name = name;
-        newChannel.is_channel = true;
-
-        if (type === ChannelType.PROTECTED)
-        {
-            newChannel.is_public = false;
-            newChannel.salt = await bcrypt.genSalt();
-            newChannel.channel_pwd = await bcrypt.hash(password, newChannel.salt);
-        }
-
-        await newChannel.save();
-
-        return await newChannel;
     }
 
     async createGroupChannel(groupChannelDto: GroupChannelDto): Promise<Channel> {
@@ -104,6 +84,7 @@ export class ChannelRepository extends Repository<Channel> {
         return found;
     }
 
+    //
     async getChatRoomById(id: number): Promise<Channel> {
         const room = await this
         .createQueryBuilder('r')
@@ -114,6 +95,7 @@ export class ChannelRepository extends Repository<Channel> {
         return room;
     }
 
+    //
     async JoinChannelById(id: number, user: User) {
         const found = await this.getChannelById(id);
         if (!found)
