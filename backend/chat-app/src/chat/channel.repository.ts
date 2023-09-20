@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { UserType } from "./enum/user_type.enum";
 import { ChannelType } from "./enum/channel_type.enum";
 import { GroupChannelDto } from "./dto/channel-dto";
+import { UpdatePasswordDto } from "./dto/update-dto";
 
 @Injectable()
 export class ChannelRepository extends Repository<Channel> {
@@ -88,32 +89,19 @@ export class ChannelRepository extends Repository<Channel> {
         await this.delete({channel_id: channelId});
     }
 
+    async setPassword(channel: Channel, newPassword: string) {
+        channel.channel_type = ChannelType.PROTECTED;
+        channel.salt = await bcrypt.genSalt();
+        channel.channel_pwd = await bcrypt.hash(newPassword, channel.salt);
 
-
-    //
-    async getChatRoomById(id: number): Promise<Channel> {
-        const room = await this
-        .createQueryBuilder('r')
-        .where('r.channel_id = :id', {id})
-        .select(['r.channel_id', 'r.channel_name', 'r.is_public', 'r.is_channel'])
-        .getOne();
-
-        return room;
+        await channel.save();
     }
 
-    //
-    async JoinChannelById(id: number, user: User) {
-        const found = await this.getChannelById(id);
-        if (!found)
-            throw new NotFoundException(`channel ${id} does not exist.`);
+    async unsetPassword(channel: Channel) {
+        channel.channel_type = ChannelType.PUBLIC;
+        channel.salt = '';
+        channel.channel_pwd = '';
 
-        await this.findBy({
-            channel_id: id,
-            //details.user_id = user.user_id,
-        });
-        
-        
-        return 
-
+        await channel.save();
     }
 }

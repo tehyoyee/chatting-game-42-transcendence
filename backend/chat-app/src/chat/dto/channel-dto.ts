@@ -23,7 +23,7 @@ export class DmChannelDto {
 export class JoinChannelDto {
     @IsNumber()
     @IsPositive()
-    channel_id: number;
+    channelId: number;
 
     @IsOptional()
     password: string;
