@@ -31,6 +31,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   async handleConnection(client: Socket) {
     const user = await this.socketToUser(client);
     if (!user) {
+    // NOTE: exception is not handled and program stops
       throw new ForbiddenException('client not identified.');
       return;
     }
@@ -61,7 +62,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   handleDisconnect(client: any) {
     //내용없음
   }
-  
+    
   private async socketToUser(client: Socket): Promise<User> {
     try {
       const token: any = client.handshake.query.token;
@@ -73,7 +74,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return user;
     }
     catch (error) {
-      return undefined;
+        console.log(error);
     }
   }
 
@@ -82,9 +83,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   }
   
   @SubscribeMessage('create-group-channel')
-  async onCreateGroupChannel(
-    @ConnectedSocket() client: Socket, 
-    @MessageBody() groupChannelDto: GroupChannelDto) {
+  async onCreateGroupChannel(client: Socket, groupChannelDto: GroupChannelDto) {
     const user = await this.socketToUser(client);
     if (!user) {
       throw new ForbiddenException('client not identified.');
@@ -101,11 +100,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   
     return newChannel;
   }
-  
+    
   @SubscribeMessage('create-dm-channel')
-  async onCreateDMhannel(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() dmChannelDto: DmChannelDto) {
+  async onCreateDMhannel(client: Socket, dmChannelDto: DmChannelDto) {
     const user = await this.socketToUser(client);
     if (!user) {
       throw new ForbiddenException('client not identified.');
@@ -133,11 +130,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   
     return newChannel;
   }
-  
+    
   @SubscribeMessage('join-group-channel')
-  async onJoinGroupChannel(
-    @ConnectedSocket() client: Socket, 
-    @MessageBody() joinChannelDto: JoinChannelDto) {
+  async onJoinChannel(client: Socket, joinChannelDto: JoinChannelDto) {
     const user = await this.socketToUser(client);
     if (!user) {
       throw new ForbiddenException('client not identified.');
@@ -159,7 +154,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     client.join(channel.channel_name);
     this.server.to(channel.channel_name).emit("join", user.nickname);
   }
-  
+ 
   @SubscribeMessage('post-group-message')
   async onPostGroupMessage(
     @ConnectedSocket() client: Socket,

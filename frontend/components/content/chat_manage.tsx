@@ -5,7 +5,8 @@ export function ChatMenu() {
 	return (
 		<div className={styles.chatMenu}>
 			<form>
-
+				<label htmlFor="nameField">채팅방 이름</label>
+				<input type="text"/>
 				<fieldset>
 					<legend>채팅방 종류</legend>
 					<div>
