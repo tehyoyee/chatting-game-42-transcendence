@@ -13,7 +13,7 @@ import { GameModule } from './game/game.module';
   imports: [
     TypeOrmModule.forRoot(typeORMConfig),
     UserModule, AuthModule, ChatModule, 
-    // GameModule
+    GameModule
   ],
   controllers: [AppController],
   providers: [AppService],
