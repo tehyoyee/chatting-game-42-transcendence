@@ -1,4 +1,4 @@
-import { ArgumentsHost, Catch, HttpException, ExceptionFilter } from "@nestjs/common";
+import { ArgumentsHost, Catch, HttpException, ExceptionFilter, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
 
 @Catch(HttpException)
@@ -12,8 +12,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
 			| { error: string; statusCode: 400; message: string[] };
 
 		console.log(status, err);
-		if (status === 401) {
-			response.clearCookie('token').status(status).json({ loggedIn: false, message: "Signned Out" });
+		if (status === HttpStatus.UNAUTHRIZED) {
+			response.clearCookie('token').status(status).json({ loggedIn: false, errCode: status, errMsg: err });
 		} else {
 			response.status(status).json({ msg: err});
 		}
