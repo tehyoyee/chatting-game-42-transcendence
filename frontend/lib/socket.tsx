@@ -32,6 +32,7 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		const userToken = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
 		const socketOpt = {
+			withCredentials: true,
 			query: {
 				token: userToken,
 			},
