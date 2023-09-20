@@ -4,7 +4,6 @@ import { User } from 'src/user/entity/user.entity';
 import { ChannelRepository } from './channel.repository';
 import { MessageRepository } from './message.repository';
 import { ChatGateway } from './chat.gateway';
-import { GroupChannelDto } from './dto/channel-dto';
 import { UcbRepository } from './ucb.repository';
 import { UserType } from './enum/user_type.enum';
 import { MemberDto } from './dto/member-dto';
@@ -14,7 +13,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { Message } from './entity/message.entity';
 import * as bcrypt from 'bcrypt';
 import { channel } from 'diagnostics_channel';
-import { JoinChannelDto } from './dto/channel-dto';
+import { JoinChannelDto, GroupChannelDto } from './dto/channel-dto';
 import { ChannelType } from './enum/channel_type.enum';
 import { DmDto, GroupMessageDto } from './dto/message-dto';
 
@@ -125,6 +124,10 @@ export class ChatService {
         return await this.messageRepository.createGroupMessage(sender, channel, content);
     }
 
+    async createDM(sender:User, channel: Channel, content: string): Promise<Message> {
+        return await this.messageRepository.createDM(sender, channel, content);
+    }
+
     async getMessagesByChannelId(channelId: number, userId: number): Promise<Message[]> {
         let messages: Message[] = [];
         if (await this.isMember(channelId, userId)) {
@@ -165,7 +168,7 @@ export class ChatService {
         return await this.ucbRepository.getUcbByIds(userId, channelId);
     }
     
-    async isMemberOfChannel(userId: number, channelId: number): Promise<UserChannelBridge> {
+    async isInThisChannel(userId: number, channelId: number): Promise<UserChannelBridge> {
         return await this.ucbRepository.getUcbByIds(userId, channelId);
     }
 
@@ -177,8 +180,20 @@ export class ChatService {
         return false;
     }
 
-    async deleteUCBridge(channelId: number, userId: number) {
-        return await this.ucbRepository.deleteUCBridge(channelId, userId);
+    async deleteUCBridge(userId: number, channelId: number) {
+        return await this.ucbRepository.deleteUCBridge(userId, channelId, );
+    }
+
+    async deleteChannelIfEmpty(channelId: number) {
+        const channels = await this.ucbRepository
+        .createQueryBuilder('b')
+        .where('b.channel_id = :channelId', {channelId})
+        .select(['b.channel_id'])
+        .getMany();
+
+        if (channels.length === 1) {
+            this.channelRepository.deleteChannelByChannelId
+        }
     }
 
     async updateUserTypeOfUCBridge(userId: number, channelId: number, newType: UserType) {
@@ -205,20 +220,6 @@ export class ChatService {
             return found2;
 
         return null;
-    }
-
-
-
-    async createDM(dmDto: DmDto, sender: User, channel_id: number): Promise<Message> {
-        const {receiver_id, content} = dmDto;
-        
-        const newDM = new Message();
-        newDM.content = content;
-        newDM.user = sender;
-        newDM.channel = await this.channelRepository.getChannelById(channel_id);
-        await newDM.save();
-        
-        return newDM;
     }
 
     async getDMs(senderId: number, receiverId: number): Promise<Message[]> {

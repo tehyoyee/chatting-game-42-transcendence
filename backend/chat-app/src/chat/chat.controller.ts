@@ -2,7 +2,6 @@ import { Body, Controller, Get, Param, Post, Put, Req } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { User } from 'src/user/entity/user.entity';
 import { ChatGateway } from './chat.gateway';
-import { GroupChannelDto } from './dto/channel-dto';
 import { UserInRequest } from 'src/types/user-in-request.interface';
 
 @Controller('chat')

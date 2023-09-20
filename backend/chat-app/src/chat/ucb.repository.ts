@@ -33,7 +33,7 @@ export class UcbRepository extends Repository<UserChannelBridge> {
         }
     }
 
-    async deleteUCBridge(channelId: number, userId: number) {
+    async deleteUCBridge(userId: number, channelId: number) {
         await this.delete({ channel_id: channelId, user_id: userId });
     }
 

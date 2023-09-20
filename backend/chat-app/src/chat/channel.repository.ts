@@ -4,8 +4,8 @@ import { Channel } from "./entity/channel.entity";
 import { User } from "src/user/entity/user.entity";
 import * as bcrypt from 'bcrypt';
 import { UserType } from "./enum/user_type.enum";
-import { GroupChannelDto } from "./dto/channel-dto";
 import { ChannelType } from "./enum/channel_type.enum";
+import { GroupChannelDto } from "./dto/channel-dto";
 
 @Injectable()
 export class ChannelRepository extends Repository<Channel> {
@@ -83,6 +83,12 @@ export class ChannelRepository extends Repository<Channel> {
 
         return found;
     }
+
+    async deleteChannelByChannelId(channelId: number) {
+        await this.delete({channel_id: channelId});
+    }
+
+
 
     //
     async getChatRoomById(id: number): Promise<Channel> {

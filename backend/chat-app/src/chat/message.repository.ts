@@ -21,6 +21,16 @@ export class MessageRepository extends Repository<Message> {
         return newMessage;
     }
 
+    async createDM(sender:User, channel: Channel, content: string): Promise<Message> {
+        const newDM = new Message();
+        newDM.content = content;
+        newDM.user = sender;
+        newDM.channel = channel;
+        await newDM.save();
+        
+        return newDM;
+    }
+
 
     
 }
