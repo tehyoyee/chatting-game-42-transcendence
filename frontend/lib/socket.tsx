@@ -38,15 +38,14 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 			},
 		}
 		const chatSocket = io(chatUrl, socketOpt);
-//		const gameSocket = io(gameUrl, socketOpt);
+		const gameSocket = io(gameUrl, socketOpt);
 
 		initChatSocket(chatSocket);
-//		initGameSocket(gameSocket);
+		initGameSocket(gameSocket);
 
 		setSocketContext({
 			chatSocket: chatSocket,
-//			gameSocket: gameSocket,
-			gameSocket: null,
+			gameSocket: gameSocket,
 		});
 	}, []);
 
