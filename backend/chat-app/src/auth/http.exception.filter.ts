@@ -12,7 +12,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 			| { error: string; statusCode: 400; message: string[] };
 
 		console.log(status, err);
-		if (status === HttpStatus.UNAUTHRIZED) {
+		if (status === HttpStatus.UNAUTHORIZED) {
 			response.clearCookie('token').status(status).json({ loggedIn: false, errCode: status, errMsg: err });
 		} else {
 			response.status(status).json({ msg: err});
