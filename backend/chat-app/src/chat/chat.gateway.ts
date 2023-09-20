@@ -16,8 +16,17 @@ import { UserStatus } from 'src/user/enum/user-status.enum';
 import { UserChannelBridge } from './entity/user-channel-bridge.entity';
 import { Channel } from './entity/channel.entity';
 
-
-@WebSocketGateway( {namespace: '/chat'} )
+//아래 내용은 확인이 더 필요!
+@WebSocketGateway({
+	path: "/api/socket.io",
+	namespace: "chat",
+	cors: {
+		origin: "localhost:3001",
+		credentials: true,
+		allowedHeaders: 'Content-Type, Authorization, Cookie',
+		methods: ["GET", "POST"],
+	}
+})
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   
   @WebSocketServer() server: Server;
@@ -59,12 +68,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     
     const joinedGroupChannels = await this.chatService.getJoinedGroupChannelsByUserId(user.user_id);
     for (let c of joinedGroupChannels) {
-      client.join('channel' + c.channel_id.toString());
+      client.join(c.channel_name);
     }
   
     const joinedDmChannels = await this.chatService.getJoinedDmChannelsByUserId(user.user_id);
     for (let c of joinedDmChannels) {
-      client.join('channel' + c.channel_id.toString());
+      client.join(c.channel_name);
     }
     //socket.except()를 쓰기 위해 blocked와 banned도 있어야 할듯
     this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
