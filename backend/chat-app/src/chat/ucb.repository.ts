@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { DataSource, Repository } from "typeorm";
 import { UserChannelBridge } from "./entity/user-channel-bridge.entity";
 import { Channel } from "./entity/channel.entity";
@@ -10,6 +10,8 @@ export class UcbRepository extends Repository<UserChannelBridge> {
     constructor(dataSource: DataSource) {
         super(UserChannelBridge, dataSource.createEntityManager())
     }
+
+    private logger = new Logger('UcbRepository');
 
     async getUcbByIds(userId: number, channelId: number): Promise<UserChannelBridge> {
         const found = await this.findOne({
@@ -37,24 +39,31 @@ export class UcbRepository extends Repository<UserChannelBridge> {
         await this.delete({ channel_id: channelId, user_id: userId });
     }
 
-    async updateUserTypeOfUCBridge(userId: number, channelId: number, newType: UserType) {
-        const found = await this.getUcbByIds(userId, channelId);
+    async updateUserTypeOfUCBridge(targetUserId: number, channelId: number, newType: UserType) {
+        const found = await this.getUcbByIds(targetUserId, channelId);
 
         if (found) {
             found.user_type = newType;
             await found.save();
         }
-        else
-            throw new NotFoundException(`user ${userId} not found in channel ${channelId}`);
+        else {
+            //exception handler
+            this.logger.debug('Unexist Bridge');
+            throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+        }
     }
 
-    async addMember(user: User, channel: Channel, type: UserType, found: UserChannelBridge): Promise<void> {
-        const newMembership = new UserChannelBridge();
+    async updateBanStatus(bridge: UserChannelBridge, newBanStatus: boolean): Promise<UserChannelBridge> {
+        bridge.is_banned = newBanStatus;
+        await bridge.save();
 
-        newMembership.user_type = type;
-        newMembership.user = user;
-        newMembership.channel = channel;
-        
-        await newMembership.save();
+        return bridge;
+    }
+
+    async updateMuteStatus(bridge: UserChannelBridge, newMuteStatus: boolean): Promise<UserChannelBridge> {
+        bridge.is_banned = newMuteStatus;
+        await bridge.save();
+
+        return bridge;
     }
 }

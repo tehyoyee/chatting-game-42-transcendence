@@ -6,13 +6,15 @@ import { ChatService } from './chat.service';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from 'src/auth/auth.service';
 import { NotFoundError, map } from 'rxjs';
-import { ConflictException, ForbiddenException, HttpException, HttpStatus, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, HttpException, HttpStatus, Logger, NotFoundException, ParseIntPipe, UnauthorizedException } from '@nestjs/common';
 import { UserType } from './enum/user_type.enum';
 import { DmChannelDto, JoinChannelDto, GroupChannelDto } from './dto/channel-dto';
-import { UcbDto } from './dto/ucb-dto';
+import { UpdatePasswordDto, UpdateUserInfoDto } from './dto/update-dto';
 import { ChannelType } from './enum/channel_type.enum';
 import { DmDto, GroupMessageDto } from './dto/message-dto';
 import { UserStatus } from 'src/user/enum/user-status.enum';
+import { UserChannelBridge } from './entity/user-channel-bridge.entity';
+import { Channel } from './entity/channel.entity';
 
 
 @WebSocketGateway( {namespace: '/chat'} )
@@ -37,12 +39,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       this.logger.debug('Unidentified User');
       throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
 
-      //return { statusCode: HttpStatus.UNAUTHORIZED, message: 'Unidentified User' };
-      //client.disconnect();
-      //유저가 없기 때문에 터지는게 맞는듯?
-      //exException()
-      //catch return (err);
-      //return ;
+      //가능한 방법들
+      //0. throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED); auth모듈에 있는 HttpException.filter.ts로 감
+      //1. return { statusCode: HttpStatus.UNAUTHORIZED, message: 'Unidentified User' };
+      //2. client.disconnect(); 에러 표현 없이 소켓 disconnect
+      //3. wsException() 날리기
+      //4. 그냥 return ;
     }
   
     client.data.user = user;
@@ -97,7 +99,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   }
   
   @SubscribeMessage('create-group-channel')
-  async onCreateGroupChannel(client: Socket, groupChannelDto: GroupChannelDto) {
+  async onCreateGroupChannel(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() groupChannelDto: GroupChannelDto) {
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
@@ -121,7 +125,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   }
     
   @SubscribeMessage('create-dm-channel')
-  async onCreateDMhannel(client: Socket, dmChannelDto: DmChannelDto) {
+  async onCreateDMhannel(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()dmChannelDto: DmChannelDto) {
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
@@ -159,7 +165,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   }
     
   @SubscribeMessage('join-group-channel')
-  async onJoinChannel(client: Socket, joinChannelDto: JoinChannelDto) {
+  async onJoinChannel(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() joinChannelDto: JoinChannelDto) {
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
@@ -167,7 +175,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
     }
 
-    const channel = await this.chatService.getChannelById(joinChannelDto.channel_id);
+    const bridge = await this.chatService.checkUserInThisChannel(user.user_id, joinChannelDto.channelId);
+    if (bridge.is_banned) {
+      this.logger.debug('Bannde User');
+      throw new HttpException('Bannde User', HttpStatus.UNAUTHORIZED);
+    }
+
+    const channel = await this.chatService.getChannelById(joinChannelDto.channelId);
     if (!channel) {
       //exception handler
       this.logger.debug('Unidentified User');
@@ -211,11 +225,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
     }
 
-    const ucb = await this.chatService.isInThisChannel(user.user_id, channel.channel_id);
-    if (!ucb || ucb.is_muted || ucb.is_banned) { //is_banned는 검사 안해도 될 듯
+    const bridge = await this.chatService.checkUserInThisChannel(user.user_id, channel.channel_id);
+    if (!bridge || bridge.is_muted || bridge.is_banned) { //is_banned는 검사 안해도 될 듯
       //exception handler
-      this.logger.debug('Unexist Bridge');
-      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      this.logger.debug('Cannot Post Message');
+      throw new HttpException('Cannot Post Message', HttpStatus.UNAUTHORIZED);
     }
     //블락 검사 필요
 
@@ -256,7 +270,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   }
 
   @SubscribeMessage('leave-channel')
-  async onLeaveChannel(client: Socket, channelId: number) {
+  async onLeaveChannel(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() channelId: number) {
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
@@ -264,12 +280,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
     }
 
-    const bridge = await this.chatService.isInThisChannel(user.user_id, channelId);
+    const bridge = await this.chatService.checkUserInThisChannel(user.user_id, channelId);
     if (!bridge) {
       //exception handler
       this.logger.debug('Unexist Bridge');
       throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
     }
+
     const channel = await this.chatService.getChannelById(channelId);
     if (!channel) {
       //exception handler
@@ -279,197 +296,332 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     await this.chatService.deleteUCBridge(user.user_id, channelId);
     client.leave(channel.channel_name);
-    this.server.to(channel.channel_name).emit(`user ${user.nickname} has left the room`);
+    this.server.to(channel.channel_name).emit(`user ${user.nickname} has left`);
 
     await this.chatService.deleteChannelIfEmpty(channelId);
   }
 
+  @SubscribeMessage('set-admin')
+  async onSetAdmin(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() updateUserInfoDto: UpdateUserInfoDto) {
+    const user = await this.socketToUser(client);
+    if (!user) {
+      //exception handler
+      this.logger.debug('Unidentified User');
+      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+    }
 
-  // @SubscribeMessage('setAdmin')
-  // async onSetAdmin(client: Socket, ucbDto: UcbDto) {
-  //   await this.definePlayer(client);
+    const bridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
+    if (!bridge) {
+      //exception handler
+      this.logger.debug('Unexist Bridge');
+      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+    }
+    if (bridge.user_type !== UserType.OWNER) {
+      //exception handler
+      this.logger.debug('Cannot Set Admin');
+      throw new HttpException('Cannot Set Admin', HttpStatus.UNAUTHORIZED);
+    }
 
-  //   if (this.currentUser) {
-  //     //currentUser가 channel에서의 user_type이 OWNER인지 확인해야 함!
-  //     await this.chatService.updateUserTypeOfUCBridge(ucbDto.user_id, ucbDto.channel_id, UserType.ADMIN);
+    const channel = await this.chatService.getChannelById(updateUserInfoDto.channelId);
+    if (!channel) {
+      //exception handler
+      this.logger.debug('Unexist Channel');
+      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+    }
 
-  //     let members = await this.chatService.getMembersByChannelId(ucbDto.channel_id, ucbDto.user_id);
-  //     for (let x of this.connectedUsers) {
-  //       let userId = x.handshake.query.token;
-  //       userId = this.authService.verifyToken(userId);
+    await this.chatService.updateUserTypeOfUCBridge(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId, UserType.ADMIN);
 
-  //       if (await this.chatService.isMember(ucbDto.channel_id, userId))
-  //         this.server.to(x.id).emit('members', members);
-  //     }
-  //   }
-  // }
+    const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
+    this.server.to(channel.channel_name).emit("admin", targetUser.nickname);
+  }
 
+  @SubscribeMessage('set-password')
+  async onSetPassword(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() updatePasswordDto: UpdatePasswordDto) {
+    const user = await this.socketToUser(client);
+    if (!user) {
+      //exception handler
+      this.logger.debug('Unidentified User');
+      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+    }
 
+    if (updatePasswordDto.password === '') {
+      //exception handler
+      this.logger.debug('Empty Password');
+      throw new HttpException('Empty Password', HttpStatus.UNAUTHORIZED);
+    }
 
-  // @SubscribeMessage('changePassword')
-  // async oncCangePassword(client: Socket, joinChannelDto: JoinChannelDto) {
-  //   await this.definePlayer(client);
+    const bridge = await this.chatService.checkUserInThisChannel(user.user_id, updatePasswordDto.channelId);
+    if (!bridge) {
+      //exception handler
+      this.logger.debug('Unexist Bridge');
+      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+    }
+    if (bridge.user_type !== UserType.OWNER) {
+      //exception handler
+      this.logger.debug('Cannot Set Password');
+      throw new HttpException('Cannot Set Password', HttpStatus.UNAUTHORIZED);
+    }
 
-  //   if (this.currentUser) {
-  //     if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, joinChannelDto.channel_id)) {
-  //       const {channel_id, password} = joinChannelDto;
-        
-  //       await this.chatService.updatePassword(channel_id, password);
-  //     }
-  //   }
-  // }
+    const channel = await this.chatService.getChannelById(updatePasswordDto.channelId);
+    if (!channel) {
+      //exception handler
+      this.logger.debug('Unexist Channel');
+      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+    }
 
-  // @SubscribeMessage('removePassword')
-  // async onRemovePassword(client: Socket, channelId: number) {
-  //   await this.definePlayer(client);
+    await this.chatService.updatePassword(channel, updatePasswordDto.password);
+    this.server.to(channel.channel_name).emit('password setted');
+  }
+
+  @SubscribeMessage('change-password')
+  async onChangePassword(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() updatePasswordDto: UpdatePasswordDto) {
+    const user = await this.socketToUser(client);
+    if (!user) {
+      //exception handler
+      this.logger.debug('Unidentified User');
+      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+    }
+
+    const bridge = await this.chatService.checkUserInThisChannel(user.user_id, updatePasswordDto.channelId);
+    if (!bridge) {
+      //exception handler
+      this.logger.debug('Unexist Bridge');
+      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+    }
+    if (bridge.user_type !== UserType.OWNER) {
+      //exception handler
+      this.logger.debug('Cannot Set Password');
+      throw new HttpException('Cannot Set Password', HttpStatus.UNAUTHORIZED);
+    }
+
+    const channel = await this.chatService.getChannelById(updatePasswordDto.channelId);
+    if (!channel) {
+      //exception handler
+      this.logger.debug('Unexist Channel');
+      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+    }
+
+    await this.chatService.updatePassword(channel, updatePasswordDto.password);
+    this.server.to(channel.channel_name).emit('password updated');
+  }
+
+  @SubscribeMessage('remove-password')
+  async onRemovePassword(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() channelId: number) {
+    const user = await this.socketToUser(client);
+    if (!user) {
+      //exception handler
+      this.logger.debug('Unidentified User');
+      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+    }
+
+    const bridge = await this.chatService.checkUserInThisChannel(user.user_id, channelId);
+    if (!bridge) {
+      //exception handler
+      this.logger.debug('Unexist Bridge');
+      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+    }
+    if (bridge.user_type !== UserType.OWNER) {
+      //exception handler
+      this.logger.debug('Cannot Set Password');
+      throw new HttpException('Cannot Set Password', HttpStatus.UNAUTHORIZED);
+    }
+
+    const channel = await this.chatService.getChannelById(channelId);
+    if (!channel) {
+      //exception handler
+      this.logger.debug('Unexist Channel');
+      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+    }
+
+    await this.chatService.removePassword(channel);
+    this.server.to(channel.channel_name).emit('password removed');
+  }
+
+  @SubscribeMessage('kick-user')
+  async onKickUser(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() updateUserInfoDto: UpdateUserInfoDto) {
+    const user = await this.socketToUser(client);
+    if (!user) {
+      //exception handler
+      this.logger.debug('Unidentified User');
+      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+    }
+
+    const channel = await this.chatService.getChannelById(updateUserInfoDto.channelId);
+    if (!channel) {
+      //exception handler
+      this.logger.debug('Unexist Channel');
+      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+    }
+    if (channel.channel_type === ChannelType.DM) {
+      //exception handler
+      this.logger.debug('Cannot Kick User On DM Channel');
+      throw new HttpException('Cannot Kick User On DM Channel', HttpStatus.UNAUTHORIZED);
+    }
+
+    const userBridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
+    if (!userBridge) {
+      //exception handler
+      this.logger.debug('Unexist Bridge');
+      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+    }
+    if (userBridge.user_type !== UserType.OWNER && userBridge.user_type !== UserType.ADMIN) {
+      //exception handler
+      this.logger.debug('Member Cannot Kick User');
+      throw new HttpException('Member Cannot Kick User', HttpStatus.UNAUTHORIZED);
+    }
+
+    const targetBridge = await this.chatService.checkUserInThisChannel(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
+    if (!targetBridge) {
+      //exception handler
+      this.logger.debug('Unexist Bridge');
+      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+    }
+    if (targetBridge.user_type === UserType.OWNER) {
+      //exception handler
+      this.logger.debug('Cannot Kick Owner');
+      throw new HttpException('Cannot Kick Owner', HttpStatus.UNAUTHORIZED);
+    }
+
+    await this.chatService.deleteUCBridge(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
+    client.leave(channel.channel_name);
+    this.server.to(channel.channel_name).emit(`user ${user.nickname} is kicked.`);
+  }
+
+  @SubscribeMessage('ban-User')
+  async onBanUser(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() updateUserInfoDto: UpdateUserInfoDto) {
+    const user = await this.socketToUser(client);
+    if (!user) {
+      //exception handler
+      this.logger.debug('Unidentified User');
+      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+    }
+
+    const channel = await this.chatService.getChannelById(updateUserInfoDto.channelId);
+    if (!channel) {
+      //exception handler
+      this.logger.debug('Unexist Channel');
+      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+    }
+    if (channel.channel_type === ChannelType.DM) {
+      //exception handler
+      this.logger.debug('Cannot Ban User On DM Channel');
+      throw new HttpException('Cannot Ban User On DM Channel', HttpStatus.UNAUTHORIZED);
+    }
+
+    const userBridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
+    if (!userBridge) {
+      //exception handler
+      this.logger.debug('Unexist Bridge');
+      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+    }
+    if (userBridge.user_type !== UserType.OWNER && userBridge.user_type !== UserType.ADMIN) {
+      //exception handler
+      this.logger.debug('Member Cannot Ban User');
+      throw new HttpException('Member Cannot Ban User', HttpStatus.UNAUTHORIZED);
+    }
+
+    const targetBridge = await this.chatService.checkUserInThisChannel(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
+    if (!targetBridge) {
+      //exception handler
+      this.logger.debug('Unexist Bridge');
+      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+    }
+    if (targetBridge.user_type === UserType.OWNER) {
+      //exception handler
+      this.logger.debug('Cannot Ban Owner');
+      throw new HttpException('Cannot Ban Owner', HttpStatus.UNAUTHORIZED);
+    }
+    if (targetBridge.is_banned) {
+      //exception handler
+      this.logger.debug('User Already Banned');
+      throw new HttpException('User Already Banned', HttpStatus.UNAUTHORIZED);
+    }
+
+    await this.chatService.updateBanStatus(targetBridge, true);
+
+    client.leave(channel.channel_name);
+    this.server.to(channel.channel_name).emit(`user ${user.nickname} is banned.`);
+  }
+
+  @SubscribeMessage('onMuteUser')
+  async OnMuteUser(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() updateUserInfoDto: UpdateUserInfoDto) {
+    const user = await this.socketToUser(client);
+    if (!user) {
+      //exception handler
+      this.logger.debug('Unidentified User');
+      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+    }
+
+    const channel = await this.chatService.getChannelById(updateUserInfoDto.channelId);
+    if (!channel) {
+      //exception handler
+      this.logger.debug('Unexist Channel');
+      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+    }
+    if (channel.channel_type === ChannelType.DM) {
+      //exception handler
+      this.logger.debug('Cannot Mute User On DM Channel');
+      throw new HttpException('Cannot Mute User On DM Channel', HttpStatus.UNAUTHORIZED);
+    }
+
+    const userBridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
+    if (!userBridge) {
+      //exception handler
+      this.logger.debug('Unexist Bridge');
+      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+    }
+    if (userBridge.user_type !== UserType.OWNER && userBridge.user_type !== UserType.ADMIN) {
+      //exception handler
+      this.logger.debug('Member Cannot Mute User');
+      throw new HttpException('Member Cannot Mute User', HttpStatus.UNAUTHORIZED);
+    }
+
+    const targetBridge = await this.chatService.checkUserInThisChannel(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
+    if (!targetBridge) {
+      //exception handler
+      this.logger.debug('Unexist Bridge');
+      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+    }
+    if (targetBridge.user_type === UserType.OWNER) {
+      //exception handler
+      this.logger.debug('Cannot Mute Owner');
+      throw new HttpException('Cannot Mute Owner', HttpStatus.UNAUTHORIZED);
+    }
+    if (targetBridge.is_muted) {
+      //exception handler
+      this.logger.debug('User Already Muted');
+      throw new HttpException('User Already Muted', HttpStatus.UNAUTHORIZED);
+    }
+
+    await this.chatService.updateMuteStatus(targetBridge, true);
+
+    this.server.to(channel.channel_name).emit(`user ${user.nickname} is muted.`);
+    
+    setTimeout(() => {
+      this.unmuteUser(user, channel, targetBridge);
+    }, 10 * 1000);
+  }
   
-  //   if (this.currentUser) {
-  //     if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, channelId)) {
-  //       await this.chatService.updatePassword(channelId, '');
-  //     }
-  //   }
-  // }
-  
-  // @SubscribeMessage('set-password')
-  // async onSetPassword(client: Socket, joinChannelDto: JoinChannelDto) {
-  //   await this.definePlayer(client);
-  
-  //   if (this.currentUser) {
-  //     if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, joinChannelDto.channel_id)) {
-  //       await this.chatService.setPasswordToChannel(joinChannelDto);
-  //     }
-  //   }
-  // }
+  private async unmuteUser(user: User, channel: Channel, targetBridge: UserChannelBridge) {
+    await this.chatService.updateMuteStatus(targetBridge, false);
 
-  // @SubscribeMessage('kickUser')
-  // async onKickUser(client: Socket, ucbDto: UcbDto) {
-  //   await this.definePlayer(client);
+    this.server.to(channel.channel_name).emit(`user ${user.nickname} is unmuted.`);
+  }
 
-  //   if (this.currentUser) {
-  //     if (this.chatService.isOwnerOfChannel(ucbDto.user_id, ucbDto.channel_id)) {
-  //       throw new UnauthorizedException(`user ${this.currentUser.user_id} cannot kick user ${ucbDto.user_id}`);
-  //     }
-      
-  //     if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, ucbDto.channel_id) || 
-  //     this.chatService.isAdminOfChannel(this.currentUser.user_id, ucbDto.channel_id)) {
-        
-  //       await this.chatService.deleteUCBridge(ucbDto.channel_id, ucbDto.user_id);
-  
-  //       let kickedUserSocket = await this.getSocketId(ucbDto.user_id);
-  //       if (kickedUserSocket) {
-  //         let rooms = await this.chatService.getRoomsForUser(ucbDto.user_id);
-  //         let allRooms = await this.chatService.getAllRooms(ucbDto.user_id);
-          
-  //         this.server.to(kickedUserSocket.id).emit('rooms', rooms);
-  //         this.server.to(kickedUserSocket.id).emit('allRooms', allRooms);
-  //       }
-  
-  //       let members = await this.chatService.getMembersByChannelId(ucbDto.channel_id, this.currentUser.user_id);
-  //       for (let x of this.connectedUsers) {
-  //         let userId = await x.handshake.query.token;
-  
-  //         userId = await this.authService.verifyToken(userId);
-  //         if (await this.chatService.isMember(ucbDto.channel_id, userId.id)) {
-  //           this.server.to(x.id).emit('members', members);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-  
-  // @SubscribeMessage('banUser') 
-  // async onBanUser(client: Socket, ucbDto: UcbDto) {
-  //   await this.definePlayer(client);
-
-  //   if (this.currentUser) {
-  //     if (this.chatService.isOwnerOfChannel(ucbDto.user_id, ucbDto.channel_id)) {
-  //       throw new UnauthorizedException(`user ${this.currentUser.user_id} cannot kick user ${ucbDto.user_id}`);
-  //     }
-      
-  //     if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, ucbDto.channel_id) || 
-  //     this.chatService.isAdminOfChannel(this.currentUser.user_id, ucbDto.channel_id)) {
-
-  //       await this.chatService.updateBanStatus(this.currentUser.user_id, ucbDto.channel_id, true);
-
-  //       let bannedSocket = await this.getSocketId(ucbDto.user_id);
-  //       if (bannedSocket) {
-  //         let rooms = await this.chatService.getRoomsForUser(ucbDto.user_id);
-  //         let allRooms = await this.chatService.getAllRooms(ucbDto.user_id);
-          
-  //         this.server.to(bannedSocket.id).emit('message', rooms);
-  //         this.server.to(bannedSocket.id).emit('allRooms', allRooms);
-  //       }
-      
-  //       let members = await this.chatService.getMembersByChannelId(ucbDto.channel_id, this.currentUser.user_id);
-  //       for (let x of this.connectedUsers) {
-  //         let userId = await x.handshake.query.token;
-  //         userId = await this.getSocketId(userId);
-  //         if (await this.chatService.isMember(ucbDto.channel_id, userId.id)) {
-  //           this.server.to(x.id).emit('members', members);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
-  // // @SubscribeMessage('unbanUser') <- 없어도 될듯?
-  
-  // @SubscribeMessage('muteUser')
-  // async onMuteUser(client: Socket, ucbDto: UcbDto) {
-  //   await this.definePlayer(client);
-
-  //   if (this.currentUser) {
-  //     if (this.chatService.isOwnerOfChannel(ucbDto.user_id, ucbDto.channel_id)) {
-  //       throw new UnauthorizedException(`user ${this.currentUser.user_id} cannot kick user ${ucbDto.user_id}`);
-  //     }
-
-  //     if (this.chatService.isOwnerOfChannel(this.currentUser.user_id, ucbDto.channel_id) || 
-  //     this.chatService.isAdminOfChannel(this.currentUser.user_id, ucbDto.channel_id)) {
-  //       await this.chatService.updateMuteStatus(ucbDto.user_id, ucbDto.channel_id, true);
-
-  //       //let mutedSocket = await this.getSocketId(ucbDto.user_id);
-  //       let members = await this.chatService.getMembersByChannelId(ucbDto.channel_id, this.currentUser.user_id);
-  //       for (let x of this.connectedUsers) {
-  //         let userId = await x.handshake.query.token;
-  //         userId = await this.getSocketId(userId);
-  //         if (await this.chatService.isMember(ucbDto.channel_id, userId.id)) {
-  //           this.server.to(x.id).emit('members', members);
-  //           let membership = {
-  //             channel_id: ucbDto.channel_id, 
-  //             user_id: ucbDto.user_id };
-  //           setTimeout(() => {
-  //             this.server.to(x.id).emit('unMuteUser', membership);
-  //           }, 10 * 1000);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-  
-  // @SubscribeMessage('unMuteUser')
-  // async onUnMuteUser(client: Socket, ucbDto: UcbDto) {
-  //   await this.definePlayer(client);
-
-  //   if (this.currentUser) {
-  //     await this.chatService.updateMuteStatus(ucbDto.user_id, ucbDto.channel_id, false);
-
-  //     let unMutedSocket = await this.getSocketId(ucbDto.user_id);
-  //     let members = await this.chatService.getMembersByChannelId(ucbDto.channel_id, ucbDto.user_id);
-  //     if (unMutedSocket) {
-  //       this.server.to(unMutedSocket.id).emit('members', members);
-  //     }
-
-  //     for (let x of this.connectedUsers) {
-  //       let userId = await x.handshake.query.token;
-  //       userId = await this.authService.verifyToken(userId);
-  //       if (await this.chatService.isMember(ucbDto.channel_id, userId.id)) {
-  //         this.server.to(x.id).emit('members', members);
-  //       }
-  //     }
-  //   }
-  // }
-
-  // @SubscribeMessage('inviteGame')
-
-
+  // @SubscribeMessage('invite-game')
+  // @SubscribeMessage('accept-game')
 }

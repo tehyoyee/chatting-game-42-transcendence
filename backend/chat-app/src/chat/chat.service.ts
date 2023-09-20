@@ -6,7 +6,6 @@ import { MessageRepository } from './message.repository';
 import { ChatGateway } from './chat.gateway';
 import { UcbRepository } from './ucb.repository';
 import { UserType } from './enum/user_type.enum';
-import { MemberDto } from './dto/member-dto';
 import { UserService } from 'src/user/user.service';
 import { UserChannelBridge } from './entity/user-channel-bridge.entity';
 import { AuthService } from 'src/auth/auth.service';
@@ -16,6 +15,7 @@ import { channel } from 'diagnostics_channel';
 import { JoinChannelDto, GroupChannelDto } from './dto/channel-dto';
 import { ChannelType } from './enum/channel_type.enum';
 import { DmDto, GroupMessageDto } from './dto/message-dto';
+import { UpdatePasswordDto } from './dto/update-dto';
 
 @Injectable()
 export class ChatService {
@@ -55,31 +55,6 @@ export class ChatService {
 
     async createUCBridge(user: User, channel: Channel, userType: UserType) {
         await this.ucbRepository.createUCBridge(user, channel, userType);
-    }
-
-    //
-    async getMembersByChannelId(channelId: number, userId: number): Promise<MemberDto[]> {
-        let membersObject: MemberDto[] = [];
-
-        if (await this.ucbRepository.getUcbByIds(userId, channelId)) {
-            const usersId = await this.ucbRepository
-            .createQueryBuilder('m')
-            .where('m.channel_id = :channelId', {channelId})
-            .select(['m.user_id', 'm.user_type'])
-            .getMany();
-
-            const members: User[] = [];
-            for (let id of usersId) {
-                let memberObject = {
-                    member: await this.userService.getProfileByUserId(id.user_id),
-                    type: id.user_type,
-                    is_banned: id.is_banned,
-                    is_muted: id.is_muted
-                }
-                membersObject.push(memberObject);
-            }
-        }
-        return membersObject; 
     }
 
     async getJoinedGroupChannelsOfUser(userId: number) {
@@ -128,57 +103,21 @@ export class ChatService {
         return await this.messageRepository.createDM(sender, channel, content);
     }
 
-    async getMessagesByChannelId(channelId: number, userId: number): Promise<Message[]> {
-        let messages: Message[] = [];
-        if (await this.isMember(channelId, userId)) {
-            const query = await this.messageRepository.createQueryBuilder('m')
-            .select(['m.content', 'm.user_id', 'm.channel_id'])
-            .where('m.channel_id = :channelId', {channelId})
-            .orderBy('m.created_at');
+    // async getMessagesByChannelId(channelId: number, userId: number): Promise<Message[]> {
+    //     let messages: Message[] = [];
+    //     if (await this.isMember(channelId, userId)) {
+    //         const query = await this.messageRepository.createQueryBuilder('m')
+    //         .select(['m.content', 'm.user_id', 'm.channel_id'])
+    //         .where('m.channel_id = :channelId', {channelId})
+    //         .orderBy('m.created_at');
 
-            messages = await query.getMany();
+    //         messages = await query.getMany();
 
-            //block 유저의 메세지 지우는 부분 필요
-        }
+    //         //block 유저의 메세지 지우는 부분 필요
+    //     }
     
-        return messages;
-    }
-
-    //
-    async getAllRooms(userId: number): Promise<Channel[]> {
-        const rooms = await this.channelRepository
-        .createQueryBuilder('r')
-        .select(['r.channel_id', 'r.channel_name', 'r.is_public', 'r.is_channel'])
-        .getMany();
-
-        let i = 0;
-        while (i < rooms.length) {
-            if ((rooms[i].is_public === false && await this.isMember(rooms[i].channel_id, userId)) || 
-            (rooms[i].is_public === true && await this.isBanned(rooms[i].channel_id, userId))) {
-                rooms.splice(i, 1);
-            }
-            else
-                i++;
-        }
-        return rooms;
-    }
-
-    //
-    async isMember(channelId: number, userId: number): Promise<UserChannelBridge> {
-        return await this.ucbRepository.getUcbByIds(userId, channelId);
-    }
-    
-    async isInThisChannel(userId: number, channelId: number): Promise<UserChannelBridge> {
-        return await this.ucbRepository.getUcbByIds(userId, channelId);
-    }
-
-    async isBanned(channelId: number, userId: number): Promise<boolean> {
-        const membership = await this.ucbRepository.getUcbByIds(userId, channelId);
-
-        if (membership && membership.is_banned === true)
-            return true;
-        return false;
-    }
+    //     return messages;
+    // }
 
     async deleteUCBridge(userId: number, channelId: number) {
         return await this.ucbRepository.deleteUCBridge(userId, channelId, );
@@ -196,10 +135,9 @@ export class ChatService {
         }
     }
 
-    async updateUserTypeOfUCBridge(userId: number, channelId: number, newType: UserType) {
-       await this.ucbRepository.updateUserTypeOfUCBridge(userId, channelId, newType);
+    async updateUserTypeOfUCBridge(targetUserId: number, channelId: number, newType: UserType) {
+       await this.ucbRepository.updateUserTypeOfUCBridge(targetUserId, channelId, newType);
     }
-
 
     async checkChannelPassword(channel: Channel, inputPwd: string): Promise<boolean> {
         if (await bcrypt.compare(inputPwd, channel.channel_pwd))
@@ -220,22 +158,6 @@ export class ChatService {
             return found2;
 
         return null;
-    }
-
-    async getDMs(senderId: number, receiverId: number): Promise<Message[]> {
-        let messages: Message[] = [];
-
-        //sender가 receiver로부터 block되었는지 확인해야 함
-        let channelName = "[DM]" + senderId + "&" + receiverId;
-        let found = await this.getChannelByName(channelName);
-        if (!found) {
-            channelName = "[DM]" + receiverId + "&" + senderId;
-            found = await this.getChannelByName(channelName);
-        }
-
-        messages = await this.getMessagesByChannelId(found.channel_id, senderId);
-
-        return messages;
     }
     
     async isOwnerOfChannel(userId: number, channelId: number) {
@@ -258,52 +180,25 @@ export class ChatService {
         return null;
     }
 
-    async updatePassword(channelId: number, newPassword: string): Promise<Channel> {
-        const channel = await this.getChannelById(channelId);
-
-        channel.salt = await bcrypt.genSalt();
-        channel.channel_pwd = await bcrypt.hash(newPassword, channel.salt);
-
-        await channel.save();
-        return channel;
+    async checkUserInThisChannel(userId: number, channelId: number): Promise<UserChannelBridge> {
+        return await this.ucbRepository.getUcbByIds(userId, channelId);
     }
 
-    async setPasswordToChannel(joinChannelDto: JoinChannelDto) {
-        const {channel_id, password} = joinChannelDto;
-
-        const channel = await this.channelRepository.getChannelById(channel_id);
-        if (!channel)
-            throw new NotFoundException(`channel ${channel_id} not found`);
-
-        channel.is_public = false;
-        channel.salt = await bcrypt.genSalt();
-        channel.channel_pwd = await bcrypt.hash(password, channel.salt);
-
-        await channel.save();
+    async updatePassword(channel: Channel, newPassword: string) {
+        await this.channelRepository.setPassword(channel, newPassword);
     }
 
-    async updateBanStatus(userId: number, channelId: number, newBanStatus: boolean): Promise<UserChannelBridge> {
-        const found = await this.ucbRepository.getUcbByIds(userId, channelId);
-        if (!found) {
-            throw new NotFoundException(`user ${userId} not found in channel ${channelId}`);
-        }
-        found.is_banned = newBanStatus;
-        await found.save();
-
-        return found;
+    async removePassword(channel: Channel) {
+        await this.channelRepository.unsetPassword(channel);
     }
 
-    async updateMuteStatus(userId: number, channelId: number, newMuteStatus: boolean): Promise<UserChannelBridge> {
-        const found = await this.ucbRepository.getUcbByIds(userId, channelId);
-        if (!found) {
-            throw new NotFoundException(`user ${userId} not found in channel ${channelId}`);
-        }
-        found.is_banned = newMuteStatus;
-        await found.save();
-
-        return found;
+    async updateBanStatus(bridge: UserChannelBridge, newBanStatus: boolean): Promise<UserChannelBridge> {
+        return await this.ucbRepository.updateBanStatus(bridge, newBanStatus);
     }
 
+    async updateMuteStatus(bridge: UserChannelBridge, newMuteStatus: boolean): Promise<UserChannelBridge> {
+        return await this.ucbRepository.updateMuteStatus(bridge, newMuteStatus);
+    }
 
     async getChannelByName(channelName: string): Promise<Channel> {
         return await this.channelRepository.getChannelByName(channelName);
@@ -312,10 +207,4 @@ export class ChatService {
     async getChannelById(id: number): Promise<Channel> {
         return await this.channelRepository.getChannelById(id);
     }
-
-    async JoinChannelById(id: number, user: User) {
-        return await this.channelRepository.JoinChannelById(id, user);
-
-    }
-
 }
