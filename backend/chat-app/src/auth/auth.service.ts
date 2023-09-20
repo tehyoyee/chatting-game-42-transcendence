@@ -104,8 +104,7 @@ export class AuthService {
 			const token = req.cookies['token'];
 
 			if (!token) {
-			  res.json({ loggedIn: false });
-				return;
+				throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
 			}
 			try {
 				const { payload } = this.jwtService.verify(token);
