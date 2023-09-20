@@ -5,8 +5,8 @@ import { Socket } from "socket.io-client";
 import { AuthService } from "src/auth/auth.service";
 import { User } from "src/user/entity/user.entity";
 import { UserService } from "src/user/user.service";
-import { IoAdapter } from '@nestjs/platform-socket.io';
 import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { Message } from "src/chat/entity/message.entity";
 
 // @WebSocketGateway()
 @WebSocketGateway({ namespace: '/game'})
@@ -17,9 +17,11 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		private userService: UserService,
 		) {}
 	
+	userMap = [];
 	gameSocketMap = new Map<number, number>(); // userid, socketid
 	gameRoomMap = new Map<number, string>(); // userid, room
-	gameQueue = [];
+	gameNormalQueue: string[] = [];
+	gameAdvancedQueue: string[] = [];
 
 	@WebSocketServer() // 소켓인스턴스를 준다
 	server: Server;
@@ -27,10 +29,37 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	onModuleInit() {
 		this.server.on('connection', (socket) => {
 			console.log(`socket_id = ${socket.id}`);
+			// socket.join('asdf');
 			console.log('Connected');
 		});
 	}
+	// async joinQueue(@MessageBody() body: any) {
 
+	@SubscribeMessage('joinQueue')
+	joinQueue(@ConnectedSocket() clientSocket: any, @MessageBody() body: any) {
+		// clientSocket.join('asdf');
+		// console.log(body);
+		// console.log(body.type);
+		// console.log(clientSocket);
+		if (body.type === 'normal') {
+			this.gameNormalQueue.push(body.clientSocket);
+			console.log(`added normalQueue user : ${body.clientSocket}`);
+			if (this.gameNormalQueue.length % 2 === 0) {
+				clientSocket.join('asdf');
+				console.log(`${this.gameNormalQueue[0]} and ${this.gameNormalQueue[1]} matched`);
+				this.gameNormalQueue = this.gameNormalQueue.slice(2);
+			}
+			console.log('AFter they joined', this.gameNormalQueue);
+		}
+		// console.log("asdf");
+	}
+
+	@SubscribeMessage('emitMessage')
+	message() {
+		console.log("broadcast");
+		// this.server.emit('onMessage', "heres");
+		this.server.to('asdf').emit('onMessage', "roomheres");
+	}
 	// accessToken: any;
 	// currentUser: User;
   
@@ -78,6 +107,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	}
   
 	handleDisconnect(client: any) {
+		console.log(client);
+		console.log(`${client} has left.`);
 	// 	// this.connectedUsers = this.connectedUsers.filter(user => user.id !== client.id);
 	}
 	

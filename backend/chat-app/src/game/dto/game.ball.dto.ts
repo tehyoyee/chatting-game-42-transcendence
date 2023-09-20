@@ -1,6 +1,8 @@
-// export class BallDto {
+export class BallDto {
 
-// 	width: number;
-// 	height: number;
-// 	x: (this.)
-// }
+	x: number;
+	y: number;
+	dx: number;
+	dy: number;
+	speed: number;
+}
