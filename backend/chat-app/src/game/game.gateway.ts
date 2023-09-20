@@ -68,18 +68,18 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	// }
   
   
-	// async handleConnection(client: Socket) {
+	async handleConnection(client: Socket) {
 	// 	await this.definePlayer(client);
   
 	// 	if (this.currentUser) {
 	// 		// client.data.currentUser = this.currentUser;
 	// 		// this.connectedUsers.push(client);
 	// 	}
-	// }
+	}
   
-	// handleDisconnect(client: any) {
+	handleDisconnect(client: any) {
 	// 	// this.connectedUsers = this.connectedUsers.filter(user => user.id !== client.id);
-	// }
+	}
 	
 	// @SubscribeMessage('gamequeue')
 	// movePlayer(_: Socket, info: string) {
