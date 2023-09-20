@@ -37,6 +37,7 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 				token: userToken,
 			},
 		}
+		console.log("socket connection request");
 		const chatSocket = io(chatUrl, socketOpt);
 		const gameSocket = io(gameUrl, socketOpt);
 

@@ -12,13 +12,13 @@ export default function Layout({
     <>
       <NavBar></NavBar>
       <Logout></Logout>
-			<SocketContextProvider>
-				<ComponentProtector>
+			<ComponentProtector>
+				<SocketContextProvider>
 					<div className="contentBox">
 						{children}
 					</div>
-				</ComponentProtector>
-			</SocketContextProvider>
+				</SocketContextProvider>
+			</ComponentProtector>
     </>
   );
 }
