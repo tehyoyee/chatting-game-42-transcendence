@@ -10,27 +10,28 @@ enum Type {
 
 export function ChatMenu() {
 	const [type, setType] = useState<Type>(Type.Public);
+	const { chatSocket } = useSocketContext();
 
-	console.log(`chatMenu render type=${type}`);
 	function handleTypeChange(e: any) {
 		switch (Number(e.target.value)) {
 			case Type.Public:
-				console.log("pub");
 				setType(Type.Public);
 				break;
 			case Type.Private:
-				console.log("pri");
 				setType(Type.Private);
 				break;
 			case Type.Password:
-				console.log("pwd");
 				setType(Type.Password);
 				break;
 		}
 	}
+
+	function handleCreation() {
+	}
+
 	return (
 		<div className={styles.chatMenu}>
-			<form>
+			<form onSubmit={(e) => {e.preventDefault(); handleCreation}}>
 				<label 
 					htmlFor="nameField">채팅방 이름</label>
 				<input 
@@ -68,17 +69,23 @@ export function ChatMenu() {
 							style={{
 								margin: "6px",
 								border: "solid 1px black",
+								marginBottom: "16px", /* to align bottom button */
 							}}
 							type="text"
 							pattern="[a-zA-Z0-9]{4,16}"
 							required
 						/>
+					</> ||
+					<>
+					{/*to align bottom button*/}
+						<br />
+						<br />
 					</>
 				}
 				<button
 					style={{
 						position: "relative",
-						top: "100px",
+						top: "200px",
 						padding: "2px",
 						border: "solid 1px black",
 						backgroundColor: "lightgray",
