@@ -12,10 +12,15 @@ export class RelationService {
 
     async addFriend(sender: User, receiverId: number): Promise<Relation> {
         const already = await this.relationRepository.getRelationByIds(sender.user_id, receiverId);
-        if (already && already.ralation_type === RelationType.FRIEND) {
+        if (already && already.relation_type === RelationType.FRIEND) {
             //exception handler
-            this.logger.debug('Friend Already');
-            throw new HttpException('Friend Already', HttpStatus.UNAUTHORIZED);
+            this.logger.debug('Friended Already');
+            throw new HttpException('Friended Already', HttpStatus.UNAUTHORIZED);
+        }
+        if (already && already.relation_type === RelationType.BLOCK) {
+            //exception handler
+            this.logger.debug('Unblock First');
+            throw new HttpException('Unblock First', HttpStatus.UNAUTHORIZED);
         }
 
         //sender가 reeiver를 블록했는지 검사
@@ -26,10 +31,10 @@ export class RelationService {
 
     async addBlock(sender: User, receiverId: number): Promise<Relation> {
         const already = await this.relationRepository.getRelationByIds(sender.user_id, receiverId);
-        if (already && already.ralation_type === RelationType.BLOCK) {
+        if (already && already.relation_type === RelationType.BLOCK) {
             //exception handler
-            this.logger.debug('Block Already');
-            throw new HttpException('Block Already', HttpStatus.UNAUTHORIZED);
+            this.logger.debug('Blocked Already');
+            throw new HttpException('Blocked Already', HttpStatus.UNAUTHORIZED);
         }
 
         //sender가 receiver를 친구등록했는지 검사
