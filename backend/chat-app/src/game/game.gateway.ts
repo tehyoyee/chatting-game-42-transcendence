@@ -44,9 +44,14 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				const playerIdRight = this.gameNormalQueue[1];
 				const playerSocketLeft = this.userSocketMap.get(playerIdLeft);
 				const playerSocketRight = this.userSocketMap.get(playerIdRight);
+				const newRoomName = playerSocketLeft.id + playerSocketRight.id;
+				console.log("Matching Created !!!");
 				console.log(`playerLeft: ${playerIdLeft}`);
 				console.log(`playerRight: ${playerIdRight}`);
-				console.log("Matching Created !!!");
+				console.log(`Game Room ${newRoomName} created !!`);
+				playerSocketLeft.join(newRoomName);
+				playerSocketRight.join(newRoomName);
+				this.server.to(newRoomName).emit('gameStart');
 				this.gameNormalQueue = this.gameNormalQueue.slice(2);
 			}
 		}
@@ -58,21 +63,15 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		console.log(`[Game] gameQueue : ${user.username} removed.`);
 		for (let i = 0; i < this.gameNormalQueue.length; i++) {
 			if (this.gameNormalQueue[i] === user.user_id) {
-				delete this.gameNormalQueue[i];
+				this.gameNormalQueue.splice(i, 1);
 			}
 		}
 		for (let i = 0; i < this.gameAdvancedQueue.length; i++) {
 			if (this.gameAdvancedQueue[i] === user.user_id) {
-				delete this.gameAdvancedQueue[i];
+				this.gameAdvancedQueue.splice(i, 1);
 			}
 		}
-		// 		client.join('asdf');
-		// 		console.log(`${this.gameNormalQueue[0]} and ${this.gameNormalQueue[1]} matched`);
-		// 	}
-		// } else if (body.type === 'ADVANCED') {
-		// 	this.gameAdvancedQueue.push(body.client.id);
-		// }
-		// console.log("asdf");
+		console.log("AfterExitQueue", this.gameNormalQueue);
 	}
 
 	@SubscribeMessage('emitMessage')
@@ -95,12 +94,12 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		console.log(`[Game] userlist : ${user.username} removed.`);
 		for (let i = 0; i < this.gameNormalQueue.length; i++) {
 			if (this.gameNormalQueue[i] === user.user_id) {
-				delete this.gameNormalQueue[i];
+				this.gameNormalQueue.splice(i, 1);
 			}
 		}
 		for (let i = 0; i < this.gameAdvancedQueue.length; i++) {
 			if (this.gameAdvancedQueue[i] === user.user_id) {
-				delete this.gameAdvancedQueue[i];
+				this.gameAdvancedQueue.splice(i, 1);
 			}
 		}
 	}
