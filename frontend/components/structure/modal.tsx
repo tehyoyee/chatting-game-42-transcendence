@@ -18,8 +18,20 @@ type ModalContextType = {
 // TODO: modal close on nickname change confirm
 const ModalContext = createContext<ModalContextType | null>(null);
 
-export default function Modal({ onClose, children, title = "", style = {} }: { onClose: Function, children: React.ReactNode, title?: string | null, style?: CSSRuleObject }) {
-	const modalRoot = document.querySelector('#modal-root');
+export default function Modal({ 
+	onClose, 
+	children, 
+	id = "modal-root", 
+	title = "", 
+	style = {} 
+}: { 
+	onClose: Function, 
+	children: React.ReactNode, 
+	id?: string, 
+	title?: string | null, 
+	style?: CSSRuleObject 
+}) {
+	const modalRoot = document.querySelector(`#${id}`);
 	const modalContent = (
 		<div className={`${styles.modalOverlay}`}>
 			<div 
