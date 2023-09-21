@@ -76,12 +76,12 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
       <div className={styles.userProfileContainer}>
         <div className={styles.userProfile}>
           <Image src={defaultImage} alt='profile image' className={styles.userImage} />
-          <div className={styles.userText}>user1</div>
+          <div className={styles.userText}></div>
         </div>
-        <div className={styles.userProfile}>
+        { ready && <div className={styles.userProfile}>
           <Image src={defaultImage} alt='profile image' className={styles.userImage} />
-          <div className={styles.userText}>user2</div>
-        </div>
+          <div className={styles.userText}></div>
+        </div> }
       </div>
       {loading && <p>Loading...</p>}
       {!ready && <DotLoader></DotLoader>}
