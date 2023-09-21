@@ -1,7 +1,6 @@
 import { OnModuleInit } from "@nestjs/common";
 import { WebSocketServer, MessageBody, SubscribeMessage, WebSocketGateway } from "@nestjs/websockets";
-import { Server } from 'socket.io';
-import { Socket } from "socket.io-client";
+import { Server, Socket } from 'socket.io';
 import { AuthService } from "src/auth/auth.service";
 import { User } from "src/user/entity/user.entity";
 import { UserService } from "src/user/user.service";
@@ -18,10 +17,10 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		) {}
 	
 	userMap = [];
-	gameSocketMap = new Map<number, number>(); // userid, socketid
+	userSocketMap = new Map<number, Socket>(); // userid, socketid
 	gameRoomMap = new Map<number, string>(); // userid, room
-	gameNormalQueue: string[] = [];
-	gameAdvancedQueue: string[] = [];
+	gameNormalQueue: number[] = [];
+	gameAdvancedQueue: number[] = [];
 
 	@WebSocketServer() // 소켓인스턴스를 준다
 	server: Server;
@@ -29,28 +28,38 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	onModuleInit() {
 		this.server.on('connection', (socket) => {
 			console.log(`socket_id = ${socket.id}`);
-			// socket.join('asdf');
 			console.log('Connected');
 		});
 	}
 	// async joinQueue(@MessageBody() body: any) {
 
 	@SubscribeMessage('joinQueue')
-	joinQueue(@ConnectedSocket() clientSocket: any, @MessageBody() body: any) {
-		// clientSocket.join('asdf');
-		// console.log(body);
-		// console.log(body.type);
-		// console.log(clientSocket);
-		if (body.type === 'normal') {
-			this.gameNormalQueue.push(body.clientSocket);
-			console.log(`added normalQueue user : ${body.clientSocket}`);
-			if (this.gameNormalQueue.length % 2 === 0) {
-				clientSocket.join('asdf');
-				console.log(`${this.gameNormalQueue[0]} and ${this.gameNormalQueue[1]} matched`);
+	async joinQueue(@ConnectedSocket() client: any, @MessageBody() body: any) {
+		const user = await this.socketToUser(client);
+		console.log(body);
+		if (body === 'NORMAL') {
+			this.gameNormalQueue.push(user.user_id);
+			console.log(`added normalQueue user : ${user.username}`);
+			if (this.gameNormalQueue.length >= 2) {
+				const playerIdLeft = this.gameNormalQueue[0];
+				const playerIdRight = this.gameNormalQueue[1];
+				const playerSocketLeft = this.userSocketMap.get(playerIdLeft);
+				const playerSocketRight = this.userSocketMap.get(playerIdRight);
+				console.log(`playerLeft: ${playerIdLeft}`);
+				console.log(`playerRight: ${playerIdRight}`);
+				console.log("Matching Created !!!");
 				this.gameNormalQueue = this.gameNormalQueue.slice(2);
+
 			}
-			console.log('AFter they joined', this.gameNormalQueue);
 		}
+	
+
+		// 		client.join('asdf');
+		// 		console.log(`${this.gameNormalQueue[0]} and ${this.gameNormalQueue[1]} matched`);
+		// 	}
+		// } else if (body.type === 'ADVANCED') {
+		// 	this.gameAdvancedQueue.push(body.client.id);
+		// }
 		// console.log("asdf");
 	}
 
@@ -98,18 +107,28 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
   
   
 	async handleConnection(client: Socket) {
-	// 	await this.definePlayer(client);
-  
-	// 	if (this.currentUser) {
-	// 		// client.data.currentUser = this.currentUser;
-	// 		// this.connectedUsers.push(client);
-	// 	}
+		const user = await this.socketToUser(client);
+		this.userSocketMap.set(user.user_id, client);
 	}
   
-	handleDisconnect(client: any) {
-		console.log(client);
-		console.log(`${client} has left.`);
-	// 	// this.connectedUsers = this.connectedUsers.filter(user => user.id !== client.id);
+	async handleDisconnect(client: any) {
+		console.log(`[Game] ${client.id} has left.`);
+		const user = await this.socketToUser(client);
+		this.userSocketMap.delete(user.user_id);
+
+		console.log(`[Game] userlist : ${user.username} removed.`);
+		for (let i = 0; i < this.gameNormalQueue.length; i++) {
+			if (this.gameNormalQueue[i] === user.user_id) {
+				delete this.gameNormalQueue[i];
+				break;
+			}
+		}
+		for (let i = 0; i < this.gameAdvancedQueue.length; i++) {
+			if (this.gameAdvancedQueue[i] === user.user_id) {
+				delete this.gameAdvancedQueue[i];
+				break;
+			}
+		}
 	}
 	
 	// @SubscribeMessage('gamequeue')
@@ -126,5 +145,19 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	// 		content: body,
 	// 	});
 	// }
-
+	private async socketToUser(client: Socket): Promise<User> {
+		const token: any = client.handshake.query.token;
+		if (!token)
+		  return null;
+	  
+		try {
+		  const decoded = await this.authService.verifyToken(token);
+		  const user: User = await this.userService.getProfileByUserId(decoded.id);
+		  return user;
+		}
+		catch (error) {
+			console.log("error");
+			return undefined;
+		}
+	}
 }
