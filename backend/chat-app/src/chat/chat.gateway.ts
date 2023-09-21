@@ -21,7 +21,7 @@ import { Channel } from './entity/channel.entity';
 	// path: "/api/socket.io",
 	namespace: "/chat",
 	cors: {
-	 	origin: "localhost:3001",
+	 	origin: "http://localhost:3001",
 	 	credentials: true,
 	 	allowedHeaders: 'Content-Type, Authorization, Cookie',
 	 	methods: ["GET", "POST"],
