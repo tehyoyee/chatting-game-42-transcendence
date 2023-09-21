@@ -24,7 +24,6 @@ import { UserAchievement } from './profile';
   };
 	useEffect(() => {
 		// fetch channel list and update state
-		//  const [chatRooms, setChatRooms] = useFetch(chatReqUrl, test);
 	}, []);
 	const [curRoomId, setCurRoomId] = useState(chatRooms?.curRoomId);
 */

@@ -85,3 +85,11 @@ fieldset input[type='radio'] {
 fieldset label {
 	margin: 4px;
 }
+
+.overflow-y-scroll {
+	overflow-y: scroll;
+}
+
+.overflow-x-hidden {
+	overflow-x: hidden;
+}
