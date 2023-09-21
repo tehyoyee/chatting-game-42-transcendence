@@ -10,8 +10,8 @@ FILTER				= /dev/null
 endif
 
 all:
-	$(MAKE) front FILTER="> /dev/null" &
-	$(MAKE) back FILTER="> /dev/null" &
+	$(MAKE) front FILTER="> /dev/null" #&
+	$(MAKE) back FILTER="> /dev/null" #&
 
 front: $(FRONT_MODULE)
 	cd $(FRONT_PATH) && npm run dev -- -p 3001 $(FILTER)
