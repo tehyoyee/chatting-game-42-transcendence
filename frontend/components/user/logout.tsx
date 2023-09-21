@@ -33,6 +33,7 @@ export default function Logout() {
 			console.log(err);
 		});
 		sessionStorage.removeItem('tfa');
+		document.cookie = '';
     await updateLoginState();
     router.push('/');
   }, []);

@@ -3,10 +3,16 @@ import styles from '@/styles/chat_manage.module.css';
 import useSocketContext from '@/lib/socket';
 
 enum Type {
-	Public = 1,
+	Public = 0,
 	Private,
-	Password,
+	Protected,
 };
+
+const TypeToString: string[] = [
+	"public",
+	"private",
+	"protected",
+];
 
 const evt_create_normal = "create-group-channel";
 const evt_create_dm = "create-dm-channel";
@@ -17,9 +23,12 @@ export function ChatMenu() {
 
 	// NOTE: is it necessary to check socket established?
 	useEffect(() => {
-		if (!chatSocket) {
-		}
-	}, []);
+		if (!chatSocket) return;
+			chatSocket.off('creation-success');
+			chatSocket.off('creation-fail');
+			chatSocket.on('creation-success', (data) => {console.log(`생성 성공: ${JSON.stringify(data)}`)});
+			chatSocket.on('creation-fail', (data) => {alert(`생성 실패: ${JSON.stringify(data)}`);});
+	}, [chatSocket]);
 
 	function handleTypeChange(e: any) {
 		switch (Number(e.target.value)) {
@@ -29,8 +38,8 @@ export function ChatMenu() {
 			case Type.Private:
 				setChatType(Type.Private);
 				break;
-			case Type.Password:
-				setChatType(Type.Password);
+			case Type.Protected:
+				setChatType(Type.Protected);
 				break;
 		}
 	}
@@ -45,26 +54,31 @@ export function ChatMenu() {
 			console.error("chatsocket error");
 			return;
 		}
+
 		switch (chatType) {
 			case Type.Public:
-			case Type.Private:
+				console.log(TypeToString[chatType]);
 				chatSocket.emit(evt_create_normal, {
 					channelName: name,
-					channelType: chatType,
+					channelType: TypeToString[chatType],
 				});
 				break;
-			case Type.Password:
+			case Type.Private:
+				chatSocket.emit(evt_create_dm, {
+					channelName: name,
+					channelType: TypeToString[chatType],
+				});
+				break;
+			case Type.Protected:
 				chatSocket.emit(evt_create_normal, {
 					channelName: name,
-					channelType: chatType,
+					channelType: TypeToString[chatType],
 					password: password,
 				});
 				break;
 		}
 		console.log(`${chatType}: chat creation request`);
 		if (!chatSocket) return;
-		chatSocket.on('join', () => {});
-		chatSocket.on('creation_fail', () => {});
 
 //		chatSocket.emit(evt_create_normal, formData);
 	}
@@ -98,12 +112,12 @@ export function ChatMenu() {
 					</div>
 
 					<div>
-						<input type='radio' id='password' name='type' value={Type.Password}/>
+						<input type='radio' id='password' name='type' value={Type.Protected}/>
 						<label htmlFor='password'>With Password</label>
 					</div>
 				</fieldset>
 				{
-					(chatType == Type.Password) &&
+					(chatType == Type.Protected) &&
 						<>
 							<label 
 								htmlFor="nameField">비밀번호
