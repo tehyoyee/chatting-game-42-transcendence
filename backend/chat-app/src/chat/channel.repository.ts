@@ -24,6 +24,10 @@ export class ChannelRepository extends Repository<Channel> {
             newChannel.salt = await bcrypt.genSalt();
             newChannel.channel_pwd = await bcrypt.hash(password, newChannel.salt);
         }
+        if (channelType === ChannelType.PUBLIC) {
+            newChannel.salt = '';
+            newChannel.channel_pwd = '';
+        }
         await newChannel.save();
 
         return newChannel;

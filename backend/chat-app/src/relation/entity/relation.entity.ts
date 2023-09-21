@@ -8,7 +8,7 @@ export class Relation extends BaseEntity {
     relation_id: number;
 
     @Column()
-    ralation_type: RelationType;
+    relation_type: RelationType;
     
     @Column({ name: 'sender_id' })
     sender_id: number;

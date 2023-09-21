@@ -12,7 +12,7 @@ export class RelationRepository extends Repository<Relation> {
 
     async addFriend(sender: User, receiverId: number): Promise<Relation> {
         const newRelation = new Relation();
-        newRelation.ralation_type = RelationType.FRIEND;
+        newRelation.relation_type = RelationType.FRIEND;
         newRelation.sender_id = sender.user_id;
         newRelation.receiver_id = receiverId;
         newRelation.sender = sender;
@@ -23,7 +23,7 @@ export class RelationRepository extends Repository<Relation> {
 
     async addBlock(sender: User, receiverId: number): Promise<Relation> {
         const newRelation = new Relation();
-        newRelation.ralation_type = RelationType.BLOCK;
+        newRelation.relation_type = RelationType.BLOCK;
         newRelation.sender_id = sender.user_id;
         newRelation.receiver_id = receiverId;
         newRelation.sender = sender;

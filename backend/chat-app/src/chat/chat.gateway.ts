@@ -21,7 +21,7 @@ import { Channel } from './entity/channel.entity';
 	// path: "/api/socket.io",
 	namespace: "/chat",
 	cors: {
-	 	origin: "localhost:3001",
+	 	origin: "http://localhost:3001",
 	 	credentials: true,
 	 	allowedHeaders: 'Content-Type, Authorization, Cookie',
 	 	methods: ["GET", "POST"],
@@ -45,14 +45,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (!user) {
     // NOTE: exception is not handled and program stops
-      //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // //exception handler
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+
+      client.emit('creation-fail', 'Unidentified User Error in handleConnection');
 
       //가능한 방법들
       //0. throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED); auth모듈에 있는 HttpException.filter.ts로 감
-      //1. return { statusCode: HttpStatus.UNAUTHORIZED, message: 'Unidentified User' };
-      //2. client.disconnect(); 에러 표현 없이 소켓 disconnect
+      // 1. return { statusCode: HttpStatus.UNAUTHORIZED, message: 'Unidentified User' };
+      //2. client.disconnect(); 에러 표현 없이 소켓 disconnect 안됨
       //3. wsException() 날리기
       //4. 그냥 return ;
     }
@@ -115,64 +117,78 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     @MessageBody() groupChannelDto: GroupChannelDto) {
     const user = await this.socketToUser(client);
     if (!user) {
+      //이벤트명 'creation-fail' 로 통일해서 메세지만 다르게 보내기
+      //client.emit('creation-fail', 'fail');
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onCreateGroupChannel');
     }
   
     const duplicate = await this.chatService.getChannelByName(groupChannelDto.channelName);
     if (duplicate) {
       //exception handler
-      this.logger.debug('`Duplicate Channel Name`');
-      throw new HttpException(`Duplicate Channel Name`, HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Duplicate Channel Name');
+      // throw new HttpException(`Duplicate Channel Name`, HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Duplicate Channel Name Error in onCreateGroupChannel');
     }
   
     const newChannel = await this.chatService.createGroupChannel(user, groupChannelDto);
   
+    //성공 했을 때 채널 고유 아이디를 그 클라이언트한테 emit
+    client.emit('creation-success', newChannel.channel_id);
     client.join(newChannel.channel_name);
     this.server.to(newChannel.channel_name).emit("join", user.username);
 
-    return newChannel;
+    //return newChannel;
   }
     
   @SubscribeMessage('create-dm-channel')
-  async onCreateDMhannel(
+  async onCreateDmChannel(
     @ConnectedSocket() client: Socket,
     @MessageBody()dmChannelDto: DmChannelDto) {
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onCreateDmChannel');
     }
     
     const exist = await this.chatService.checkDmRoomExists(user.user_id, dmChannelDto.receiverId);
     if (exist) {
       //exception handler
-      this.logger.debug('dmRoom already exists');
-      throw new HttpException('dmRoom already exists', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('dmRoom already exists');
+      // throw new HttpException('dmRoom already exists', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'dmRoom already exists Error in onCreateDmChannel');
     }
-  
+    
     const newChannel = await this.chatService.createDmChannel(user, user.user_id, dmChannelDto.receiverId);
     const receiver = await this.userService.getProfileByUserId(dmChannelDto.receiverId);
     if (!receiver) {
       //exception handler
-      this.logger.debug('receiver not found.');
-      throw new HttpException('receiver not found.', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('receiver not found.');
+      // throw new HttpException('receiver not found.', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'receiver not found Error in onCreateDmChannel');
     }
     const receiverSocket = this.userIdToSocket(receiver.user_id);
     if (!receiverSocket) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onCreateDmChannel');
     }
   
     client.join(newChannel.channel_name);
     receiverSocket.join(newChannel.channel_name);
+
+    client.emit('creation-success', newChannel.channel_id);
+    receiverSocket.emit('creation-success', newChannel.channel_id);
+
     this.server.to(newChannel.channel_name).emit("join", user.nickname);
     this.server.to(newChannel.channel_name).emit("join", receiver.nickname);
   
-    return newChannel;
+    //return newChannel;
   }
     
   @SubscribeMessage('join-group-channel')
@@ -182,34 +198,39 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onJoinChannel');
     }
-
+    
     const bridge = await this.chatService.checkUserInThisChannel(user.user_id, joinChannelDto.channelId);
     if (bridge.is_banned) {
-      this.logger.debug('Bannde User');
-      throw new HttpException('Bannde User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Bannde User');
+      // throw new HttpException('Bannde User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Bannde User Error in onJoinChannel');
     }
-
+    
     const channel = await this.chatService.getChannelById(joinChannelDto.channelId);
     if (!channel) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Channel');
+      // throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Channel Error in onJoinChannel');
     }
-
+    
     if (channel.channel_type === ChannelType.PROTECTED) {
       if (!(await this.chatService.checkChannelPassword(channel, joinChannelDto.password))) {
         //exception handler
-      this.logger.debug('Incorrect Password');
-      throw new HttpException('Incorrect Password', HttpStatus.UNAUTHORIZED);
+        // this.logger.debug('Incorrect Password');
+        // throw new HttpException('Incorrect Password', HttpStatus.UNAUTHORIZED);
+        client.emit('creation-fail', 'Incorrect Password Error in onJoinChannel');
       }
     }
 
     await this.chatService.createUCBridge(user, channel, UserType.MEMBER);
 
     client.join(channel.channel_name);
+    client.emit('creation-success', channel.channel_id);
     this.server.to(channel.channel_name).emit("join", user.nickname);
   }
  
@@ -220,34 +241,39 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onPostGroupMessage');
     }
-
+    
     if (groupMessageDto.content === '') {
       //exception handler
-      this.logger.debug('Empty Content');
-      throw new HttpException('Empty Content', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Empty Content');
+      // throw new HttpException('Empty Content', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Empty Content Error in onPostGroupMessage');
     }
     const channel = await this.chatService.getChannelById(groupMessageDto.channel_id);
     if (!channel) {
       //exception handler
-      this.logger.debug('Unexist Channel');
-      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Channel');
+      // throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Channel Error in onPostGroupMessage');
     }
-
+    
     const bridge = await this.chatService.checkUserInThisChannel(user.user_id, channel.channel_id);
     if (!bridge || bridge.is_muted || bridge.is_banned) { //is_banned는 검사 안해도 될 듯
       //exception handler
-      this.logger.debug('Cannot Post Message');
-      throw new HttpException('Cannot Post Message', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Cannot Post Message');
+      // throw new HttpException('Cannot Post Message', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Cannot Post Message Error in onPostGroupMessage');
     }
     //블락 검사 필요
 
     const newMessage = await this.chatService.createGroupMessage(user, channel, groupMessageDto.content);
 
     this.server.to(channel.channel_name).emit('message', newMessage);
-    return newMessage;
+    client.emit('creation-success', channel.channel_id);
+    //return newMessage;
   }
 
   @SubscribeMessage('post-dm')
@@ -257,27 +283,31 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onPostDm');
     } 
-
+    
     if (dmDto.content === '') {
       //exception handler
-      this.logger.debug('Empty Content');
-      throw new HttpException('Empty Content', HttpStatus.UNAUTHORIZED); 
+      // this.logger.debug('Empty Content');
+      // throw new HttpException('Empty Content', HttpStatus.UNAUTHORIZED); 
+      client.emit('creation-fail', 'Empty Content Error in onPostDm');
     }
     const channel = await this.chatService.checkDmRoomExists(user.user_id, dmDto.receiver_id);
     if (!channel) {
       //exception handler
-      this.logger.debug('Unexist Channel');
-      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Channel');
+      // throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Channel Error in onPostDm');
     }
     // block 검사 필요
 
     const newMessage = await this.chatService.createDM(user, channel, dmDto.content);
 
     this.server.to(channel.channel_name).emit('message', newMessage);
-    return newMessage;
+    client.emit('creation-success', channel.channel_id);
+    //return newMessage;
   }
 
   @SubscribeMessage('leave-channel')
@@ -287,26 +317,30 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onLeaveChannel');
     }
-
+    
     const bridge = await this.chatService.checkUserInThisChannel(user.user_id, channelId);
     if (!bridge) {
       //exception handler
-      this.logger.debug('Unexist Bridge');
-      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Bridge');
+      // throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Bridge Error in onLeaveChannel');
     }
-
+    
     const channel = await this.chatService.getChannelById(channelId);
     if (!channel) {
       //exception handler
-      this.logger.debug('Unexist Channel');
-      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Channel');
+      // throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Channel Error in onLeaveChannel');
     }
 
     await this.chatService.deleteUCBridge(user.user_id, channelId);
     client.leave(channel.channel_name);
+    client.emit('creation-success', channel.channel_id);
     this.server.to(channel.channel_name).emit(`user ${user.nickname} has left`);
 
     await this.chatService.deleteChannelIfEmpty(channelId);
@@ -319,32 +353,37 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onSetAdmin');
     }
-
+    
     const bridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
     if (!bridge) {
       //exception handler
-      this.logger.debug('Unexist Bridge');
-      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Bridge');
+      // throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onSetAdmin');
     }
     if (bridge.user_type !== UserType.OWNER) {
       //exception handler
-      this.logger.debug('Cannot Set Admin');
-      throw new HttpException('Cannot Set Admin', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Cannot Set Admin');
+      // throw new HttpException('Cannot Set Admin', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Cannot Set Admin Error in onSetAdmin');
     }
-
+    
     const channel = await this.chatService.getChannelById(updateUserInfoDto.channelId);
     if (!channel) {
       //exception handler
-      this.logger.debug('Unexist Channel');
-      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Channel');
+      // throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Channel Error in onSetAdmin');
     }
 
     await this.chatService.updateUserTypeOfUCBridge(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId, UserType.ADMIN);
 
     const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
+    client.emit('creation-success', channel.channel_id);
     this.server.to(channel.channel_name).emit("admin", targetUser.nickname);
   }
 
@@ -355,36 +394,42 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onSetPassword');
     }
-
+    
     if (updatePasswordDto.password === '') {
       //exception handler
-      this.logger.debug('Empty Password');
-      throw new HttpException('Empty Password', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Empty Password');
+      // throw new HttpException('Empty Password', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Empty Password Error in onSetPassword');
     }
-
+    
     const bridge = await this.chatService.checkUserInThisChannel(user.user_id, updatePasswordDto.channelId);
     if (!bridge) {
       //exception handler
-      this.logger.debug('Unexist Bridge');
-      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Bridge');
+      // throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Bridge Error in onSetPassword');
     }
     if (bridge.user_type !== UserType.OWNER) {
       //exception handler
-      this.logger.debug('Cannot Set Password');
-      throw new HttpException('Cannot Set Password', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Cannot Set Password');
+      // throw new HttpException('Cannot Set Password', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Cannot Set Password Error in onSetPassword');
     }
-
+    
     const channel = await this.chatService.getChannelById(updatePasswordDto.channelId);
     if (!channel) {
       //exception handler
-      this.logger.debug('Unexist Channel');
-      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Channel');
+      // throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Channel Error in onSetPassword');
     }
 
     await this.chatService.updatePassword(channel, updatePasswordDto.password);
+    client.emit('creation-success', channel.channel_id);
     this.server.to(channel.channel_name).emit('password setted');
   }
 
@@ -395,30 +440,35 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onChangePassword');
     }
-
+    
     const bridge = await this.chatService.checkUserInThisChannel(user.user_id, updatePasswordDto.channelId);
     if (!bridge) {
       //exception handler
-      this.logger.debug('Unexist Bridge');
-      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Bridge');
+      // throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Bridge Error in onChangePassword');
     }
     if (bridge.user_type !== UserType.OWNER) {
       //exception handler
-      this.logger.debug('Cannot Set Password');
-      throw new HttpException('Cannot Set Password', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Cannot Set Password');
+      // throw new HttpException('Cannot Set Password', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Cannot Set Password Error in onChangePassword');
     }
-
+    
     const channel = await this.chatService.getChannelById(updatePasswordDto.channelId);
     if (!channel) {
       //exception handler
-      this.logger.debug('Unexist Channel');
-      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Channel');
+      // throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Channel Error in onChangePassword');
     }
 
     await this.chatService.updatePassword(channel, updatePasswordDto.password);
+    client.emit('creation-success', channel.channel_id);
     this.server.to(channel.channel_name).emit('password updated');
   }
 
@@ -429,30 +479,35 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onRemovePassword');
     }
-
+    
     const bridge = await this.chatService.checkUserInThisChannel(user.user_id, channelId);
     if (!bridge) {
       //exception handler
-      this.logger.debug('Unexist Bridge');
-      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Bridge');
+      // throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Bridge Error in onRemovePassword');
     }
     if (bridge.user_type !== UserType.OWNER) {
       //exception handler
-      this.logger.debug('Cannot Set Password');
-      throw new HttpException('Cannot Set Password', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Cannot Set Password');
+      // throw new HttpException('Cannot Set Password', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Cannot Set Password Error in onRemovePassword');
     }
-
+    
     const channel = await this.chatService.getChannelById(channelId);
     if (!channel) {
       //exception handler
-      this.logger.debug('Unexist Channel');
-      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Channel');
+      // throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Channel Error in onRemovePassword');
     }
 
     await this.chatService.removePassword(channel);
+    client.emit('creation-success', channel.channel_id);
     this.server.to(channel.channel_name).emit('password removed');
   }
 
@@ -463,48 +518,56 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onKickUser');
     }
-
+    
     const channel = await this.chatService.getChannelById(updateUserInfoDto.channelId);
     if (!channel) {
       //exception handler
-      this.logger.debug('Unexist Channel');
-      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Channel');
+      // throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Channel Error in onKickUser');
     }
     if (channel.channel_type === ChannelType.DM) {
       //exception handler
-      this.logger.debug('Cannot Kick User On DM Channel');
-      throw new HttpException('Cannot Kick User On DM Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Cannot Kick User On DM Channel');
+      // throw new HttpException('Cannot Kick User On DM Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Cannot Kick User On DM Channel Error in onKickUser');
     }
-
+    
     const userBridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
     if (!userBridge) {
       //exception handler
-      this.logger.debug('Unexist Bridge');
-      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Bridge');
+      // throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Bridge Error in onKickUser');
     }
     if (userBridge.user_type !== UserType.OWNER && userBridge.user_type !== UserType.ADMIN) {
       //exception handler
-      this.logger.debug('Member Cannot Kick User');
-      throw new HttpException('Member Cannot Kick User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Member Cannot Kick User');
+      // throw new HttpException('Member Cannot Kick User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Member Cannot Kick User Error in onKickUser');
     }
-
+    
     const targetBridge = await this.chatService.checkUserInThisChannel(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
     if (!targetBridge) {
       //exception handler
-      this.logger.debug('Unexist Bridge');
-      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Bridge');
+      // throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Bridge Error in onKickUser');
     }
     if (targetBridge.user_type === UserType.OWNER) {
       //exception handler
-      this.logger.debug('Cannot Kick Owner');
-      throw new HttpException('Cannot Kick Owner', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Cannot Kick Owner');
+      // throw new HttpException('Cannot Kick Owner', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Cannot Kick Owner Error in onKickUser');
     }
 
     await this.chatService.deleteUCBridge(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
     client.leave(channel.channel_name);
+    client.emit('creation-success', channel.channel_id);
     this.server.to(channel.channel_name).emit(`user ${user.nickname} is kicked.`);
   }
 
@@ -515,54 +578,63 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onBanUser');
     }
-
+    
     const channel = await this.chatService.getChannelById(updateUserInfoDto.channelId);
     if (!channel) {
       //exception handler
-      this.logger.debug('Unexist Channel');
-      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Channel');
+      // throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Channel Error in onBanUser');
     }
     if (channel.channel_type === ChannelType.DM) {
       //exception handler
-      this.logger.debug('Cannot Ban User On DM Channel');
-      throw new HttpException('Cannot Ban User On DM Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Cannot Ban User On DM Channel');
+      // throw new HttpException('Cannot Ban User On DM Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Cannot Ban User On DM Channel Error in onBanUser');
     }
 
     const userBridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
     if (!userBridge) {
       //exception handler
-      this.logger.debug('Unexist Bridge');
-      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Bridge');
+      // throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Bridge Error in onBanUser');
     }
     if (userBridge.user_type !== UserType.OWNER && userBridge.user_type !== UserType.ADMIN) {
       //exception handler
-      this.logger.debug('Member Cannot Ban User');
-      throw new HttpException('Member Cannot Ban User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Member Cannot Ban Others');
+      // throw new HttpException('Member Cannot Ban Others', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Member Cannot Ban Others Error in onBanUser');
     }
-
+    
     const targetBridge = await this.chatService.checkUserInThisChannel(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
     if (!targetBridge) {
       //exception handler
-      this.logger.debug('Unexist Bridge');
-      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Bridge');
+      // throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Bridge Error in onBanUser');
     }
     if (targetBridge.user_type === UserType.OWNER) {
       //exception handler
-      this.logger.debug('Cannot Ban Owner');
-      throw new HttpException('Cannot Ban Owner', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Cannot Ban Owner');
+      // throw new HttpException('Cannot Ban Owner', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Cannot Ban Owner Error in onBanUser');
     }
     if (targetBridge.is_banned) {
       //exception handler
-      this.logger.debug('User Already Banned');
-      throw new HttpException('User Already Banned', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('User Already Banned');
+      // throw new HttpException('User Already Banned', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'User Already Banned Error in onBanUser');
     }
 
     await this.chatService.updateBanStatus(targetBridge, true);
 
     client.leave(channel.channel_name);
+    client.emit('creation-success', channel.channel_id);
     this.server.to(channel.channel_name).emit(`user ${user.nickname} is banned.`);
   }
 
@@ -573,53 +645,61 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (!user) {
       //exception handler
-      this.logger.debug('Unidentified User');
-      throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unidentified User Error in onMuteUser');
     }
-
+    
     const channel = await this.chatService.getChannelById(updateUserInfoDto.channelId);
     if (!channel) {
       //exception handler
-      this.logger.debug('Unexist Channel');
-      throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Channel');
+      // throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Channel Error in onMuteUser');
     }
     if (channel.channel_type === ChannelType.DM) {
       //exception handler
-      this.logger.debug('Cannot Mute User On DM Channel');
-      throw new HttpException('Cannot Mute User On DM Channel', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Cannot Mute User On DM Channel');
+      // throw new HttpException('Cannot Mute User On DM Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Cannot Mute User On DM Channel Error in onMuteUser');
     }
-
+    
     const userBridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
     if (!userBridge) {
       //exception handler
-      this.logger.debug('Unexist Bridge');
-      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Bridge');
+      // throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Bridge Error in onMuteUser');
     }
     if (userBridge.user_type !== UserType.OWNER && userBridge.user_type !== UserType.ADMIN) {
       //exception handler
-      this.logger.debug('Member Cannot Mute User');
-      throw new HttpException('Member Cannot Mute User', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Member Cannot Mute Others');
+      // throw new HttpException('Member Cannot Mute Others', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Member Cannot Mute Others Error in onMuteUser');
     }
-
+    
     const targetBridge = await this.chatService.checkUserInThisChannel(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
     if (!targetBridge) {
       //exception handler
-      this.logger.debug('Unexist Bridge');
-      throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Unexist Bridge');
+      // throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Unexist Bridge Error in onMuteUser');
     }
     if (targetBridge.user_type === UserType.OWNER) {
       //exception handler
-      this.logger.debug('Cannot Mute Owner');
-      throw new HttpException('Cannot Mute Owner', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('Cannot Mute Owner');
+      // throw new HttpException('Cannot Mute Owner', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'Cannot Mute Owner Error in onMuteUser');
     }
     if (targetBridge.is_muted) {
       //exception handler
-      this.logger.debug('User Already Muted');
-      throw new HttpException('User Already Muted', HttpStatus.UNAUTHORIZED);
+      // this.logger.debug('User Already Muted');
+      // throw new HttpException('User Already Muted', HttpStatus.UNAUTHORIZED);
+      client.emit('creation-fail', 'User Already Muted Error in onMuteUser');
     }
 
     await this.chatService.updateMuteStatus(targetBridge, true);
-
+    client.emit('creation-success', channel.channel_id);
     this.server.to(channel.channel_name).emit(`user ${user.nickname} is muted.`);
     
     setTimeout(() => {
