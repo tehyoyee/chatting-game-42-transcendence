@@ -16,6 +16,20 @@ export interface IProfileType {
 	email: string,
 };
 
+export enum UserAchievement {
+  A0 = '',
+  A1 = 'WIN 1',
+  A2 = 'WIN 3',
+  A3 = 'WIN 5'
+};
+
+export interface IGameProfileType {
+  win_count: number,
+  lose_count: number,
+  point: number,
+  achievement: UserAchievement,
+};
+
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 const profileUrl = `${serverUrl}/profile`;
 
@@ -27,6 +41,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
 		avartar: '',
 		email: '',
 	});
+
 	const [ update, setUpdate ] = useState<Object | null>(null);
 
   useEffect(() => {
@@ -58,7 +73,29 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
     },
   ];
 	//////////////////////////////
+  const [ gameProfile, setGameProfile ] = useState<IGameProfileType>({
+    win_count: 0,
+    lose_count: 0,
+    point: 0,
+    achievement: UserAchievement.A0,
+	});
   
+	// const [ updateGame, setGameUpdate ] = useState<Object | null>(null);
+
+  useEffect(() => {
+    (async() => {
+      await fetch(`${profileUrl}/${uid}`, {
+        method: 'GET',
+        credentials: 'include',
+      })
+      .then(res => res.json())
+      .then(data => {setGameProfile(data)})
+      .catch(err => {
+        console.log(`${profileUrl}: fetch failed: ${err}`);
+      });
+    })()
+  }, []);
+
   return (
     <>
     {isMyProfile &&
@@ -87,8 +124,14 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
           <br />
         </ul>
         <hr></hr>
-      <ExpandableButtons></ExpandableButtons>
+      <ExpandableButtons
+        win_count={gameProfile.win_count}
+        lose_count={gameProfile.lose_count}
+        point={gameProfile.point}
+        achievement={gameProfile.achievement}
+      ></ExpandableButtons>
       <BackToTop></BackToTop>
     </>
   );
 }
+
