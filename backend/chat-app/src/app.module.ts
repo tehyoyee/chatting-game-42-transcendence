@@ -12,7 +12,8 @@ import { GameModule } from './game/game.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeORMConfig),
-    UserModule, AuthModule, ChatModule, GameModule
+    UserModule, AuthModule, ChatModule, 
+    GameModule
   ],
   controllers: [AppController],
   providers: [AppService],
