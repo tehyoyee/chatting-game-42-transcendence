@@ -1,4 +1,4 @@
-import { Body, Controller, Param, ParseIntPipe, Post, Req } from '@nestjs/common';
+import { Body, Controller, Param, ParseIntPipe, Patch, Post, Req } from '@nestjs/common';
 import { RelationService } from './relation.service';
 import { Relation } from './entity/relation.entity';
 import { AuthService } from 'src/auth/auth.service';
@@ -23,6 +23,8 @@ export class RelationController {
     async addBlock(@Req() req: Request, @Param('id', ParseIntPipe) block_id: number) {
 
     }
+
+    //@Patch('update')
     
 
 }
