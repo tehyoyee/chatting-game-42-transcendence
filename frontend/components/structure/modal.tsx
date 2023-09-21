@@ -32,7 +32,8 @@ export default function Modal({ onClose, children, title = "", style = {} }: { o
 						</a>
 					</div>
 					{title && <h1>{title}</h1>}
-					<div className="modal-body">
+					<div 
+						className="modal-body">
 						<ModalContext.Provider value={{ onClose }}>
 							{children}
 						</ModalContext.Provider>

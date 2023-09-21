@@ -13,8 +13,8 @@ export default function Page() {
   console.log(`rendering loginpage: updated=${updated} loggedIn=${loggedIn}`);
 // TODO: buggy
   useEffect(() => {
-		if (called.current) return;
-		called.current = true
+//		if (called.current) return;
+//		called.current = true
     if (loggedIn === true) {
       router.push('/');
     }
