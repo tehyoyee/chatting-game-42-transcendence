@@ -63,7 +63,7 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
       const countdownInterval = setInterval(() => {
         if (countdown <= 1) {
           clearInterval(countdownInterval);
-          router.push('https://www.google.com');
+					router.push('/game/play');
         } else {
           setCountdown(countdown - 1);
         }
