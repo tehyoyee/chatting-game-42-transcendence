@@ -8,12 +8,13 @@ import { AuthModule } from './auth/auth.module';
 import { typeORMConfig } from './configs/typeorm.config';
 import { ChatModule } from './chat/chat.module';
 import { GameModule } from './game/game.module';
+import { RelationModule } from './relation/relation.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeORMConfig),
     UserModule, AuthModule, ChatModule, 
-    GameModule
+    GameModule, RelationModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -20,12 +20,12 @@ import { Channel } from './entity/channel.entity';
 @WebSocketGateway({
 	// path: "/api/socket.io",
 	namespace: "/chat",
-	// cors: {
-	// 	origin: "localhost:3001",
-	// 	credentials: true,
-	// 	allowedHeaders: 'Content-Type, Authorization, Cookie',
-	// 	methods: ["GET", "POST"],
-	// }
+	cors: {
+		origin: "localhost:3001",
+		credentials: true,
+		allowedHeaders: 'Content-Type, Authorization, Cookie',
+		methods: ["GET", "POST"],
+	}
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   
@@ -83,6 +83,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   //OnGatewayDosconnect의 메소드, 소켓 연결이 종료되면 호출된다.
   async handleDisconnect(client: any) {
     const user = await this.socketToUser(client);
+    this.userSocketMap.delete(user.user_id);
     client.disconnect();
 
     this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);

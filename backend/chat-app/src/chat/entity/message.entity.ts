@@ -26,5 +26,4 @@ export class Message extends BaseEntity {
     @ManyToOne(type => User, user => user.messages)
     @JoinColumn({ name: 'user_id' })
     user: User;
-    
 }
