@@ -33,8 +33,6 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
   
 
   
-  
-  
   export default function Matching() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -43,11 +41,13 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
     const [countdown, setCountdown] = useState(3);
     const SocketContext = useSocketContext();
     
-    
-    const handleClick = () => {
+    SocketContext.gameSocket?.on('gameStart', () => { setReady(true); });
+
+    const exitQueueHandler = () => {
+      console.log("exitQueue handler worked!");
       SocketContext.gameSocket?.emit('exitQueue');
     };
-
+    
     useEffect(() => {
       
       if (!queue)
@@ -59,11 +59,11 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
           setQueue(queue + 1);
       }
 
-        if (queue >= 2) {
+        if (ready) {
       const countdownInterval = setInterval(() => {
         if (countdown <= 1) {
           clearInterval(countdownInterval);
-          router.push('/game/matching/play');
+          router.push('https://www.google.com');
         } else {
           setCountdown(countdown - 1);
         }
@@ -84,21 +84,22 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
         </div>
       </div>
       {loading && <p>Loading...</p>}
-      {queue < 2 && <DotLoader></DotLoader>}
+      {!ready && <DotLoader></DotLoader>}
 
-      {!loading && (queue >= 2) && (
+      {/* {!loading && (queue >= 2) && (
         <div className={styles.buttonContainer}>
           <button className={styles.button} onClick={() => setReady(true)}>Ready</button>
         </div>
-      )}
-      {countdown !== null && (queue >= 2) && countdown > 0 && (
+      )} */}
+      {countdown !== null && ready && countdown > 0 && (
         <div className={styles.countdownContainer}>
           <p className={styles.countdown}>{countdown}</p>
         </div>
       )}
-        <div>
-          <Link href='/game' onClick={handleClick} className={styles.bottomRight}>Exit</Link>
-        </div>
+        { !ready && <div>
+          <Link href='/game' onClick={exitQueueHandler} className={styles.bottomRight}>Exit</Link>
+        </div> 
+        }
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import styles from '../../styles/profile.module.css';
+import { UserAchievement } from './profile';
 
 /*
  * 1. 임의의 자료구조를 만든다. API가 구현 안되어있으면 더미 데이터를 만들고 6번으로 간다.
@@ -35,14 +36,23 @@ type RecentMatch = {
 type MatchHistory = {
 };
 
-const buttonData = [
-  { text: '최근 경기 기록', content: '최근 경기 기록 내용' },
-  { text: '게임 전적', content: '게임 전적 내용' },
-  { text: '순위', content: '순위 내용' },
-  { text: '업적', content: '업적 내용' },
-];
 
-const ExpandableButtons = () => {
+
+const ExpandableButtons = ({win_count,
+  lose_count,
+  point,
+  achievement}: {win_count: number,
+    lose_count: number,
+    point: number,
+    achievement: UserAchievement}) => {
+      const buttonData = [
+        { text: '최근 경기 기록', content: '최근 경기 기록 내용' },
+        { text: '게임 전적', content: `승: ${win_count}
+        패: ${lose_count}
+        포인트: ${point}` },
+        { text: '순위', content: '순위 내용' },
+        { text: '업적', content: `achievement: ${achievement}` },
+      ];
   const initialState = buttonData.map(obj => obj.text);
   const [activeButtons, setActiveButtons] = useState(initialState);
 
@@ -77,3 +87,4 @@ const ExpandableButtons = () => {
 };
 
 export default ExpandableButtons;
+
