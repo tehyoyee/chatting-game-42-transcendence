@@ -3,9 +3,9 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import styles from '/styles/profile.module.css';
-import ProfileUpdator from '@/components/content/profile_updator';
-import ExpandableButtons from './expandableButtons';
-import BackToTop from './backToTop';
+import ProfileUpdator from '@/components/content/profile/updator';
+import ExpandableButtons from '@/components/content/expandableButtons';
+import BackToTop from '@/components/content/backToTop';
 
 // incomplete
 export interface IProfileType {

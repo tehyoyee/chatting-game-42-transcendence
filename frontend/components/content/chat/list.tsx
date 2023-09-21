@@ -3,7 +3,7 @@ import Image from 'next/image';
 import styles from "@/styles/chat.module.css";
 import SideBar from "@/components/structure/sidebar";
 import Modal from '@/components/structure/modal';
-import { ChatCreate } from '@/components/content/chat_create';
+import { ChatCreate } from '@/components/content/chat/create';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 
