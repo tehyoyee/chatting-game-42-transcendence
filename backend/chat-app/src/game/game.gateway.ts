@@ -34,10 +34,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	// async joinQueue(@MessageBody() body: any) {
 
 	@SubscribeMessage('joinQueue')
-	async joinQueue(@ConnectedSocket() client: any, @MessageBody() body: any) {
+	async joinQueue(@ConnectedSocket() client: any, @MessageBody() gameMode: any) {
 		const user = await this.socketToUser(client);
-		console.log(body);
-		if (body === 'NORMAL') {
+		if (gameMode === 'NORMAL') {
 			this.gameNormalQueue.push(user.user_id);
 			console.log(`added normalQueue user : ${user.username}`);
 			if (this.gameNormalQueue.length >= 2) {
@@ -49,11 +48,24 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				console.log(`playerRight: ${playerIdRight}`);
 				console.log("Matching Created !!!");
 				this.gameNormalQueue = this.gameNormalQueue.slice(2);
-
 			}
 		}
-	
+	}
+	@SubscribeMessage('exitQueue')
+	async exitQueue(@ConnectedSocket() client: any) {
+		const user = await this.socketToUser(client);
 
+		console.log(`[Game] gameQueue : ${user.username} removed.`);
+		for (let i = 0; i < this.gameNormalQueue.length; i++) {
+			if (this.gameNormalQueue[i] === user.user_id) {
+				delete this.gameNormalQueue[i];
+			}
+		}
+		for (let i = 0; i < this.gameAdvancedQueue.length; i++) {
+			if (this.gameAdvancedQueue[i] === user.user_id) {
+				delete this.gameAdvancedQueue[i];
+			}
+		}
 		// 		client.join('asdf');
 		// 		console.log(`${this.gameNormalQueue[0]} and ${this.gameNormalQueue[1]} matched`);
 		// 	}
@@ -69,42 +81,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		// this.server.emit('onMessage', "heres");
 		this.server.to('asdf').emit('onMessage', "roomheres");
 	}
-	// accessToken: any;
-	// currentUser: User;
-  
-	// private async definePlayer(client: Socket) {
-	// 	try {
-	// 		// this.accessToken = client.handshake.query.token;
-	// 		this.accessToken = await this.authService.verifyToken(this.accessToken);
-	// 		this.currentUser = null;
-	// 		this.currentUser = await this.userService.getProfileByUserId(this.accessToken.id);
-			
-	// 		if (!this.currentUser) {
-	// 		  return this.disconnect(client);
-	// 		}
-		
-	// 	} catch (error) {
-	// 		return this.disconnect(client);
-	//   	}
-	// }
-  
-	// private disconnect(socket: Socket) {
-	// 	socket.disconnect();
-	// }
-  
-
-	// private async getSocketId(id: number): Promise<Socket> {
-	//   	// for (let user of this.connectedUsers) {
-	// 	// 	let decoded = user.handshake.query.token;
-	// 	// 	decoded = await this.authService.verifyToken(decoded);
-			
-	// 	// 	if (decoded.id === id)
-	// 	// 		return user;
-	//   	// 	}
-  
-	//   		return null;
-	// }
-  
   
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
@@ -120,13 +96,11 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		for (let i = 0; i < this.gameNormalQueue.length; i++) {
 			if (this.gameNormalQueue[i] === user.user_id) {
 				delete this.gameNormalQueue[i];
-				break;
 			}
 		}
 		for (let i = 0; i < this.gameAdvancedQueue.length; i++) {
 			if (this.gameAdvancedQueue[i] === user.user_id) {
 				delete this.gameAdvancedQueue[i];
-				break;
 			}
 		}
 	}
