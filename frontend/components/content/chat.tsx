@@ -6,6 +6,7 @@ import styles from "@/styles/chat.module.css";
 import SideBar from "@/components/structure/sidebar";
 import Modal from '@/components/structure/modal';
 import { ChatMenu } from '@/components/content/chat_manage';
+import { logoutFunction } from '../user/logout';
 
 // test interface
 type ChatRoom = {
@@ -21,6 +22,7 @@ type ChatRooms = {
 const chatReqUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/channel/list/all`; // path to fetch chat info
 
 export default function Chat() {
+	const { chatSocket } = useSocketContext();
 	const [chatRooms, setChatRooms] = useState<ChatRooms>({
 		curRoomId: -1,
 		chatRoomArr: [],
@@ -29,6 +31,9 @@ export default function Chat() {
 	const [menuModal, setMenuModal] = useState<boolean>(false);
 
 	useEffect(() => {
+		if (!chatSocket) {
+			// TODO: check it works
+		}
 	}, []);
 
   const joined = chatRooms.chatRoomArr.find(data => data.id === curRoomId);
