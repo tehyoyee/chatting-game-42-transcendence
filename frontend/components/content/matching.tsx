@@ -33,8 +33,6 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
   
 
   
-  
-  
   export default function Matching() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -43,8 +41,9 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
     const [countdown, setCountdown] = useState(3);
     const SocketContext = useSocketContext();
     
-    
+    // SocketContext.gameSocket?.on()
     const handleClick = () => {
+      console.log("handler worked!");
       SocketContext.gameSocket?.emit('exitQueue');
     };
 
@@ -86,11 +85,11 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
       {loading && <p>Loading...</p>}
       {queue < 2 && <DotLoader></DotLoader>}
 
-      {!loading && (queue >= 2) && (
+      {/* {!loading && (queue >= 2) && (
         <div className={styles.buttonContainer}>
           <button className={styles.button} onClick={() => setReady(true)}>Ready</button>
         </div>
-      )}
+      )} */}
       {countdown !== null && (queue >= 2) && countdown > 0 && (
         <div className={styles.countdownContainer}>
           <p className={styles.countdown}>{countdown}</p>
