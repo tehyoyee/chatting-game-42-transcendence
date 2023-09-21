@@ -86,7 +86,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   //OnGatewayDosconnect의 메소드, 소켓 연결이 종료되면 호출된다.
   async handleDisconnect(client: any) {
     const user = await this.socketToUser(client);
-    this.userSocketMap.delete(user.user_id);
+    if (user) {
+      this.userSocketMap.delete(user.user_id);
+    }
     client.disconnect();
 
     this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
