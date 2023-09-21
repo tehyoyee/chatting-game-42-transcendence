@@ -10,7 +10,7 @@ enum Type {
 
 export function ChatMenu() {
 	const [type, setType] = useState<Type>(Type.Public);
-	const { chatSocket } = useSocketContext();
+//	const { chatSocket } = useSocketContext();
 
 	function handleTypeChange(e: any) {
 		switch (Number(e.target.value)) {

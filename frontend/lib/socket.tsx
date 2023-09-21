@@ -48,6 +48,11 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 			chatSocket: chatSocket,
 			gameSocket: gameSocket,
 		});
+		return () => {
+			chatSocket.close();
+			gameSocket.close();
+			console.log("socket closed");
+		}
 	}, []);
 
 	return (
