@@ -1,5 +1,6 @@
 .dotLoader {
+	text-align: center;
 	font-size: 120px;
-	/* padding: 0px 0px 0px 370px; */
-	position:fixed;
+	padding: 0px 0px 0px 141px;
+	position:absolute;
   }
