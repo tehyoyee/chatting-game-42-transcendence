@@ -15,6 +15,7 @@ import { JoinChannelDto, GroupChannelDto } from './dto/channel-dto';
 import { ChannelType } from './enum/channel_type.enum';
 import { DmDto, GroupMessageDto } from './dto/message-dto';
 import { UpdatePasswordDto } from './dto/update-dto';
+import { BridgeDto } from './dto/bridge-dto';
 
 @Injectable()
 export class ChatService {
@@ -228,5 +229,26 @@ export class ChatService {
 
     async getChannelById(id: number): Promise<Channel> {
         return await this.channelRepository.getChannelById(id);
+    }
+
+    async getAllUsersInChannelByChannelId(channelId: number):Promise<BridgeDto[]>{
+        let inners: BridgeDto[] = [];
+        const isBanned = false;
+
+        const bridges = await this.ucbRepository
+        .createQueryBuilder('b')
+        .where('b.channel_id = :channelId', {channelId})
+        .andWhere('b.is_banned = :isBanned', {isBanned})
+        .select(['b.user_id', 'b.user_type', 'is_banned', 'is_muted'])
+        .getMany();
+
+        for (let b of bridges) {
+            let inner = { user: await this.userService.getProfileByUserId(b.user_id),
+                        userType: b.user_type,
+                        isMuted: b.is_muted };
+            inners.push(inner);
+        }
+
+        return inners;
     }
 }

@@ -23,13 +23,15 @@ export class UcbRepository extends Repository<UserChannelBridge> {
     }
 
     async createUCBridge(user: User, channel: Channel, userType: UserType) {
-        const found = this.getUcbByIds(user.user_id, channel.channel_id);
+        const found = await this.getUcbByIds(user.user_id, channel.channel_id);
         if (!found)
         {
             const newBridge = new UserChannelBridge();
+            newBridge.user_id = user.user_id;
+            newBridge.channel_id = channel.channel_id;
+            newBridge.user_type = userType;
             newBridge.user = user;
             newBridge.channel = channel;
-            newBridge.user_type = userType;
 
             await newBridge.save();
         }

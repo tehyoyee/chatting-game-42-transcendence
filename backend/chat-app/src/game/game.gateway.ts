@@ -6,29 +6,34 @@ import { User } from "src/user/entity/user.entity";
 import { UserService } from "src/user/user.service";
 import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Message } from "src/chat/entity/message.entity";
+import { GameService } from "./game.service";
+import { KeyStatus } from "./game.keystatus.enum";
 
 // @WebSocketGateway()
 @WebSocketGateway({ namespace: '/game'})
 export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect {
 	
-	private readonly MAP_Y = 100;
-	private readonly MAP_X = 100;
+	private readonly MAP_Y = 500;
+	private readonly MAP_X = 500;
 	private readonly SPEED = 5;
-	private readonly paddleSize = 200;
+	private readonly paddleSpeed = 10;
+	private readonly PADDLE_SIZE = 10;
 	private readonly paddleGap = 10;
-	private readonly DELAY = 3000;
+	private readonly DELAY = 500;
 	private readonly MAXPOINT = 5;
 
 	constructor(
 		private authService: AuthService,
 		private userService: UserService,
+		private gameService: GameService,
 		) {}
 	
 	userMap = [];
 	userSocketMap = new Map<number, Socket>(); // userid, socketid
-	// gameRoomMap = new Map<number, string>(); // userid, room
+	gameRoomMap = new Map<number, string>(); // userid, room
 	gameNormalQueue: number[] = [];
 	gameAdvancedQueue: number[] = [];
+	userKeyMap = new Map<number, string>();	// user_id, keyStatus
 
 	@WebSocketServer() // 소켓인스턴스를 준다
 	server: Server;
@@ -39,10 +44,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			console.log('Connected');
 		});
 	}
-	// async joinQueue(@MessageBody() body: any) {
 
 	@SubscribeMessage('joinQueue')
-	async joinQueue(@ConnectedSocket() client: any, @MessageBody() gameMode: any) {
+	async joinQueue(@ConnectedSocket() client: any, @MessageBody() gameMode: string) {
 		const user = await this.socketToUser(client);
 		if (gameMode === 'NORMAL') {
 			this.gameNormalQueue.push(user.user_id);
@@ -59,31 +63,45 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				console.log(`Game Room ${newRoomName} created !!`);
 				playerSocketLeft.join(newRoomName);
 				playerSocketRight.join(newRoomName);
-				this.server.to(newRoomName).emit('gameStart');
+				this.gameRoomMap.set(playerIdLeft, newRoomName);
+				this.gameRoomMap.set(playerIdRight, newRoomName);
+				this.server.to(newRoomName).emit('gameStart', {
+					roomName: newRoomName
+				});
 				this.gameNormalQueue = this.gameNormalQueue.slice(2);
-				this.runGame(newRoomName, playerSocketLeft, playerSocketRight, 0, 0);
+				this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0);
 			}
 		}
 	}
 
-	async runGame(roomName: string, player1: Socket, player2: Socket, point1: number, point2: number) {
+	async runGame(gameMode: string, roomName: string, player1: Socket, player2: Socket, point1: number, point2: number) {
 		const user1 = await this.socketToUser(player1);
 		const user2 = await this.socketToUser(player2);
 
 		// 게임 종료 조건
 		if (point1 == this.MAXPOINT) {
 			console.log(`${user1.username} winned !`);
+			this.gameService.updateGameHistory(user1.user_id, user2.user_id);
+			player1.leave(roomName);
+			player2.leave(roomName);
+			this.gameRoomMap.delete(user1.user_id);
+			this.gameRoomMap.delete(user2.user_id);
 			return;
 		} else if (point2 == this.MAXPOINT) {
 			console.log(`${user1.username} winned !`);
+			this.gameService.updateGameHistory(user2.user_id, user1.user_id);
+			player1.leave(roomName);
+			player2.leave(roomName);
+			this.gameRoomMap.delete(user1.user_id);
+			this.gameRoomMap.delete(user2.user_id);
 			return;
 		}
+
 		const ball = {
 			x: this.MAP_X / 2,
 			y: this.MAP_Y / 2,
-			dx: this.SPEED * 0.5,
-			dy: this.SPEED * 0.866,
-			speed: this.SPEED
+			dx: this.SPEED * 0.866,
+			dy: this.SPEED * 0.5,
 		}
 		const paddle1 = {
 			x: this.paddleGap,
@@ -106,62 +124,108 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 		var winFlag = 0
 		const render = () => {
-			// 키 입력
-			// 패들 위치 변경
 
+			// Update Paddle Position
+			const user1paddleDir = this.userKeyMap.get(user1.user_id);
+			console.log('user1 Paddle DIR : ', user1paddleDir);
+			const user2paddleDir = this.userKeyMap.get(user2.user_id);
+			console.log('user2 Paddle DIR : ', user2paddleDir);
 
-			// 아랫벽 맞음
-			if (ball.dy > 0 && Math.round(ball.y + ball.dy) >= this.MAP_Y) {
-				ball.dy = -ball.dy;
-				ball.y += ball.dy;
-			// 윗벽 맞음
-			} else if (ball.dy < 0 && Math.round(ball.y + ball.dy) <= 0) {
-				ball.dy = -ball.dy;
-				ball.y += ball.dy;
-			} else {
-				ball.y += ball.dy;
+			if (user1paddleDir === KeyStatus.UP) {
+				if (paddle1.y - this.paddleSpeed >= 0) {
+					paddle1.y -= this.paddleSpeed;
+				}
+			} else if (user1paddleDir === KeyStatus.DOWN) {
+				if (paddle1.y + this.paddleSpeed <= this.MAP_Y - this.PADDLE_SIZE) {
+					paddle1.y += this.paddleSpeed;
+				}
 			}
-			// 왼쪽 맞음
-			if (ball.dx < 0 && Math.round(ball.x + ball.dx) <= 0) {
-				ball.dx = -ball.dx;
+			if (user2paddleDir === KeyStatus.UP) {
+				if (paddle1.y - this.paddleSpeed >= 0) {
+					paddle2.y -= this.paddleSpeed;
+				}
+			} else if (user2paddleDir === KeyStatus.DOWN) {
+				if (paddle1.y + this.paddleSpeed <= this.MAP_Y - this.PADDLE_SIZE) {
+					paddle2.y += this.paddleSpeed;
+				}
+			}
+			console.log(`Paddle1 : { ${paddle1.x}, ${paddle1.y} }`);
+			console.log(`Paddle2 : { ${paddle2.x}, ${paddle2.y} }`);
+
+			console.log(`ball x: ${ball.x} // y: ${ball.y}`);
+			this.server.to(roomName).emit('gamingBall', {
+				paddle1X: paddle1.x,
+				paddle1Y: paddle1.y,
+				paddle2X: paddle2.x,
+				paddle2Y: paddle2.y
+			});
+
+			// Ball Reflection at Bottom
+			if (ball.dy > 0 && ball.y + ball.dy >= this.MAP_Y) {
+				ball.dy = -ball.dy;
+				ball.y += ball.dy;
+			// Ball Reflection at Top
+			} else if (ball.dy < 0 && ball.y + ball.dy <= 0) {
+				ball.dy = -ball.dy;
+				ball.y += ball.dy;
+			} else {	// Ball Elsewhere
+				ball.y += ball.dy;
 				ball.x += ball.dx;
-			// 오른쪽맞음
-			} else if (ball.dx > 0 && Math.round(ball.x + ball.dx) >= this.MAP_X) {
-				ball.dx = -ball.dx;
-				ball.x += ball.dx;
-			} else {
-				ball.x += ball.dx;
+			}
+			
+			// Left Paddle Reflection
+			if (ball.dx < 0 && ball.x + ball.dx <= paddle1.x && paddle1.x < ball.x) {
+				if (ball.dy > 0) {	// from 1quad
+					if (ball.y <= paddle1.y && paddle1.y <= ball.y + ball.dy) {
+						ball.dx = -ball.dx;
+						ball.x += ball.dx;
+					}
+				}
+				else {		// from 4quad
+					if (ball.y + ball.dy <= paddle1.y && paddle1.y <= ball.y) {
+						ball.dx = -ball.dx;
+						ball.x += ball.dx;
+					}
+				}
+			// Right Paddle Reflection
+			} else if (ball.dx > 0 && ball.x <= paddle2.x && paddle2.x < ball.x + ball.dx) {
+				if (ball.dy > 0) {	// from 2quad
+					if (ball.y <= paddle2.y && paddle2.y <= ball.y + ball.dy) {
+						ball.dx = -ball.dx;
+						ball.x += ball.dx;
+					}
+				}
+				else {		// from 3quad
+					if (ball.y + ball.dy <= paddle2.y && paddle2.y <= ball.y) {
+						ball.dx = -ball.dx;
+						ball.x += ball.dx;
+					}
+				}
 			}
 			console.log(`ball x: ${ball.x} // y: ${ball.y}`);
 			this.server.to(roomName).emit('gamingBall', {
 				ballX: ball.x,
 				ballY: ball.y
 			});
-			// 포인트 조건
+			// Earning Point Condition
 			if (ball.x < 0) {
 				winFlag = 2;
 			} else if (ball.x > this.MAP_X) {
 				winFlag = 1;
 			}
 			if (winFlag != 0) {
+				console.log('clear Interval');
 				clearInterval(id);
+				if (winFlag == 1) {
+					this.runGame(gameMode, roomName, player1, player2, point1+1, point2);
+				} else {
+					this.runGame(gameMode, roomName, player1, player2, point1, point2+1);
+				}
 			}
-			// 공 위치
-			// this.server.to(roomName).emit('gameEvent', {
-			// 	ball,
-			// 	paddle1,
-			// 	paddle2,
-			// })
 		};
 		const id = setInterval(render, this.DELAY);
 		render();
-		if (winFlag == 1) {
-			this.runGame(roomName, player1, player2, point1+1, point2);
-		} else {
-			this.runGame(roomName, player1, player2, point1, point2+1);
-		}
 	}
-
 
 	@SubscribeMessage('exitQueue')
 	async exitQueue(@ConnectedSocket() client: any) {
@@ -181,22 +245,37 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		console.log("AfterExitQueue", this.gameNormalQueue);
 	}
 
-	@SubscribeMessage('emitMessage')
-	message() {
-		console.log("broadcast");
-		// this.server.emit('onMessage', "heres");
-		this.server.to('asdf').emit('onMessage', "roomheres");
+	@SubscribeMessage('keyW')
+	async updateKeyStatusW (@ConnectedSocket() client: any, @MessageBody() newStatus: string) {
+		const user = await this.socketToUser(client);
+		if (newStatus === KeyStatus.UP) {
+			this.userKeyMap.set(user.user_id, KeyStatus.NONE);
+		} else if (newStatus === KeyStatus.DOWN) {
+			this.userKeyMap.set(user.user_id, KeyStatus.UP);
+		}
 	}
-  
+
+	@SubscribeMessage('keyS')
+	async updateKeyStatusS (@ConnectedSocket() client: any, @MessageBody() newStatus: string) {
+		const user = await this.socketToUser(client);		
+		if (newStatus === KeyStatus.UP) {
+			this.userKeyMap.set(user.user_id, KeyStatus.NONE);
+		} else if (newStatus === KeyStatus.DOWN) {
+			this.userKeyMap.set(user.user_id, KeyStatus.DOWN);
+		}
+	}
+
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
 		this.userSocketMap.set(user.user_id, client);
+		this.userKeyMap.set(user.user_id, 'NONE');
 	}
   
 	async handleDisconnect(client: any) {
 		console.log(`[Game] ${client.id} has left.`);
 		const user = await this.socketToUser(client);
 		this.userSocketMap.delete(user.user_id);
+		this.userKeyMap.delete(user.user_id);
 
 		console.log(`[Game] userlist : ${user.username} removed.`);
 		for (let i = 0; i < this.gameNormalQueue.length; i++) {
@@ -210,21 +289,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			}
 		}
 	}
-	
-	// @SubscribeMessage('gamequeue')
-	// movePlayer(_: Socket, info: string) {
-    // 	console.log(_);
-	// 	console.log(info);
-	// }
 
-	// @SubscribeMessage('newMessage')
-	// onNewMessage(@MessageBody() body: any) {
-	// 	console.log(body);
-	// 	this.server.emit('onMessage', {
-	// 		msg: 'New Message',
-	// 		content: body,
-	// 	});
-	// }
 	private async socketToUser(client: Socket): Promise<User> {
 		const token: any = client.handshake.query.token;
 		if (!token)
