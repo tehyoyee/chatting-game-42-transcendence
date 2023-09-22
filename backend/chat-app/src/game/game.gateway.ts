@@ -13,12 +13,12 @@ import { KeyStatus } from "./game.keystatus.enum";
 @WebSocketGateway({ namespace: '/game'})
 export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect {
 	
-	private readonly MAP_Y = 500;
-	private readonly MAP_X = 500;
+	private readonly MAP_Y = 200;
+	private readonly MAP_X = 400;
 	private readonly SPEED = 5;
 	private readonly paddleSpeed = 10;
-	private readonly PADDLE_SIZE = 10;
-	private readonly paddleGap = 10;
+	private readonly PADDLE_SIZE = 80;
+	private readonly paddleGap = 40;
 	private readonly DELAY = 500;
 	private readonly MAXPOINT = 5;
 
@@ -142,15 +142,15 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			y: this.MAP_Y / 2
 		};
 		console.log(user1.nickname, user2.nickname);
-		this.server.to(roomName).emit('gamingUser', {
-			player1: user1.nickname,
-			player2: user2.nickname
-		});
-		console.log(point1, point2);
-		this.server.to(roomName).emit('gamingScore', {
-			score1: point1,
-			socre2: point2
-		});
+		// this.server.to(roomName).emit('gamingUser', {
+		// 	player1: user1.nickname,
+		// 	player2: user2.nickname
+		// });
+		// console.log(point1, point2);
+		// this.server.to(roomName).emit('gamingScore', {
+		// 	score1: point1,
+		// 	socre2: point2
+		// });
 		var winFlag = 0;
 		const render = () => {
 
@@ -182,12 +182,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			console.log(`Paddle2 : { ${paddle2.x}, ${paddle2.y} }`);
 
 			console.log(`ball x: ${ball.x} // y: ${ball.y}`);
-			this.server.to(roomName).emit('gamingPaddle', {
-				paddle1X: paddle1.x,
-				paddle1Y: paddle1.y,
-				paddle2X: paddle2.x,
-				paddle2Y: paddle2.y
-			});
 
 			// Ball Reflection at Bottom
 			if (ball.dy > 0 && ball.y + ball.dy >= this.MAP_Y) {
@@ -232,10 +226,39 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				}
 			}
 			console.log(`ball x: ${ball.x} // y: ${ball.y}`);
-			this.server.to(roomName).emit('gamingBall', {
+			this.server.to(roomName).emit('gamingInfo', {
+				canvasX: this.MAP_X,
+				canvasY: this.MAP_Y,
+				player1: user1.nickname,
+				player2: user2.nickname,
+				score1: point1,
+				socre2: point2,
 				ballX: ball.x,
-				ballY: ball.y
+				ballY: ball.y,
+				paddle1X: paddle1.x,
+				paddle1Y: paddle1.y,
+				paddle2X: paddle2.x,
+				paddle2Y: paddle2.y,
 			});
+			// this.server.to(roomName).emit('gamingUser', {
+			// 	player1: user1.nickname,
+			// 	player2: user2.nickname
+			// });
+			// console.log(point1, point2);
+			// this.server.to(roomName).emit('gamingScore', {
+			// 	score1: point1,
+			// 	socre2: point2
+			// });
+			// this.server.to(roomName).emit('gamingBall', {
+			// 	ballX: ball.x,
+			// 	ballY: ball.y
+			// });
+			// this.server.to(roomName).emit('gamingPaddle', {
+			// 	paddle1X: paddle1.x,
+			// 	paddle1Y: paddle1.y,
+			// 	paddle2X: paddle2.x,
+			// 	paddle2Y: paddle2.y
+			// });
 			// Earning Point Condition
 			if (ball.x < 0) {
 				winFlag = 2;
