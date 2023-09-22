@@ -135,7 +135,7 @@ function handlePwd(user: IChatUser, socket: Socket) {
 		request(ControlType.RemPwd, user, socket);
 		return;
 	}
-	request(ControlType.
+	request(ControlType.AddPwd);
 }
 /*
 				<TextInputForm 

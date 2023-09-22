@@ -1,4 +1,4 @@
-import { Injectable, NotAcceptableException, NotFoundException } from "@nestjs/common";
+import { Injectable, NotAcceptableException, NotFoundException, ServiceUnavailableException } from "@nestjs/common";
 import { DataSource, Repository } from "typeorm";
 import { Channel } from "./entity/channel.entity";
 import { User } from "src/user/entity/user.entity";
@@ -89,7 +89,10 @@ export class ChannelRepository extends Repository<Channel> {
     }
 
     async deleteChannelByChannelId(channelId: number) {
-        await this.delete({channel_id: channelId});
+        const result = await this.delete({channel_id: channelId});
+        if (result.affected !== 1) {
+            throw new ServiceUnavailableException();
+        }
     }
 
     async setPassword(channel: Channel, newPassword: string) {

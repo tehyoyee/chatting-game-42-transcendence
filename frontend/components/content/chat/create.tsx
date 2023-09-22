@@ -102,7 +102,7 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 						border: "solid 1px black",
 					}}
 					type="text"
-					pattern="[a-zA-Z0-9]{2,16}"
+					pattern="{2,16}"
 					required
 				/>
 				<fieldset onChange={handleTypeChange}>

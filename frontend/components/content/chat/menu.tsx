@@ -88,7 +88,7 @@ export default function ChatMenu() {
 						style={{
 							backgroundColor: 'lightsalmon',
 						}}>
-						{'채널 나가기'} 
+						{'채널 탈퇴'} 
 					</button>
 				</li>
 				<li>
