@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { User } from './entity/user.entity';
 import { UpdateDescription } from 'typeorm';
@@ -10,6 +10,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 @Injectable()
 export class UserService {
     constructor(private userRepository: UserRepository) {}
+
+    private logger = new Logger('UserService');
 
     async createUser(createUserDto: CreateUserDto): Promise<User> {
         return await this.userRepository.createUser(createUserDto);
@@ -110,11 +112,36 @@ export class UserService {
     }
 
     async winGame(id: number): Promise<User> {
-        return await this.userRepository.winGame(id);
+        await this.userRepository.winGame(id);
+
+        const user = await this.getProfileByUserId(id);
+        if (!user) {
+            // //exception handler
+            this.logger.debug('UnexistUser');
+            throw new HttpException('Unexist User', HttpStatus.UNAUTHORIZED);
+        }
+
+        const changed = await this.checkAchievementLevelChanged(user);
+        if (changed) {
+            await this.updateAchievement(id, changed);
+        }
+
+        return user;
     }
 
     async loseGame(id: number): Promise<User> {
         return await this.userRepository.loseGame(id);
+    }
+
+    async checkAchievementLevelChanged(user: User): Promise<UserAchievement> {
+        if (user.win_count >= 5 && user.achievement < UserAchievement.A5)
+            return UserAchievement.A5;
+        else if (user.win_count >= 3 && user.achievement < UserAchievement.A3)
+            return UserAchievement.A3;
+        else if (user.win_count >= 1 && user.achievement < UserAchievement.A1) 
+            return UserAchievement.A1;
+
+        return null;
     }
 
     async updateAuthCodeByUserId(id: number, authCode: string): Promise<void> {
