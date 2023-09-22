@@ -57,7 +57,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				const playerSocketLeft = this.userSocketMap.get(playerIdLeft);
 				const playerSocketRight = this.userSocketMap.get(playerIdRight);
 				const newRoomName = playerSocketLeft.id + playerSocketRight.id;
-				console.log("Matching Created !!!");
+				console.log("Normal Match Created !!!");
 				console.log(`playerLeft: ${playerIdLeft}`);
 				console.log(`playerRight: ${playerIdRight}`);
 				console.log(`Game Room ${newRoomName} created !!`);
@@ -70,7 +70,29 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				});
 				this.gameNormalQueue = this.gameNormalQueue.slice(2);
 				setTimeout(() => this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0), 3000);
-				// this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0);
+			}
+		} else if (gameMode === 'ADVANCED') {
+			this.gameAdvancedQueue.push(user.user_id);
+			console.log(`added normalQueue user : ${user.username}`);
+			if (this.gameAdvancedQueue.length >= 2) {
+				const playerIdLeft = this.gameAdvancedQueue[0];
+				const playerIdRight = this.gameAdvancedQueue[1];
+				const playerSocketLeft = this.userSocketMap.get(playerIdLeft);
+				const playerSocketRight = this.userSocketMap.get(playerIdRight);
+				const newRoomName = playerSocketLeft.id + playerSocketRight.id;
+				console.log("Advanced Match Created !!!");
+				console.log(`playerLeft: ${playerIdLeft}`);
+				console.log(`playerRight: ${playerIdRight}`);
+				console.log(`Game Room ${newRoomName} created !!`);
+				playerSocketLeft.join(newRoomName);
+				playerSocketRight.join(newRoomName);
+				this.gameRoomMap.set(playerIdLeft, newRoomName);
+				this.gameRoomMap.set(playerIdRight, newRoomName);
+				this.server.to(newRoomName).emit('gameStart', {
+					roomName: newRoomName
+				});
+				this.gameNormalQueue = this.gameNormalQueue.slice(2);
+				setTimeout(() => this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0), 3000);
 			}
 		}
 	}
@@ -103,27 +125,33 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			y: this.MAP_Y / 2,
 			dx: this.SPEED * 0.866,
 			dy: this.SPEED * 0.5,
+		};
+		if (gameMode === 'ADVANCED') {
+			ball.dx += ((point1 + point2) / this.MAXPOINT);
+			ball.dy += ((point1 + point2) / this.MAXPOINT);
+		}
+		if (Math.random() >= 0.5) {
+			ball.dx = -ball.dx;
 		}
 		const paddle1 = {
 			x: this.paddleGap,
 			y: this.MAP_Y / 2
-		}
+		};
 		const paddle2 = {
 			x: this.MAP_X - this.paddleGap,
 			y: this.MAP_Y / 2
-		}
+		};
 		console.log(user1.nickname, user2.nickname);
 		this.server.to(roomName).emit('gamingUser', {
 			player1: user1.nickname,
 			player2: user2.nickname
-		})
+		});
 		console.log(point1, point2);
 		this.server.to(roomName).emit('gamingScore', {
 			score1: point1,
 			socre2: point2
-		})
-
-		var winFlag = 0
+		});
+		var winFlag = 0;
 		const render = () => {
 
 			// Update Paddle Position
@@ -154,7 +182,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			console.log(`Paddle2 : { ${paddle2.x}, ${paddle2.y} }`);
 
 			console.log(`ball x: ${ball.x} // y: ${ball.y}`);
-			this.server.to(roomName).emit('gamingBall', {
+			this.server.to(roomName).emit('gamingPaddle', {
 				paddle1X: paddle1.x,
 				paddle1Y: paddle1.y,
 				paddle2X: paddle2.x,
@@ -268,6 +296,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
+		if (!user) {
+			console.log('asdf');
+		}
 		this.userSocketMap.set(user.user_id, client);
 		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 	}
@@ -275,6 +306,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async handleDisconnect(client: any) {
 		console.log(`[Game] ${client.id} has left.`);
 		const user = await this.socketToUser(client);
+		if (user) {
+			this.userSocketMap.delete(user.user_id);
+		}
 		this.userSocketMap.delete(user.user_id);
 		this.userKeyMap.delete(user.user_id);
 
