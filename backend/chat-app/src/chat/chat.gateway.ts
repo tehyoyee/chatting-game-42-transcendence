@@ -89,6 +89,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     if (user) {
       this.userSocketMap.delete(user.user_id);
     }
+    this.userSocketMap.delete(user.user_id);
     client.disconnect();
 
     this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
@@ -215,7 +216,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
     
     const bridge = await this.chatService.checkUserInThisChannel(user.user_id, joinChannelDto.channelId);
-    if (bridge.is_banned) {
+    if (bridge && bridge.is_banned) {
       // this.logger.debug('Bannde User');
       // throw new HttpException('Bannde User', HttpStatus.UNAUTHORIZED);
       client.emit('creation-fail', 'Bannde User Error in onJoinChannel');
