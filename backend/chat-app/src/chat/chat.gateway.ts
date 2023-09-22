@@ -39,6 +39,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   private logger = new Logger('ChatGateway');
   private userSocketMap = new Map();
 
+  //==========================================================================================
   //onGatewayConnection의 메소드, 소켓이 연결되면 호출된다.
   async handleConnection(client: Socket) {
     this.logger.debug("handle connection in");
@@ -83,6 +84,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
   }
   
+  //==========================================================================================
   //OnGatewayDosconnect의 메소드, 소켓 연결이 종료되면 호출된다.
   async handleDisconnect(client: any) {
     const user = await this.socketToUser(client);
@@ -94,6 +96,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
   }
+
+  //==========================================================================================
     
   private async socketToUser(client: Socket): Promise<User> {
     const token: any = client.handshake.query.token;
@@ -110,10 +114,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
         return undefined;
     }
   }
+  
+  //==========================================================================================
 
   private userIdToSocket(userId: number): Socket {
     return this.userSocketMap.get(userId);
   }
+
+  //==========================================================================================
   
   @SubscribeMessage('create-group-channel')
   async onCreateGroupChannel(
@@ -146,10 +154,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //성공 했을 때 채널 고유 아이디를 그 클라이언트한테 emit
     client.emit('creation-success', {channel_id: newChannel.channel_id, user_type: newBridge.user_type});
     client.join(newChannel.channel_name);
-    this.server.to(newChannel.channel_name).emit("join", user.username);
+    this.server.to(newChannel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
 
     //return newChannel;
   }
+
+  //==========================================================================================
     
   @SubscribeMessage('create-dm-channel')
   async onCreateDmChannel(
@@ -200,12 +210,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     client.emit('creation-dm-success', {channel_id: newChannel.channel_id, user_type: newBridge.user_type});
     receiverSocket.emit('creation-dm-success', {channel_id: newChannel.channel_id, user_type: newReceiverBridge.user_type});
 
-    this.server.to(newChannel.channel_name).emit("join", user.nickname);
-    this.server.to(newChannel.channel_name).emit("join", receiver.nickname);
+    this.server.to(newChannel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
+    this.server.to(newChannel.channel_name).emit("join", {user_id: receiver.user_id, user_nickname: receiver.nickname});
   
     //return newChannel;
   }
-    
+
+  //==========================================================================================  
+
   @SubscribeMessage('join-group-channel')
   async onJoinChannel(
     @ConnectedSocket() client: Socket,
@@ -253,10 +265,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     client.join(channel.channel_name);
     client.emit('join-success', {channel_id: channel.channel_id, user_type: newBridge.user_type});
-    //client.emit('get-users-channel', inners);
-    this.server.to(channel.channel_name).emit("join", user.nickname);
+    client.emit('get-users-channel', inners);
+    this.server.to(channel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
   }
- 
+
+  //==========================================================================================
+
   @SubscribeMessage('post-group-message')
   async onPostGroupMessage(
     @ConnectedSocket() client: Socket,
@@ -298,10 +312,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     const newMessage = await this.chatService.createGroupMessage(user, channel, groupMessageDto.content);
 
-    this.server.to(channel.channel_name).emit('message', newMessage);
+    this.server.to(channel.channel_name).emit('message', {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
     client.emit('post-success', channel.channel_id);
     //return newMessage;
   }
+
+  //==========================================================================================
 
   @SubscribeMessage('post-dm')
   async onPostDm(
@@ -335,10 +351,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     const newMessage = await this.chatService.createDM(user, channel, dmDto.content);
 
-    this.server.to(channel.channel_name).emit('message', newMessage);
+    this.server.to(channel.channel_name).emit('message', {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
     client.emit('post-dm-success', channel.channel_id);
     //return newMessage;
   }
+
+  //==========================================================================================
 
   @SubscribeMessage('leave-channel')
   async onLeaveChannel(
@@ -374,10 +392,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     await this.chatService.deleteUCBridge(user.user_id, channelId);
     client.leave(channel.channel_name);
     client.emit('leave-success', channel.channel_id);
-    this.server.to(channel.channel_name).emit(`user ${user.nickname} has left`);
+    this.server.to(channel.channel_name).emit("leave", {user_id: user.user_id, user_nickname: user.nickname});
 
     await this.chatService.deleteChannelIfEmpty(channelId);
   }
+
+  //==========================================================================================
 
   @SubscribeMessage('close-channel-window')
   async onCloseChannelWindow(
@@ -417,6 +437,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     //await this.chatService.deleteChannelIfEmpty(channelId);
   }
+
+  //==========================================================================================
 
   @SubscribeMessage('set-admin')
   async onSetAdmin(
@@ -460,8 +482,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
     client.emit('admin-success', channel.channel_id);
-    this.server.to(channel.channel_name).emit("admin", targetUser.nickname);
+    this.server.to(channel.channel_name).emit("admin", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
   }
+
+  //==========================================================================================
 
   @SubscribeMessage('set-password')
   async onSetPassword(
@@ -514,6 +538,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit('password setted');
   }
 
+  //==========================================================================================
+
   @SubscribeMessage('change-password')
   async onChangePassword(
     @ConnectedSocket() client: Socket,
@@ -557,6 +583,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit('password updated');
   }
 
+  //==========================================================================================
+
   @SubscribeMessage('remove-password')
   async onRemovePassword(
     @ConnectedSocket() client: Socket,
@@ -599,6 +627,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     client.emit('removepwd-success', channel.channel_id);
     this.server.to(channel.channel_name).emit('password removed');
   }
+
+  //==========================================================================================
 
   @SubscribeMessage('kick-user')
   async onKickUser(
@@ -661,11 +691,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
 
+    const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
+
     await this.chatService.deleteUCBridge(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
     client.leave(channel.channel_name);
     client.emit('kick-success', channel.channel_id);
-    this.server.to(channel.channel_name).emit(`user ${user.nickname} is kicked.`);
+    this.server.to(channel.channel_name).emit("kick", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
   }
+
+  //==========================================================================================
 
   @SubscribeMessage('ban-User')
   async onBanUser(
@@ -736,11 +770,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
 
     await this.chatService.updateBanStatus(targetBridge, true);
-
+    const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
+    
     client.leave(channel.channel_name);
     client.emit('ban-success', channel.channel_id);
-    this.server.to(channel.channel_name).emit(`user ${user.nickname} is banned.`);
+    this.server.to(channel.channel_name).emit("ban", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
   }
+
+  //==========================================================================================
 
   @SubscribeMessage('onMuteUser')
   async OnMuteUser(
@@ -810,19 +847,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
 
+    const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
+
     await this.chatService.updateMuteStatus(targetBridge, true);
     client.emit('onmute-success', channel.channel_id);
-    this.server.to(channel.channel_name).emit(`user ${user.nickname} is muted.`);
+    this.server.to(channel.channel_name).emit("mute", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
     
     setTimeout(() => {
-      this.unmuteUser(user, channel, targetBridge);
+      this.unmuteUser(user, channel, targetUser, targetBridge);
     }, 10 * 1000);
   }
+
+  //==========================================================================================
   
-  private async unmuteUser(user: User, channel: Channel, targetBridge: UserChannelBridge) {
+  private async unmuteUser(user: User, channel: Channel, targetUser: User, targetBridge: UserChannelBridge) {
     await this.chatService.updateMuteStatus(targetBridge, false);
 
-    this.server.to(channel.channel_name).emit(`user ${user.nickname} is unmuted.`);
+    this.server.to(channel.channel_name).emit("unmute", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
   }
 
   // @SubscribeMessage('invite-game')

@@ -23,23 +23,36 @@ export class RelationController {
         return await this.relationService.addBlock(sender, relationDto.receiverId);
     }
 
-    // @Delete('remove/friend')
-    // async unFriend() {
+    @Delete('remove/friend')
+    async unFriend(@Body() relationDto: RelationDto) {
+        try {
+            const sender = await this.userService.getProfileByUserId(relationDto.senderId);
+            await this.relationService.unFriend(relationDto.senderId, relationDto.receiverId);
+        } catch(exception) {
+            return {state: false};
+        }
+        return {state: true};
+    }
 
-    // }
+    @Delete('remove/block')
+    async unBlock(@Body() relationDto: RelationDto) {
+        try {
+            const sender = await this.userService.getProfileByUserId(relationDto.senderId);
+            await this.relationService.unBlock(relationDto.senderId, relationDto.receiverId);
+        } catch(exception) {
+            return {state: false};
+        }
+        return {state: true};
+    }
 
-    // @Delete('remove/block')
-    // async unBlock() {
-        
-    // }
+    @Get('social/friends/:id')
+    async getFriendsStatusOfUser(@Param('id', ParseIntPipe) userId: number) {
+        return await this.relationService.getFriendsOfUser(userId);
+    }
 
-    // @Get('social/friends')
-    // async getFriendsStatusOfUser() {
+    @Get('social/blocks/:id')
+    async getBlocksStatusOfUser(@Param('id', ParseIntPipe) userId: number) {
+        return await this.relationService.getBlocksOfUser(userId);
+    }
 
-    // }
-
-    // @Get('social/blocks')
-    // async getBlocksStatusOfUser() {
-        
-    // }
 }

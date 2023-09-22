@@ -2,9 +2,14 @@ import { useState, useEffect, ReactNode } from 'react';
 import styles from "@/styles/chat.module.css";
 import useSocketContext from '@/lib/socket';
 
+import ChatMenu from './menu';
+
 export default function ChatRoom() {
 	return (
-		<ChatBox></ChatBox>
+		<>
+			<ChatMenu></ChatMenu>
+			<ChatBox></ChatBox>
+		</>
 	);
 }
 
@@ -62,7 +67,7 @@ function ChatBox() {
 					id="chatInputField"
 					autoComplete='off'
 					style={{
-						width: '85%',
+						width: '70%',
 						height: '2rem',
 					}}
 					max={256}
