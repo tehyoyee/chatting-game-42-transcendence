@@ -54,7 +54,7 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
       if (!queue)
       {
           const JoinQueue = () => {
-              SocketContext.gameSocket?.emit('joinQueue', "NORMAL");
+              SocketContext.gameSocket?.emit('joinQueue', "ADVANCED");
             }
           JoinQueue();
           setQueue(queue + 1);

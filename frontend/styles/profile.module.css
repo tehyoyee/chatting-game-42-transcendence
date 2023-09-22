@@ -42,6 +42,7 @@
 }
 
 .userProps {
+	justify-content: center;
 	text-align: center;
 	font-size: 23px;
 	font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
