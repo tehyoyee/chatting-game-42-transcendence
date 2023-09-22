@@ -5,10 +5,13 @@ import { ChatGateway } from './chat.gateway';
 import { UserInRequest } from 'src/types/user-in-request.interface';
 import { Channel } from './entity/channel.entity';
 import { ChannelType } from './enum/channel_type.enum';
+import { UserService } from 'src/user/user.service';
+import { BridgeDto } from './dto/bridge-dto';
 
 @Controller('chat')
 export class ChatController {
     constructor(
+        private userServics: UserService,
         private chatService: ChatService,
         private chatGateway: ChatGateway) {}
 
@@ -54,7 +57,7 @@ export class ChatController {
             return await this.chatService.getPrivateChannelByUserId(id);
         }
 
-        //특정 채널 id로 가져오기
+        //특정 채널을 id로 가져오기
         @Get('/channel/:id')
         async getChannelByChannelId(@Param('id', ParseIntPipe) id: number): Promise<Channel> {
             return await this.chatService.getChannelById(id);
@@ -64,6 +67,17 @@ export class ChatController {
         @Get('/channel/:name')
         async getChannelByChannelName(@Param('name') name: string): Promise<Channel> {
             return await this.chatService.getChannelByName(name);
+        }
+
+        //The user should be able to access other players profiles through the chat interface.
+        @Get('profile/:id')
+        async getProfileByUserIdInChannel(@Param('id', ParseIntPipe) id: number): Promise<User> {
+            return await this.userServics.getProfileByUserId(id);
+        }
+
+        @Get('users-in-channel/:id')
+        async get(@Param('id', ParseIntPipe) id: number): Promise<BridgeDto[]> {
+            return await this.chatService.getAllUsersInChannelByChannelId(id);
         }
     }
 

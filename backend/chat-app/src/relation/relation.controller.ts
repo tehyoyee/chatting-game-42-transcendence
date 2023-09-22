@@ -1,4 +1,4 @@
-import { Body, Controller, Param, ParseIntPipe, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Req } from '@nestjs/common';
 import { RelationService } from './relation.service';
 import { Relation } from './entity/relation.entity';
 import { AuthService } from 'src/auth/auth.service';
@@ -13,18 +13,33 @@ export class RelationController {
 
     @Post('add/friend')
     async addFriend(@Body() relationDto: RelationDto): Promise<Relation> {
-
         const sender = await this.userService.getProfileByUserId(relationDto.senderId); 
         return await this.relationService.addFriend(sender, relationDto.receiverId);
-
     }
     
     @Post('add/block')
-    async addBlock(@Req() req: Request, @Param('id', ParseIntPipe) block_id: number) {
-
+    async addBlock(@Body() relationDto: RelationDto): Promise<Relation> {
+        const sender = await this.userService.getProfileByUserId(relationDto.senderId);
+        return await this.relationService.addBlock(sender, relationDto.receiverId);
     }
 
-    //@Patch('update')
-    
+    // @Delete('remove/friend')
+    // async unFriend() {
 
+    // }
+
+    // @Delete('remove/block')
+    // async unBlock() {
+        
+    // }
+
+    // @Get('social/friends')
+    // async getFriendsStatusOfUser() {
+
+    // }
+
+    // @Get('social/blocks')
+    // async getBlocksStatusOfUser() {
+        
+    // }
 }
