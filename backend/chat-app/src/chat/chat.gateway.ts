@@ -39,6 +39,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   private logger = new Logger('ChatGateway');
   private userSocketMap = new Map();
 
+  //==========================================================================================
   //onGatewayConnection의 메소드, 소켓이 연결되면 호출된다.
   async handleConnection(client: Socket) {
     this.logger.debug("handle connection in");
@@ -83,6 +84,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
   }
   
+  //==========================================================================================
   //OnGatewayDosconnect의 메소드, 소켓 연결이 종료되면 호출된다.
   async handleDisconnect(client: any) {
     const user = await this.socketToUser(client);
@@ -94,6 +96,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
   }
+
+  //==========================================================================================
     
   private async socketToUser(client: Socket): Promise<User> {
     const token: any = client.handshake.query.token;
@@ -110,12 +114,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
         return undefined;
     }
   }
+  
+  //==========================================================================================
 
   private userIdToSocket(userId: number): Socket {
     return this.userSocketMap.get(userId);
   }
 
-  //===========================================================================================================
+  //==========================================================================================
   
   @SubscribeMessage('create-group-channel')
   async onCreateGroupChannel(
@@ -153,7 +159,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //return newChannel;
   }
 
-  //===========================================================================================================
+  //==========================================================================================
     
   @SubscribeMessage('create-dm-channel')
   async onCreateDmChannel(
@@ -210,8 +216,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //return newChannel;
   }
 
-  //===========================================================================================================
-    
+  //==========================================================================================  
+
   @SubscribeMessage('join-group-channel')
   async onJoinChannel(
     @ConnectedSocket() client: Socket,
@@ -263,8 +269,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
   }
 
-  //===========================================================================================================
- 
+  //==========================================================================================
+
   @SubscribeMessage('post-group-message')
   async onPostGroupMessage(
     @ConnectedSocket() client: Socket,
@@ -311,7 +317,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //return newMessage;
   }
 
-  //===========================================================================================================
+  //==========================================================================================
 
   @SubscribeMessage('post-dm')
   async onPostDm(
@@ -350,7 +356,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //return newMessage;
   }
 
-  //===========================================================================================================
+  //==========================================================================================
 
   @SubscribeMessage('leave-channel')
   async onLeaveChannel(
@@ -391,7 +397,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     await this.chatService.deleteChannelIfEmpty(channelId);
   }
 
-  //===========================================================================================================
+  //==========================================================================================
 
   @SubscribeMessage('close-channel-window')
   async onCloseChannelWindow(
@@ -432,7 +438,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //await this.chatService.deleteChannelIfEmpty(channelId);
   }
 
-  //===========================================================================================================
+  //==========================================================================================
 
   @SubscribeMessage('set-admin')
   async onSetAdmin(
@@ -479,7 +485,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit("admin", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
   }
 
-  //===========================================================================================================
+  //==========================================================================================
 
   @SubscribeMessage('set-password')
   async onSetPassword(
@@ -532,7 +538,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit('password setted');
   }
 
-  //===========================================================================================================
+  //==========================================================================================
 
   @SubscribeMessage('change-password')
   async onChangePassword(
@@ -577,7 +583,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit('password updated');
   }
 
-  //===========================================================================================================
+  //==========================================================================================
 
   @SubscribeMessage('remove-password')
   async onRemovePassword(
@@ -622,7 +628,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit('password removed');
   }
 
-  //===========================================================================================================
+  //==========================================================================================
 
   @SubscribeMessage('kick-user')
   async onKickUser(
@@ -693,7 +699,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit("kick", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
   }
 
-  //===========================================================================================================
+  //==========================================================================================
 
   @SubscribeMessage('ban-User')
   async onBanUser(
@@ -771,7 +777,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit("ban", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
   }
 
-  //===========================================================================================================
+  //==========================================================================================
 
   @SubscribeMessage('onMuteUser')
   async OnMuteUser(
@@ -852,7 +858,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }, 10 * 1000);
   }
 
-  //===========================================================================================================
+  //==========================================================================================
   
   private async unmuteUser(user: User, channel: Channel, targetUser: User, targetBridge: UserChannelBridge) {
     await this.chatService.updateMuteStatus(targetBridge, false);
