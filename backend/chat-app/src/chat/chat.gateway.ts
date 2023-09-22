@@ -141,9 +141,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
   
     const newChannel = await this.chatService.createGroupChannel(user, groupChannelDto);
-  
+    const newBridge = await this.chatService.checkUserInThisChannel(user.user_id, newChannel.channel_id);
+
     //성공 했을 때 채널 고유 아이디를 그 클라이언트한테 emit
-    client.emit('creation-success', newChannel.channel_id);
+    client.emit('creation-success', {channel_id: newChannel.channel_id, user_type: newBridge.user_type});
     client.join(newChannel.channel_name);
     this.server.to(newChannel.channel_name).emit("join", user.username);
 
@@ -189,12 +190,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('creation-dm-fail', 'Unidentified User Error in onCreateDmChannel');
       return ;
     }
+    
+    const newBridge = await this.chatService.checkUserInThisChannel(user.user_id, newChannel.channel_id);
+    const newReceiverBridge = await this.chatService.checkUserInThisChannel(receiver.user_id, newChannel.channel_id);
   
     client.join(newChannel.channel_name);
     receiverSocket.join(newChannel.channel_name);
 
-    client.emit('creation-dm-success', newChannel.channel_id);
-    receiverSocket.emit('creation-dm-success', newChannel.channel_id);
+    client.emit('creation-dm-success', {channel_id: newChannel.channel_id, user_type: newBridge.user_type});
+    receiverSocket.emit('creation-dm-success', {channel_id: newChannel.channel_id, user_type: newReceiverBridge.user_type});
 
     this.server.to(newChannel.channel_name).emit("join", user.nickname);
     this.server.to(newChannel.channel_name).emit("join", receiver.nickname);
@@ -217,9 +221,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     
     const bridge = await this.chatService.checkUserInThisChannel(user.user_id, joinChannelDto.channelId);
     if (bridge && bridge.is_banned) {
-      // this.logger.debug('Bannde User');
-      // throw new HttpException('Bannde User', HttpStatus.UNAUTHORIZED);
-      client.emit('join-fail', 'Bannde User Error in onJoinChannel');
+      // this.logger.debug('Banned User');
+      // throw new HttpException('Banned User', HttpStatus.UNAUTHORIZED);
+      client.emit('join-fail', 'Banned User Error in onJoinChannel');
       return ;
     }
     
@@ -243,11 +247,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
 
     await this.chatService.createUCBridge(user, channel, UserType.MEMBER);
+    const newBridge = await this.chatService.checkUserInThisChannel(user.user_id, channel.channel_id);
 
     let inners = await this.chatService.getAllUsersInChannelByChannelId(channel.channel_id);
 
     client.join(channel.channel_name);
-    client.emit('join-success', channel.channel_id);
+    client.emit('join-success', {channel_id: channel.channel_id, user_type: newBridge.user_type});
     //client.emit('get-users-channel', inners);
     this.server.to(channel.channel_name).emit("join", user.nickname);
   }
