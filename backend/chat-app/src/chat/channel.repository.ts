@@ -93,7 +93,9 @@ export class ChannelRepository extends Repository<Channel> {
     }
 
     async setPassword(channel: Channel, newPassword: string) {
-        channel.channel_type = ChannelType.PROTECTED;
+        if (channel.channel_type === ChannelType.PUBLIC) {
+            channel.channel_type = ChannelType.PROTECTED;
+        }
         channel.salt = await bcrypt.genSalt();
         channel.channel_pwd = await bcrypt.hash(newPassword, channel.salt);
 

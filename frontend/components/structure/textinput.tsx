@@ -37,12 +37,7 @@ export default function TextInputForm({
 			required
 		/>
 		<button
-			style={{
-				padding: '1px',
-				border: 'solid 1px black',
-				borderRadius: '0.3rem',
-				backgroundColor: 'lightgray',
-			}}
+			className="normalButton"
 			type="submit">
 			확인
 		</button>
