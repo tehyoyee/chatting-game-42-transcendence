@@ -8,6 +8,7 @@ import { MailService } from "src/auth/mail.service";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { HttpModule } from "@nestjs/axios";
 import { UserRepository } from "src/user/user.repository";
+import { GameService } from "./game.service";
 
 @Module({
 	imports: [
@@ -16,6 +17,13 @@ import { UserRepository } from "src/user/user.repository";
 		MailerModule,
 		HttpModule,
 	],
-	providers: [GameGateway, AuthService, UserService, MailService, UserRepository],
+	providers: [
+		GameGateway,
+		GameService,
+		AuthService,
+		UserService,
+		MailService,
+		UserRepository
+	],
 })
 export class GameModule {}

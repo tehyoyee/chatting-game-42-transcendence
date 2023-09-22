@@ -4,7 +4,7 @@ import { UserRepository } from 'src/user/user.repository';
 
 // Logistic function
 const logisticFunction = (p1: number, p2: number): number => {
-	return Math.round(25 - 50/(1 + 10 ^ (Math.abs(p1 - p2) / 400)))
+	return Math.round(25 - (50/(1 + 10 ** (Math.abs(p1 - p2) / 400))))
 }
 
 @Injectable()
@@ -24,17 +24,19 @@ export class GameService {
 		if (!winUser || !loseUser) {
 			throw new HttpException('User not Found', 404);
 		}
+
 		winUser.win_count++;
 		loseUser.lose_count++;
 
 		// 점수 변경
 		const surplus = logisticFunction(winUser.point, loseUser.point);
+		console.log(surplus);
 		if (winUser.point > loseUser.point) {
 			winUser.point += (25 - surplus);
 			loseUser.point -= (25 - surplus);
 		} else {
-			winUser.point -= (25 - surplus);
-			loseUser.point += (25 + surplus);
+			winUser.point += (25 + surplus);
+			loseUser.point -= (25 + surplus);
 		}
 		await this.userRepository.save(winUser);
 		await this.userRepository.save(loseUser);
