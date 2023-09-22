@@ -13,12 +13,12 @@ import { KeyStatus } from "./game.keystatus.enum";
 @WebSocketGateway({ namespace: '/game'})
 export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect {
 	
-	private readonly MAP_Y = 1000;
-	private readonly MAP_X = 1400;
+	private readonly MAP_Y = 1400;
+	private readonly MAP_X = 2000;
 	private readonly SPEED = 5;
-	private readonly paddleSpeed = 10;
-	private readonly PADDLE_SIZE = 80;
-	private readonly paddleGap = 40;
+	private readonly paddleSpeed = 20;
+	private readonly PADDLE_SIZE = 300;
+	private readonly paddleGap = 20;
 	private readonly DELAY = 16;
 	private readonly MAXPOINT = 5;
 
@@ -105,6 +105,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		if (point1 == this.MAXPOINT) {
 			console.log(`${user1.username} winned !`);
 			this.gameService.updateGameHistory(user1.user_id, user2.user_id);
+			this.server.to(roomName).emit('gameEnd');
 			player1.leave(roomName);
 			player2.leave(roomName);
 			this.gameRoomMap.delete(user1.user_id);
@@ -113,6 +114,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		} else if (point2 == this.MAXPOINT) {
 			console.log(`${user1.username} winned !`);
 			this.gameService.updateGameHistory(user2.user_id, user1.user_id);
+			this.server.to(roomName).emit('gameEnd');
 			player1.leave(roomName);
 			player2.leave(roomName);
 			this.gameRoomMap.delete(user1.user_id);
@@ -127,8 +129,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			dy: this.SPEED * 0.5,
 		};
 		if (gameMode === 'ADVANCED') {
-			ball.dx += ((point1 + point2) / this.MAXPOINT);
-			ball.dy += ((point1 + point2) / this.MAXPOINT);
+			ball.dx += this.SPEED * ((point1 + point2) / this.MAXPOINT);
+			ball.dy += this.SPEED * ((point1 + point2) / this.MAXPOINT);
 		}
 		if (Math.random() >= 0.5) {
 			ball.dx = -ball.dx;
@@ -141,19 +143,10 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			x: this.MAP_X - this.paddleGap,
 			y: this.MAP_Y / 2
 		};
-		console.log(user1.nickname, user2.nickname);
-		// this.server.to(roomName).emit('gamingUser', {
-		// 	player1: user1.nickname,
-		// 	player2: user2.nickname
-		// });
-		// console.log(point1, point2);
-		// this.server.to(roomName).emit('gamingScore', {
-		// 	score1: point1,
-		// 	socre2: point2
-		// });
-		var winFlag = 0;
-		const render = () => {
 
+		var winFlag = 0;
+
+		const render = () => {
 			// Update Paddle Position
 			const user1paddleDir = this.userKeyMap.get(user1.user_id);
 			console.log('user1 Paddle DIR : ', user1paddleDir);
@@ -178,10 +171,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					paddle2.y += this.paddleSpeed;
 				}
 			}
-			console.log(`Paddle1 : { ${paddle1.x}, ${paddle1.y} }`);
-			console.log(`Paddle2 : { ${paddle2.x}, ${paddle2.y} }`);
-
-			console.log(`ball x: ${ball.x} // y: ${ball.y}`);
 
 			// Ball Reflection at Bottom
 			if (ball.dy > 0 && ball.y + ball.dy >= this.MAP_Y) {
@@ -198,34 +187,27 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			
 			// Left Paddle Reflection
 			if (ball.dx < 0 && ball.x + ball.dx <= paddle1.x && paddle1.x < ball.x) {
-				if (ball.dy > 0) {	// from 1quad
-					if (ball.y <= paddle1.y && paddle1.y <= ball.y + ball.dy) {
-						ball.dx = -ball.dx;
-						ball.x += ball.dx;
-					}
-				}
-				else {		// from 4quad
-					if (ball.y + ball.dy <= paddle1.y && paddle1.y <= ball.y) {
+				if (ball.dy > 0) {	// from 1, 4 quadrant
+					if (paddle1.y <= (ball.y + (ball.y + ball.dy)) / 2 && (ball.y + (ball.y + ball.dy)) / 2 <= paddle1.y + this.PADDLE_SIZE) {
 						ball.dx = -ball.dx;
 						ball.x += ball.dx;
 					}
 				}
 			// Right Paddle Reflection
 			} else if (ball.dx > 0 && ball.x <= paddle2.x && paddle2.x < ball.x + ball.dx) {
-				if (ball.dy > 0) {	// from 2quad
-					if (ball.y <= paddle2.y && paddle2.y <= ball.y + ball.dy) {
-						ball.dx = -ball.dx;
-						ball.x += ball.dx;
-					}
-				}
-				else {		// from 3quad
-					if (ball.y + ball.dy <= paddle2.y && paddle2.y <= ball.y) {
+				if (ball.dy > 0) {	// from 2, 3 quadrant
+					if (paddle2.y <= (ball.y + (ball.y + ball.dy)) / 2 && (ball.y + (ball.y + ball.dy)) / 2 <= paddle2.y + this.PADDLE_SIZE) {
 						ball.dx = -ball.dx;
 						ball.x += ball.dx;
 					}
 				}
 			}
+			console.log(`Paddle1 : { ${paddle1.x}, ${paddle1.y} }`);
+			console.log(`Paddle2 : { ${paddle2.x}, ${paddle2.y} }`);
 			console.log(`ball x: ${ball.x} // y: ${ball.y}`);
+			/**
+			 * Gaming Info to Front-end
+			 */
 			this.server.to(roomName).emit('gamingInfo', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
@@ -240,26 +222,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				paddle2X: paddle2.x,
 				paddle2Y: paddle2.y,
 			});
-			// this.server.to(roomName).emit('gamingUser', {
-			// 	player1: user1.nickname,
-			// 	player2: user2.nickname
-			// });
-			// console.log(point1, point2);
-			// this.server.to(roomName).emit('gamingScore', {
-			// 	score1: point1,
-			// 	socre2: point2
-			// });
-			// this.server.to(roomName).emit('gamingBall', {
-			// 	ballX: ball.x,
-			// 	ballY: ball.y
-			// });
-			// this.server.to(roomName).emit('gamingPaddle', {
-			// 	paddle1X: paddle1.x,
-			// 	paddle1Y: paddle1.y,
-			// 	paddle2X: paddle2.x,
-			// 	paddle2Y: paddle2.y
-			// });
-			// Earning Point Condition
+			/**
+			 * Earning Point Condition
+			 */
 			if (ball.x < 0) {
 				winFlag = 2;
 			} else if (ball.x > this.MAP_X) {
@@ -294,7 +259,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				this.gameAdvancedQueue.splice(i, 1);
 			}
 		}
-		console.log("AfterExitQueue", this.gameNormalQueue);
 	}
 
 	@SubscribeMessage('keyW')
