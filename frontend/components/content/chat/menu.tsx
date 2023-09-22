@@ -15,29 +15,36 @@ import ChatControl from './control';
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`
 const chatInfoReqUrl = `${serverUrl}/chat/users-in-channel/`;
 
-const fetcher = (async (path: string) => {
-	await fetch(path, {
+const fetcher = async (path: string): Promise<IChatMate[]> => {
+	const res = await fetch(path, {
 		method: 'GET',
 		credentials: 'include',
 	})
 	.then(res => {
 		if (!res.ok) throw new Error("invalid response");
 		return res.json()
-	})
-});
+	});
+	return res;
+};
 
 export default function ChatMenu() {
 	const {chatSocket} = useSocketContext();
 	const chatContext = useChatContext();
 	const { user, setUser, joined, setJoined } = chatContext;
-	const [userList, updateUserList] = useFetch<IChatMate[]>(`${chatInfoReqUrl}${user.channel_id}`, []);
+	const [userList, updateUserList] = useFetch<IChatMate[]>(`${chatInfoReqUrl}${user.channel_id}`, [], fetcher);
 	const [controlModal, setControlModal] = useState<boolean>(false);
-	const list: IChatMate[] = userList;
 
 	useEffect(() => {
 		if (!chatSocket) return;
+		chatSocket.off('leave');
+		chatSocket.on('leave', (msg) => {
+			console.log("an user exited");
+			console.log(`exit: ${JSON.stringify(msg)}`)
+			updateUserList();
+		});
 		chatSocket.off('join');
 		chatSocket.on('join', (msg) => {
+			console.log("new user joined");
 			console.log(`join: ${JSON.stringify(msg)}`)
 			updateUserList();
 		});
@@ -48,9 +55,9 @@ export default function ChatMenu() {
 		<SideBar
 			className={"full-background-color overflow-y-scroll overflow-x-hidden"}>
 			<ul>
-				<li>
-					{
-						(user.user_type === EChatUserType.OWNER || user.user_type === EChatUserType.ADMIN) &&
+				{
+					(user.user_type === EChatUserType.OWNER || user.user_type === EChatUserType.ADMIN) &&
+					<li>
 						<button
 							type='button'
 							onClick={(e) => 
@@ -61,16 +68,18 @@ export default function ChatMenu() {
 							}}>
 							{'채널 설정'} 
 						</button>
-					}
-					{
-						controlModal && 
-							<Modal
-								onClose={setControlModal}
-								style={{}}
-								>
-								<ChatControl userList={userList}></ChatControl>
-							</Modal>
-					}
+					</li>
+				}
+				{
+					controlModal && 
+						<Modal
+							onClose={setControlModal}
+							style={{}}
+							>
+							<ChatControl userList={userList}></ChatControl>
+						</Modal>
+				}
+				<li>
 					<button
 						type='button'
 						onClick={(e) => 
@@ -81,6 +90,8 @@ export default function ChatMenu() {
 						}}>
 						{'채널 나가기'} 
 					</button>
+				</li>
+				<li>
 					<button
 						type='button'
 						onClick={(e) => 
@@ -93,12 +104,13 @@ export default function ChatMenu() {
 					</button>
 				</li>
 				{
-					userList.map(user => {
+					userList.map((user, index) => {
 						return (
-							<UserCard
-								user={user}
-								key={user.user_id}
-							></UserCard>
+							<li key={index}>
+								<UserCard
+									user={user}
+								></UserCard>
+							</li>
 						);
 					})
 				}
@@ -111,11 +123,13 @@ function exitChat(user: IChatUser, socket: Socket) {
 	if (!confirm("채널에서 나가시겠습니까?")) return;
 	console.log('exitChat request');
 	socket.emit('leave-channel', user.channel_id);
+	socket.off(); // NOTE
 }
 
 function closeChat(user: IChatUser, socket: Socket) {
 	console.log('closeChat request');
 	socket.emit('close-channel-window', user.channel_id);
+	socket.off(); // NOTE
 }
 
 function socketInit(chatSocket: Socket, chatContext: TChatContext) {

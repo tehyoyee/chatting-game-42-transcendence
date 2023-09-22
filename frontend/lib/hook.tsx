@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 type TFetcher<T> = (path: string) => Promise<T>;
 
 export function useFetch<T>(path: string, init: T, fetcher?: TFetcher<T>): [T, Function] {
-	const [item, setItem] = useState(init);
+	const [item, setItem] = useState<T>(init);
 	const [update, setUpdate] = useState({});
 
 	useEffect(() => {

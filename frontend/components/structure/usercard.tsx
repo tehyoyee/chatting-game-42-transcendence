@@ -1,3 +1,5 @@
+import chatStyles from '@/styles/chat.module.css';
+import styles from '@/styles/social.module.css';
 import { IChatMate } from "@/components/content/chat/context";
 
 export default function UserCard({
@@ -6,9 +8,12 @@ export default function UserCard({
 	user: IChatMate,
 }) {
 	return (
-		<div style={{
+		<div 
+			className={`${chatStyles.button} ${styles.playerCard}`}
+			style={{
+			backgroundColor: "lightgray",
 			}}>
-			{user.user_nickname}
+			{user.userNickName}
 		</div>
 	);
 }
