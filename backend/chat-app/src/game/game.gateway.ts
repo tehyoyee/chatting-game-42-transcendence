@@ -69,7 +69,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					roomName: newRoomName
 				});
 				this.gameNormalQueue = this.gameNormalQueue.slice(2);
-				this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0);
+				setTimeout(() => this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0), 3000);
+				// this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0);
 			}
 		}
 	}
@@ -268,7 +269,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
 		this.userSocketMap.set(user.user_id, client);
-		this.userKeyMap.set(user.user_id, 'NONE');
+		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 	}
   
 	async handleDisconnect(client: any) {
