@@ -22,7 +22,7 @@ import { BlockDto } from 'src/relation/dto/block-dto';
 	// path: "/api/socket.io",
 	namespace: "/chat",
 	cors: {
-	 	origin: "http://localhost:3001",
+	 	origin: "http://10.18.229.228:3001",
 	 	credentials: true,
 	 	allowedHeaders: 'Content-Type, Authorization, Cookie',
 	 	methods: ["GET", "POST"],
