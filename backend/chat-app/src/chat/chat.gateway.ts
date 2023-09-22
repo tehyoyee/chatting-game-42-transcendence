@@ -248,7 +248,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     client.join(channel.channel_name);
     client.emit('join-success', channel.channel_id);
-    //client.emit('', inners); -> 이벤트명 뭐로할까여!
+    //client.emit('get-users-channel', inners);
     this.server.to(channel.channel_name).emit("join", user.nickname);
   }
  
@@ -372,6 +372,45 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit(`user ${user.nickname} has left`);
 
     await this.chatService.deleteChannelIfEmpty(channelId);
+  }
+
+  @SubscribeMessage('close-channel-window')
+  async onCloseChannelWindow(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() channelId: number) {
+    const user = await this.socketToUser(client);
+    if (!user) {
+      //exception handler
+      // this.logger.debug('Unidentified User');
+      // throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+      client.emit('close-fail', 'Unidentified User Error in onCloseChannelWindow');
+      return ;
+    }
+    
+    const bridge = await this.chatService.checkUserInThisChannel(user.user_id, channelId);
+    if (!bridge) {
+      //exception handler
+      // this.logger.debug('Unexist Bridge');
+      // throw new HttpException('Unexist Bridge', HttpStatus.UNAUTHORIZED);
+      client.emit('close-fail', 'Unexist Bridge Error in onCloseChannelWindow');
+      return ;
+    }
+    
+    const channel = await this.chatService.getChannelById(channelId);
+    if (!channel) {
+      //exception handler
+      // this.logger.debug('Unexist Channel');
+      // throw new HttpException('Unexist Channel', HttpStatus.UNAUTHORIZED);
+      client.emit('close-fail', 'Unexist Channel Error in onCloseChannelWindow');
+      return ;
+    }
+
+    //await this.chatService.deleteUCBridge(user.user_id, channelId);
+    client.leave(channel.channel_name);
+    client.emit('close-success', channel.channel_id);
+    //this.server.to(channel.channel_name).emit(`user ${user.nickname} has left`);
+
+    //await this.chatService.deleteChannelIfEmpty(channelId);
   }
 
   @SubscribeMessage('set-admin')
