@@ -2,11 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 
-export function useFetch<T>(path: string, init: T): [T, React.Dispatch<React.SetStateAction<Object>>] {
+type TFetcher<T> = (path: string) => Promise<T>;
+
+export function useFetch<T>(path: string, init: T, fetcher?: TFetcher<T>): [T, Function] {
 	const [item, setItem] = useState(init);
 	const [update, setUpdate] = useState({});
 
 	useEffect(() => {
+		if (!fetcher) {
 		(async() => {
 			await fetch(path, {
 				method: 'GET',
@@ -22,8 +25,19 @@ export function useFetch<T>(path: string, init: T): [T, React.Dispatch<React.Set
 				console.log(`${path}: fetch failed: ${err}`);
 			});
 		})()
+		} else {
+			fetcher(path)
+			.then(data => {setItem(data)})
+			.catch(err => {
+				setItem(init);
+				console.log(`${path}: fetch failed: ${err}`);
+			});
+		}
 	}, [update]);
-	return [item, setUpdate];
+	function updateItem() {
+		setUpdate({});
+	};
+	return [item, updateItem];
 }
 
 export function useToken() {

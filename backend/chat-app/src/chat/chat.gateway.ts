@@ -267,7 +267,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     client.join(channel.channel_name);
     client.emit('join-success', {channel_id: channel.channel_id, user_type: newBridge.user_type});
-    //client.emit('get-users-channel', inners);
+    client.emit('get-users-channel', inners);
     this.server.to(channel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
   }
 

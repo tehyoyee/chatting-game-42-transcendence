@@ -6,12 +6,14 @@ export default function TextInputForm({
 	label = '',
 	pattern = '',
 	tailMassage = '',
+	id = 'inputField',
 }: {
 	children: ReactNode,
 	onSubmit: Function,
 	label?: string,
 	pattern?: string,
 	tailMassage?: string,
+	id?: string,
 }) {
 	return (
 	<form
@@ -29,7 +31,7 @@ export default function TextInputForm({
 				width: '14rem',
 			}}
 			type="text"
-			id="inputField"
+			id={`${id}`}
 			pattern={pattern}
 			onInvalid={() => {console.log("invalid")}}
 			required

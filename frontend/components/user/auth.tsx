@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function useAuthContext() {
   const currentAuthContext = useContext(AuthContext);
   if (currentAuthContext == null) {
-    throw new Error("AuthContext is null. it must be used within <AuthContext.Provider>");
+    throw new Error("AuthContext is null. it must be used within <AuthContextProvider>");
   }
   return currentAuthContext;
 }
