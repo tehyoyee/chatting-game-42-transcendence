@@ -46,18 +46,12 @@ export default function ChatList() {
 		chatSocket.on('join-fail', (msg) => {
 			console.log(`join-fail: ${msg}`)
 			setJoined(false)
-			setUser({
-				...user,
-				channel_id: -1,
-			});
+			setUser(msg);
 		});
 		chatSocket.on('join-success', (msg) => {
-			console.log(`join-success: ${msg}`); 
+			console.log(`join-success: ${JSON.stringify(msg)}`); 
 			setJoined(true)
-			setUser({
-				...user,
-				channel_id: Number(msg),
-			});
+			setUser(msg);
 		});
 	}, [chatSocket])
 

@@ -6,19 +6,31 @@ import styles from '@/styles/chat.module.css';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 
+import UserCard from '@/components/structure/usercard';
 import Modal from '@/components/structure/modal';
 import SideBar from '@/components/structure/sidebar';
 import useChatContext, { IChatUser, IChatMate, EChatUserType, TChatContext } from './context';
 import ChatControl from './control';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`
-const chatInfoReqUrl = `${serverUrl}/`;
+const chatInfoReqUrl = `${serverUrl}/chat/users-in-channel/`;
+
+const fetcher = (async (path: string) => {
+	await fetch(path, {
+		method: 'GET',
+		credentials: 'include',
+	})
+	.then(res => {
+		if (!res.ok) throw new Error("invalid response");
+		return res.json()
+	})
+});
 
 export default function ChatMenu() {
 	const {chatSocket} = useSocketContext();
 	const chatContext = useChatContext();
 	const { user, setUser, joined, setJoined } = chatContext;
-	const [userList, updateUserList] = useFetch<IChatMate[]>(chatInfoReqUrl, []);
+	const [userList, updateUserList] = useFetch<IChatMate[]>(`${chatInfoReqUrl}${user.channel_id}`, []);
 	const [controlModal, setControlModal] = useState<boolean>(false);
 	const list: IChatMate[] = userList;
 
@@ -26,7 +38,7 @@ export default function ChatMenu() {
 		if (!chatSocket) return;
 		chatSocket.off('join');
 		chatSocket.on('join', (msg) => {
-			console.log(`join: ${msg}`)
+			console.log(`join: ${JSON.stringify(msg)}`)
 			updateUserList();
 		});
 		socketInit(chatSocket, chatContext);
@@ -79,23 +91,17 @@ export default function ChatMenu() {
 						}}>
 						{'채널 닫기'} 
 					</button>
-					{/*menuModal &&
-						<Modal onClose={}>
-							<ChatCreate onClose={() => {}}></ChatCreate>
-						</Modal>
-				*/	}
 				</li>
-				{/*
-					list.map(info => {
+				{
+					userList.map(user => {
 						return (
 							<UserCard
-								info={info}
-								key={info.user_id}
-								className={''}
+								user={user}
+								key={user.user_id}
 							></UserCard>
 						);
 					})
-				*/}
+				}
 			</ul>
 		</SideBar>
 	);

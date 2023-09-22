@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext, createContext } from 'react';
+import { IProfileType } from '@/components/content/profile/profile';
 
 export enum EChatUserType {
 	OWNER = "owner",
@@ -12,9 +13,9 @@ export interface IChatUser {
 };
 
 export interface IChatMate {
-	user: number,
-	userType: EChatUserType,
-	isMuted: boolean,
+	user_id: number,
+	user_nickname: string
+//	isMuted: boolean,
 }
 
 export type TChatContext = {
