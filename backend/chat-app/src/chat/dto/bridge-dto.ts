@@ -1,9 +1,14 @@
-import { IsEnum, IsNumber, IsPositive, isEnum } from "class-validator";
+import { IsEnum, IsNumber, IsPositive, IsString, isEnum } from "class-validator";
 import { UserType } from "../enum/user_type.enum";
 import { User } from "src/user/entity/user.entity";
 
 export class BridgeDto {
-    user: User;
+    @IsNumber()
+    @IsPositive()
+    userId: number;
+
+    @IsString()
+    userNickName: string;
 
     @IsEnum(UserType)
     userType: UserType;

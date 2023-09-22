@@ -17,6 +17,8 @@ import { HttpModule, HttpService } from '@nestjs/axios';
 import { MailService } from 'src/auth/mail.service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HttpExceptionFilter } from 'src/auth/http.exception.filter';
+import { RelationModule } from 'src/relation/relation.module';
+import { RelationService } from 'src/relation/relation.service';
 
 @Module({
   imports: [
@@ -25,9 +27,10 @@ import { HttpExceptionFilter } from 'src/auth/http.exception.filter';
     UserModule,
     HttpModule,
     MailerModule,
+    RelationModule
   ],
   controllers: [ChatController],
-  providers: [ChatGateway, UserService, AuthService, MailService, ChatService, ChannelRepository, MessageRepository, UcbRepository],
+  providers: [ChatGateway, UserService, AuthService, MailService, ChatService,  RelationService, ChannelRepository, MessageRepository, UcbRepository],
   exports: [ChatService, ChannelRepository, MessageRepository, UcbRepository]
 })
 export class ChatModule {}

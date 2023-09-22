@@ -15,8 +15,8 @@ import { DmDto, GroupMessageDto } from './dto/message-dto';
 import { UserStatus } from 'src/user/enum/user-status.enum';
 import { UserChannelBridge } from './entity/user-channel-bridge.entity';
 import { Channel } from './entity/channel.entity';
+import { RelationService } from 'src/relation/relation.service';
 
-//아래 내용은 확인이 더 필요!
 @WebSocketGateway({
 	// path: "/api/socket.io",
 	namespace: "/chat",
@@ -34,6 +34,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   constructor(
     private authService: AuthService,
     private userService: UserService,
+    private relationServie: RelationService,
     private chatService: ChatService) {}
   
   private logger = new Logger('ChatGateway');
@@ -262,6 +263,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const newBridge = await this.chatService.checkUserInThisChannel(user.user_id, channel.channel_id);
 
     let inners = await this.chatService.getAllUsersInChannelByChannelId(channel.channel_id);
+    //inners에 user_id랑 user_nickname만 가도록 축소
 
     client.join(channel.channel_name);
     client.emit('join-success', {channel_id: channel.channel_id, user_type: newBridge.user_type});

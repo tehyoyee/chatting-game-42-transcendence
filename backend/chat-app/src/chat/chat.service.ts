@@ -239,11 +239,13 @@ export class ChatService {
         .createQueryBuilder('b')
         .where('b.channel_id = :channelId', {channelId})
         .andWhere('b.is_banned = :isBanned', {isBanned})
-        .select(['b.user_id', 'b.user_type', 'is_banned', 'is_muted'])
+        .select(['b.user_id', 'b.user_type', 'b.is_muted'])
         .getMany();
 
         for (let b of bridges) {
-            let inner = { user: await this.userService.getProfileByUserId(b.user_id),
+            let user = await this.userService.getProfileByUserId(b.user_id);
+            let inner = { userId: user.user_id,
+                        userNickName: user.nickname,
                         userType: b.user_type,
                         isMuted: b.is_muted };
             inners.push(inner);
