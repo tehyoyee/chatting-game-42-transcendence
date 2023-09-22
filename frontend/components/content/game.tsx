@@ -26,7 +26,7 @@ export default function Game() {
         <h1 className={styles.h1}>가속 모드</h1>
         <p className={styles.p}>빠른 속도</p>
         <div className={styles.frame}>
-          <Link href='/game/matching' className={`${styles.button} ${styles.customBtn} ${styles.btn2}`}>
+          <Link href='/game/matchingFast' className={`${styles.button} ${styles.customBtn} ${styles.btn2}`}>
             <span>Game Start</span>
           </Link>
         </div>
