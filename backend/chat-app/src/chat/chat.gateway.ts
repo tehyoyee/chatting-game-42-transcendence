@@ -222,8 +222,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     client.join(channel.channel_name);
     client.emit('join-success', {channel_id: channel.channel_id, user_type: newBridge.user_type});
-    client.emit('get-users-channel', inners);
-    this.server.to(channel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
+//    client.emit('get-users-channel', inners);
+    this.server.to(channel.channel_name).emit("join", {userId: user.user_id, userNickname: user.nickname});
   }
 
   //==========================================================================================
@@ -366,6 +366,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //await this.chatService.deleteUCBridge(user.user_id, channelId);
     client.leave(channel.channel_name);
     client.emit('close-success', channel.channel_id);
+    this.server.to(channel.channel_name).emit("leave", {user_id: user.user_id, user_nickname: user.nickname});
     //this.server.to(channel.channel_name).emit(`user ${user.nickname} has left`);
 
     //await this.chatService.deleteChannelIfEmpty(channelId);

@@ -43,13 +43,14 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
     
     SocketContext.gameSocket?.on('gameStart', () => { setReady(true); });
 
+    
     const exitQueueHandler = () => {
       console.log("exitQueue handler worked!");
       SocketContext.gameSocket?.emit('exitQueue');
     };
     
     useEffect(() => {
-      
+
       if (!queue)
       {
           const JoinQueue = () => {

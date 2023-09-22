@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "../../styles/game.module.css"
+import BackToTop from "./backToTop";
 
 export default function Game() {
 
@@ -30,6 +31,7 @@ export default function Game() {
           </Link>
         </div>
       </div>
+      <BackToTop></BackToTop>
     </>
   );
 }
