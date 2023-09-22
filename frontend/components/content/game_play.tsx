@@ -1,4 +1,6 @@
+import useSocketContext, { SocketContext } from '@/lib/socket';
 import { useRef, useEffect, useState } from 'react';
+
 
 enum DIRECTION {
 	IDLE = 0,
@@ -58,6 +60,8 @@ type PlayerType = {
 };
 
 export default function GamePlay() {
+	
+	const Sock = useSocketContext();
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
 	var Pong: GameType;
@@ -184,8 +188,14 @@ export default function GamePlay() {
 			update: function () {
 				if (!this.over) {
 				// If the ball collides with the bound limits - correct the x and y coords.
-				if (this.ball.x <= 0) Pong._resetTurn(this.ai, this.player);
-				if (this.ball.x >= this.canvas.width - this.ball.width) Pong._resetTurn(this.player, this.ai);
+				if (this.ball.x <= 0)
+				{
+					Pong._resetTurn(this.ai, this.player);
+				}
+				if (this.ball.x >= this.canvas.width - this.ball.width)
+				{
+					Pong._resetTurn(this.player, this.ai);
+				}
 				if (this.ball.y <= 0) this.ball.moveY = DIRECTION.DOWN;
 				if (this.ball.y >= this.canvas.height - this.ball.height) this.ball.moveY = DIRECTION.UP;
 	 
@@ -295,27 +305,36 @@ export default function GamePlay() {
 				// Set the fill style to white (For the paddles and the ball)
 				this.context.fillStyle = '#ffffff';
 	 
+				const tmpObj: any = 0;
+				Sock.gameSocket?.on('gamingPaddle', tmpObj);
 				// Draw the Player
 				this.context.fillRect(
-				this.player.x,
-				this.player.y,
+				tmpObj.paddle1X,
+				tmpObj.paddle1Y,
+				// this.player.x,
+				// this.player.y,
 				this.player.width,
 				this.player.height
 				);
-	 
+				
 				// Draw the Ai
 				this.context.fillRect(
-				this.ai.x,
-				this.ai.y,
+				tmpObj.paddle2X,
+				tmpObj.paddle2Y,
+				// this.ai.x,
+				// this.ai.y,
 				this.ai.width,
 				this.ai.height 
 				);
 	 
 				// Draw the Ball
 				if (Pong._turnDelayIsOver.call(this)) {
+					const tmpObj: any = 0;
+					Sock.gameSocket?.on('gamingBall', tmpObj);
+
 				this.context.fillRect(
-					this.ball.x,
-					this.ball.y,
+					tmpObj.ballX,
+					tmpObj.ballY,
 					this.ball.width,
 					this.ball.height
 				);
@@ -386,14 +405,26 @@ export default function GamePlay() {
 				}
 
 				// Handle up arrow and w key events
-				if (key.code === 'KeyW') Pong.player.move = DIRECTION.UP;
+				if (key.code === 'KeyW')
+				{
+					Sock.gameSocket?.emit('keyW', 'DOWN');
+					Pong.player.move = DIRECTION.UP;
+				}
 
 				// Handle down arrow and s key events
-				if (key.code === 'KeyS') Pong.player.move = DIRECTION.DOWN;
+				if (key.code === 'KeyS')
+				{
+					Sock.gameSocket?.emit('keyS', 'DOWN');
+					Pong.player.move = DIRECTION.DOWN;
+				}
 				});
 
 				// Stop the player from moving when there are no keys being pressed.
-				document.addEventListener('keyup', function (key) { Pong.player.move = DIRECTION.IDLE; });
+				document.addEventListener('keyup', function (key) { 
+					Sock.gameSocket?.emit('keyW', 'UP');
+					Sock.gameSocket?.emit('keyS', 'UP');
+					Pong.player.move = DIRECTION.IDLE;
+				});
 			},
 	 
 			// Reset the ball location, the player turns and set a delay before the next round begins.
@@ -401,8 +432,11 @@ export default function GamePlay() {
 				this.ball = Ball.new(canvas, this.ball.speed);
 				this.turn = loser;
 				this.timer = (new Date()).getTime();
-	 
-				victor.score++;
+				
+				// victor.score++;
+				const tmpObj: any = 0;
+				Sock.gameSocket?.on('gamingScore', tmpObj);
+				victor.score = tmpObj.score1;
 			},
 	 
 			// Wait for a delay to have passed after each turn.
