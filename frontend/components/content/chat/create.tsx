@@ -17,7 +17,7 @@ const TypeToString: string[] = [
 const evt_create_normal = "create-group-channel";
 const evt_create_dm = "create-dm-channel";
 
-export function ChatMenu() {
+export function ChatCreate({ onClose }: { onClose: Function }) {
 	const [chatType, setChatType] = useState<Type>(Type.Public);
 	const { chatSocket } = useSocketContext();
 
@@ -26,7 +26,10 @@ export function ChatMenu() {
 		if (!chatSocket) return;
 			chatSocket.off('creation-success');
 			chatSocket.off('creation-fail');
-			chatSocket.on('creation-success', (data) => {console.log(`생성 성공: ${JSON.stringify(data)}`)});
+			chatSocket.on('creation-success', (data) => {
+				console.log(`생성 성공: ${JSON.stringify(data)}`)
+				onClose();
+			});
 			chatSocket.on('creation-fail', (data) => {alert(`생성 실패: ${JSON.stringify(data)}`);});
 	}, [chatSocket]);
 
@@ -79,7 +82,6 @@ export function ChatMenu() {
 		}
 		console.log(`${chatType}: chat creation request`);
 		if (!chatSocket) return;
-
 //		chatSocket.emit(evt_create_normal, formData);
 	}
 

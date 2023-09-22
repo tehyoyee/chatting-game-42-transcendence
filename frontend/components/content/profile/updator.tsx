@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, Dispatch, SetStateAction } from 'react';
+import React, { SetStateAction } from 'react';
 import { useState, useEffect } from 'react';
 import styles from '@/styles/profile.module.css';
 import Modal from '@/components/structure/modal';
@@ -8,42 +8,24 @@ import TextInputForm from '@/components/structure/textinput';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 
-type UpdateType = {
-  setUpdate: Dispatch<SetStateAction<Object>>;
-};
-
-const UpdateContext = createContext<UpdateType | null>(null);
-
-function UploadBtn({ children, title }: { children: React.ReactNode, title: string }) {
-	const [showModal, setShowModal] = useState(false);
-	const update = useContext(UpdateContext);
-  
-	useEffect(() => {
-	  update?.setUpdate({});
-	  console.log(`setupdateed showModal=${showModal}`);
-	}, [showModal]);
-  
+function UploadBtn({ 
+	onClick, 
+	title 
+}: { 
+	onClick: Function,
+	title: string 
+}) {
 	return (
 	  <>
 			<button
 				className={`${styles.profileUpdateBtn}`}
 				type="button"
 				onClick={(e) => {
-				e.preventDefault();
-				setShowModal(true);
+					e.preventDefault();
+					onClick();
 				}}>
 				{title}
 			</button>
-			{showModal && (
-				<Modal
-				style={{
-					height: '200px',
-					width: '400px',
-				}}
-				onClose={() => setShowModal(false)}>
-				{children}
-				</Modal>
-			)}
 	  </>
 	);
 }
@@ -56,26 +38,24 @@ export default function ProfileUpdator({
   uid: number;
   name: string;
   update: {
-    setUpdate: Dispatch<SetStateAction<Object>>;
+    setUpdate: React.Dispatch<SetStateAction<Object>>;
   };
 }) {
   return (
     <div
       id="profileUpdator"
       className={styles.settings}>
-      <UpdateContext.Provider value={update}>
-        <ul>
-          <li>
-            <ImgUpdator uid={uid}></ImgUpdator>
-          </li>
-          <li>
-            <NameUpdator uid={uid} name={name}></NameUpdator>
-          </li>
-          <li>
-            <TfaUpdator uid={uid}></TfaUpdator>
-          </li>
-        </ul>
-      </UpdateContext.Provider>
+			<ul>
+				<li>
+					<ImgUpdator setUpdate={update.setUpdate} uid={uid}></ImgUpdator>
+				</li>
+				<li>
+					<NameUpdator setUpdate={update.setUpdate} uid={uid} name={name}></NameUpdator>
+				</li>
+				<li>
+					<TfaUpdator uid={uid}></TfaUpdator>
+				</li>
+			</ul>
     </div>
   );
 }
@@ -132,9 +112,17 @@ function TfaUpdator({ uid }: { uid: number }) {
   );
 }
 
-function NameUpdator({ uid, name }: { uid: number; name: string }) {
+function NameUpdator({ 
+	uid, 
+	name,
+	setUpdate,
+}: { 
+	uid: number,
+	name: string,
+	setUpdate: React.Dispatch<SetStateAction<Object>>,
+}) {
 	const [newName, setNewName] = useState(name);
-	const [updated, setUpdated] = useState(false);
+	const [showModal, setShowModal] = useState(false);
 	
   const requestNameUpdate = async (uid: number) => {
     const field = document.querySelector('#inputField') as HTMLInputElement;
@@ -147,8 +135,9 @@ function NameUpdator({ uid, name }: { uid: number; name: string }) {
     })
       .then((res) => {
         if (!res.ok) throw new Error(`invalid response: ${res.status}`);
-				setUpdated(true);
 				setNewName(field.value);
+				setShowModal(false);
+				setUpdate({});
       })
       .catch((err) => {
         console.log(`${updateUrl}: fetch error: ${err}`);
@@ -158,16 +147,23 @@ function NameUpdator({ uid, name }: { uid: number; name: string }) {
 
 	return (
 		<>
-			<UploadBtn title={'Update Name'}>
+			<UploadBtn onClick={() => {setShowModal(true)}} title={'Update Name'}></UploadBtn>
+			{showModal && (
+			<Modal
+				style={{
+					height: '200px',
+					width: '400px',
+				}}
+				onClose={() => setShowModal(false)}>
 				<TextInputForm 
 					onSubmit={() => {requestNameUpdate(uid)}}
 					label="새 닉네임:"
 					pattern="[a-zA-Z0-9]{4,16}"
 					tailMassage="영어 소문자, 대문자, 숫자 4~16자리로 이뤄져야 합니다."
 					>
-          <p>{`현재 닉네임: ${updated ? newName : name}`}</p>
 				</TextInputForm>
-			</UploadBtn>
+			</Modal>
+			)}
 		</>
 	);
 	/*
@@ -213,11 +209,16 @@ function NameUpdator({ uid, name }: { uid: number; name: string }) {
 		*/
 }
 
-function ImgUpdator({ uid }: { uid: number }) {
+function ImgUpdator({ 
+	uid,
+	setUpdate,
+}: { 
+	uid: number,
+	setUpdate: React.Dispatch<SetStateAction<Object>>,
+}) {
   return (
     <>
-      <UploadBtn title={'Update Avatar'}>
-	  </UploadBtn>
+      <UploadBtn onClick={() => {}} title={'Update Avatar'}></UploadBtn>
     </>
   );
 }

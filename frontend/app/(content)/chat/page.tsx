@@ -1,10 +1,10 @@
-import Chat from '@/components/content/chat';
-import sidebarStyles from '/styles/sidebar.module.css';
+'use client'
+
+import Chat from '@/components/content/chat/chat';
 
 export default function Page() {
+
   return (
-    <>
-      <Chat></Chat>
-    </>
+		<Chat></Chat>
   );
 }

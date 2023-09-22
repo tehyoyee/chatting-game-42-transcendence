@@ -114,7 +114,7 @@ export default function GamePlay() {
 
 				this.player = Ai.new(this.canvas, 'left');
 				this.ai = Ai.new(this.canvas, 'right');
-				this.ball = Ball.new(this.canvas, 20); // NOTE: 
+				this.ball = Ball.new(this.canvas, 15); // NOTE: 
 
 				this.ai.speed = 20;
 				this.running = this.over = false;
