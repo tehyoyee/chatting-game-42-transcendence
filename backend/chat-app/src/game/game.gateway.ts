@@ -185,21 +185,17 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				ball.x += ball.dx;
 			}
 			
-			// Left Paddle Reflection
+			// Left Paddle Reflection from 1, 4 quadrant
 			if (ball.dx < 0 && ball.x + ball.dx <= paddle1.x && paddle1.x < ball.x) {
-				if (ball.dy > 0) {	// from 1, 4 quadrant
-					if (paddle1.y <= (ball.y + (ball.y + ball.dy)) / 2 && (ball.y + (ball.y + ball.dy)) / 2 <= paddle1.y + this.PADDLE_SIZE) {
-						ball.dx = -ball.dx;
-						ball.x += ball.dx;
-					}
+				if (paddle1.y <= (ball.y + (ball.y + ball.dy)) / 2 && (ball.y + (ball.y + ball.dy)) / 2 <= paddle1.y + this.PADDLE_SIZE) {
+					ball.dx = -ball.dx;
+					ball.x += ball.dx;
 				}
-			// Right Paddle Reflection
+			// Right Paddle Reflection from 2, 3 quadrant
 			} else if (ball.dx > 0 && ball.x <= paddle2.x && paddle2.x < ball.x + ball.dx) {
-				if (ball.dy > 0) {	// from 2, 3 quadrant
-					if (paddle2.y <= (ball.y + (ball.y + ball.dy)) / 2 && (ball.y + (ball.y + ball.dy)) / 2 <= paddle2.y + this.PADDLE_SIZE) {
-						ball.dx = -ball.dx;
-						ball.x += ball.dx;
-					}
+				if (paddle2.y <= (ball.y + (ball.y + ball.dy)) / 2 && (ball.y + (ball.y + ball.dy)) / 2 <= paddle2.y + this.PADDLE_SIZE) {
+					ball.dx = -ball.dx;
+					ball.x += ball.dx;
 				}
 			}
 			console.log(`Paddle1 : { ${paddle1.x}, ${paddle1.y} }`);
