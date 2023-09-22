@@ -123,13 +123,11 @@ function exitChat(user: IChatUser, socket: Socket) {
 	if (!confirm("채널에서 나가시겠습니까?")) return;
 	console.log('exitChat request');
 	socket.emit('leave-channel', user.channel_id);
-	socket.off(); // NOTE
 }
 
 function closeChat(user: IChatUser, socket: Socket) {
 	console.log('closeChat request');
 	socket.emit('close-channel-window', user.channel_id);
-	socket.off(); // NOTE
 }
 
 function socketInit(chatSocket: Socket, chatContext: TChatContext) {
@@ -145,6 +143,7 @@ function socketInit(chatSocket: Socket, chatContext: TChatContext) {
 			...user,
 			channel_id: -1,
 		});
+		chatSocket.off(); // NOTE
 	});
 
 	chatSocket.off('close-fail')
@@ -157,5 +156,6 @@ function socketInit(chatSocket: Socket, chatContext: TChatContext) {
 			...user,
 			channel_id: -1,
 		});
+		chatSocket.off(); // NOTE
 	});
 }

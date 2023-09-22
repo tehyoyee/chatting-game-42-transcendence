@@ -159,7 +159,7 @@ function NameUpdator({
 					onSubmit={() => {requestNameUpdate(uid)}}
 					label="새 닉네임:"
 					pattern="[a-zA-Z0-9]{4,16}"
-					tailMassage="영어 소문자, 대문자, 숫자 4~16자리로 이뤄져야 합니다."
+					tailMessage="영어 소문자, 대문자, 숫자 4~16자리로 이뤄져야 합니다."
 					>
 				</TextInputForm>
 			</Modal>
