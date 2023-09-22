@@ -10,9 +10,9 @@ export class RelationRepository extends Repository<Relation> {
         super(Relation, datasource.createEntityManager());
     }
 
-    async addFriend(sender: User, receiverId: number): Promise<Relation> {
+    async addRelation(sender: User, receiverId: number, newRelationType: RelationType): Promise<Relation> {
         const newRelation = new Relation();
-        newRelation.relation_type = RelationType.FRIEND;
+        newRelation.relation_type = newRelationType;
         newRelation.sender_id = sender.user_id;
         newRelation.receiver_id = receiverId;
         newRelation.sender = sender;
@@ -21,15 +21,9 @@ export class RelationRepository extends Repository<Relation> {
         return newRelation;
     }
 
-    async addBlock(sender: User, receiverId: number): Promise<Relation> {
-        const newRelation = new Relation();
-        newRelation.relation_type = RelationType.BLOCK;
-        newRelation.sender_id = sender.user_id;
-        newRelation.receiver_id = receiverId;
-        newRelation.sender = sender;
+    async deleteRelation() {
+        //this.delete({});
 
-        await newRelation.save();
-        return newRelation;
     }
 
     async getRelationByIds(senderId: number, receiverId: number): Promise<Relation> {

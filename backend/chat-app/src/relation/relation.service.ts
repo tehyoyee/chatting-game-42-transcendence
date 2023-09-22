@@ -23,7 +23,7 @@ export class RelationService {
             this.logger.debug('Block To Friend');
         }
 
-        return await this.relationRepository.addFriend(sender, receiverId);
+        return await this.relationRepository.addRelation(sender, receiverId, RelationType.FRIEND);
     }
 
     async addBlock(sender: User, receiverId: number): Promise<Relation> {
@@ -39,7 +39,7 @@ export class RelationService {
             this.logger.debug('Friend To Block');
         }
 
-        return await this.relationRepository.addBlock(sender, receiverId);
+        return await this.relationRepository.addRelation(sender, receiverId, RelationType.BLOCK);
     }
 
     async getRelationByIds(senderId: number, receiverId: number): Promise<Relation> {
