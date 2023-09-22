@@ -11,11 +11,7 @@ const logisticFunction = (p1: number, p2: number): number => {
 export class GameService {
 	constructor(
 		private userRepository: UserRepository
-	) {
-	}
-
-	// @InjectRepository(UserRepository)
-	// private userRepository
+	) {}
 
 	async updateGameHistory(winId: number, loseId: number) {
 		const winUser = await this.userRepository.getProfileByUserId(winId);
