@@ -32,3 +32,12 @@
 	min-width: 500px;
 	width: 100%;
 }
+
+.normalButton {
+	width: 4rem;
+	margin: 3px;
+	padding: 1px;
+	border: solid 1px black;
+	border-radius: 0.3rem;
+	background-color: lightgray;
+}

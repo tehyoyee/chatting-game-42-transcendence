@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 
+import styles from '@/styles/chat.module.css';
 import useSocketContext from '@/lib/socket';
 import TextInputForm from '@/components/structure/textinput';
 import useChatContext, { IChatUser, IChatMate, EChatUserType } from './context';
@@ -39,34 +40,55 @@ export default function ChatControl({
 	useEffect(() => {
 	}, []);
 	return (
-		<div>
-			<select>
-				{
-					userList.map((user) => {
-						return (
-							<option>
-								{user.user.nickname}
-							</option>
-						);
-					})
-				}
-			</select>
-			<TextInputForm 
-				onSubmit={() => {chatSocket && request(ControlType.Ban, user, chatSocket)}} 
+		<form>
+			<div 
+				style={{
+					border: "solid 1px black",
+					padding: "3px",
+				}}
+				>
+				{'user: '}
+				<select>
+					{
+						userList.map((user) => {
+							return (
+								<option>
+									{user.userNickName}
+								</option>
+							);
+						})
+					}
+				</select>
+			</div>
+			<br />
+			<button
+				type='button'
+				onClick={(e) => {
+					e.preventDefault(); chatSocket && request(ControlType.Ban, user, chatSocket)
+				}} 
+				className={`${styles.normalButton}`}
 				id={`${controlTypeData[ControlType.Ban].field}`}>
-				{'Ban User'}
-			</TextInputForm>
-			<TextInputForm 
-				onSubmit={() => {chatSocket && request(ControlType.Kick, user, chatSocket)}} 
+				{'Ban'}
+			</button>
+			<button
+				type='button'
+				onClick={(e) => {
+					e.preventDefault(); chatSocket && request(ControlType.Kick, user, chatSocket)
+				}} 
+				className={styles.normalButton}
 				id={`${controlTypeData[ControlType.Kick].field}`}>
-				{'Kick User'}
-			</TextInputForm>
-			<TextInputForm 
-				onSubmit={() => {chatSocket && request(ControlType.Mute, user, chatSocket)}} 
+				{'Kick'}
+			</button>
+			<button
+				type='button'
+				onClick={(e) => {
+					e.preventDefault(); chatSocket && request(ControlType.Mute, user, chatSocket)
+				}} 
+				className={styles.normalButton}
 				id={`${controlTypeData[ControlType.Mute].field}`}>
-				{'Mute User'}
-			</TextInputForm>
-		</div>
+				{'Mute'}
+			</button>
+		</form>
 	);
 }
 

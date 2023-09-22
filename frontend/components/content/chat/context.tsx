@@ -12,10 +12,12 @@ export interface IChatUser {
 	channel_id: number,
 };
 
+// inners
 export interface IChatMate {
-	user_id: number,
-	user_nickname: string
-//	isMuted: boolean,
+	userId: number,
+	userNickName: string,
+	userType: string,
+	isMuted: boolean,
 }
 
 export type TChatContext = {

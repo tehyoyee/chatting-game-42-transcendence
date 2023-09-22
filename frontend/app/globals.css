@@ -93,3 +93,10 @@ fieldset label {
 .overflow-x-hidden {
 	overflow-x: hidden;
 }
+
+.normalButton {
+	padding: 1px;
+	border: solid 1px black;
+	border-radius: 0.3rem;
+	background-color: lightgray;
+}
