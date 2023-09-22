@@ -335,8 +335,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     client.emit('leave-success', channel.channel_id);
     this.server.to(channel.channel_name).emit("leave", {user_id: user.user_id, user_nickname: user.nickname});
 
-    await this.chatService.deleteChannelIfEmpty(channelId);
-    //방 폭파 안됨 수정할 것
+    try {
+      await this.chatService.deleteChannelIfEmpty(channelId);
+    } catch (ServiceUnavailableException) {
+      client.emit('leave-fail', 'Channel Not Deleted Error in onLeaveChannel')
+    }
   }
 
   //==========================================================================================

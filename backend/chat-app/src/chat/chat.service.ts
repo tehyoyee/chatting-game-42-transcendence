@@ -153,8 +153,8 @@ export class ChatService {
         .select(['b.channel_id'])
         .getMany();
 
-        if (channels.length === 1) {
-            await this.channelRepository.deleteChannelByChannelId;
+        if (channels.length === 0) {
+            await this.channelRepository.deleteChannelByChannelId(channelId);
         }
     }
 
