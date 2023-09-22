@@ -13,13 +13,13 @@ import { KeyStatus } from "./game.keystatus.enum";
 @WebSocketGateway({ namespace: '/game'})
 export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect {
 	
-	private readonly MAP_Y = 200;
-	private readonly MAP_X = 400;
+	private readonly MAP_Y = 1000;
+	private readonly MAP_X = 1400;
 	private readonly SPEED = 5;
 	private readonly paddleSpeed = 10;
 	private readonly PADDLE_SIZE = 80;
 	private readonly paddleGap = 40;
-	private readonly DELAY = 500;
+	private readonly DELAY = 16;
 	private readonly MAXPOINT = 5;
 
 	constructor(

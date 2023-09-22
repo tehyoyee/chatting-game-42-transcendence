@@ -43,9 +43,7 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
     
     SocketContext.gameSocket?.on('gameStart', () => { setReady(true); });
 
-    const tmpObj: any = 0; //
-    SocketContext.gameSocket?.on('gamingUser', tmpObj); //
-
+    
     const exitQueueHandler = () => {
       console.log("exitQueue handler worked!");
       SocketContext.gameSocket?.emit('exitQueue');
@@ -79,11 +77,11 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
       <div className={styles.userProfileContainer}>
         <div className={styles.userProfile}>
           <Image src={defaultImage} alt='profile image' className={styles.userImage} />
-          <div className={styles.userText}>{tmpObj.player1}</div>
+          <div className={styles.userText}></div>
         </div>
         { ready && <div className={styles.userProfile}>
           <Image src={defaultImage} alt='profile image' className={styles.userImage} />
-          <div className={styles.userText}>{tmpObj.player2}</div>
+          <div className={styles.userText}></div>
         </div> }
       </div>
       {loading && <p>Loading...</p>}
