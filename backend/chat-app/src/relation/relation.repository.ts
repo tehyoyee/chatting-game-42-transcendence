@@ -21,9 +21,8 @@ export class RelationRepository extends Repository<Relation> {
         return newRelation;
     }
 
-    async deleteRelation() {
-        //this.delete({});
-
+    async deleteRelation(relationId: number) {
+        await this.delete({ relation_id: relationId });
     }
 
     async getRelationByIds(senderId: number, receiverId: number): Promise<Relation> {
