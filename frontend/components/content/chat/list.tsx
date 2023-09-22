@@ -91,7 +91,7 @@ export default function ChatList() {
 					justifyContent: 'center',
 					alignItems: 'center',
 				}}>
-					{`${info.channel_name}`}
+					{`${info.channel_name} (${info.channel_id})`}
 					{
 						info.channel_type == ChatType.protected &&
 						<>

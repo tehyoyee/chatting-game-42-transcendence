@@ -5,7 +5,6 @@ import useSocketContext from '@/lib/socket';
 import useChatContext from './context';
 import ChatList from './list';
 import ChatRoom from './room';
-import ChatMenu from './menu';
 
 export default function ChatLobby() {
 	const { chatSocket } = useSocketContext();
@@ -25,7 +24,6 @@ export default function ChatLobby() {
 			</>
 			:
 			<>
-				<ChatMenu></ChatMenu>
 				<ChatRoom></ChatRoom>
 			</>
 		}

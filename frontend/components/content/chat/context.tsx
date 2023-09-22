@@ -17,7 +17,7 @@ export interface IChatMate {
 	isMuted: boolean,
 }
 
-type TChatContext = {
+export type TChatContext = {
 	user: IChatUser,
 	setUser: React.Dispatch<React.SetStateAction<IChatUser>>,
 	joined: boolean,
@@ -37,7 +37,7 @@ export default function useChatContext(): TChatContext {
 export function ChatContextProvider({ children }: { children: React.ReactNode }) {
 	const [joined, setJoined] = useState(false);
 	const [chatUser, setChatUser] = useState<IChatUser>({
-		user_type: EChatUserType.MEMBER,
+		user_type: EChatUserType.OWNER, // NOTE
 		channel_id: -1,
 	});
 	const chatContext: TChatContext = {
