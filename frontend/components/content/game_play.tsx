@@ -25,8 +25,10 @@ export default function GamePlay() {
       color: "#000000",
 
       initialize: function () {
-        this.canvas.style.width = this.canvas.width / 2 + "px";
-        this.canvas.style.height = this.canvas.height / 2 + "px";
+        this.canvas.style.width = 1400 / 2 + "px";
+        this.canvas.style.height = 1000 / 2 + "px";
+        // this.canvas.style.width = this.canvas.width / 2 + "px";
+        // this.canvas.style.height = this.canvas.height / 2 + "px";
 
         Pong.listen();
       },
@@ -44,16 +46,16 @@ export default function GamePlay() {
           this.context.fillRect(
             gamingInfo.paddle1X,
             gamingInfo.paddle1Y,
-            18,
-            80
+            20,
+            300
           );
           this.context.fillRect(
             gamingInfo.paddle2X,
             gamingInfo.paddle2Y,
-            18,
-            80
+            20,
+            300
           );
-          this.context.fillRect(gamingInfo.ballX, gamingInfo.ballY, 10, 10);
+          this.context.fillRect(gamingInfo.ballX, gamingInfo.ballY, 20, 20);
           this.context.fillText(
             gamingInfo.score1.toString(),
             gamingInfo.canvasX / 2 - 300,
