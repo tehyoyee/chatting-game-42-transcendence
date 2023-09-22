@@ -2,12 +2,14 @@
 
 import { useState, useEffect, ReactNode } from 'react';
 import useSocketContext from '@/lib/socket';
-import ChatList from '@/components/content/chat/list';
-import ChatRoom from '@/components/content/chat/room';
+import useChatContext from './context';
+import ChatList from './list';
+import ChatRoom from './room';
+import ChatMenu from './menu';
 
 export default function ChatLobby() {
-	const [joined, setJoined] = useState(false);
 	const { chatSocket } = useSocketContext();
+	const { joined } = useChatContext();
 
 	useEffect(() => {
 		if (!chatSocket) {
@@ -19,10 +21,11 @@ export default function ChatLobby() {
 		{
 			!joined ?
 			<>
-				<ChatList setJoined={setJoined}></ChatList>
+				<ChatList></ChatList>
 			</>
 			:
 			<>
+				<ChatMenu></ChatMenu>
 				<ChatRoom></ChatRoom>
 			</>
 		}

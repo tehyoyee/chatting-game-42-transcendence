@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-export function useFetch<T>(path: string, init: T): [T, React.Dispatch<React.SetStateAction<Object>>] {
+export function useFetch<T>(path: string, init: T): [T, Function] {
 	const [item, setItem] = useState(init);
 	const [update, setUpdate] = useState({});
 
@@ -23,7 +23,10 @@ export function useFetch<T>(path: string, init: T): [T, React.Dispatch<React.Set
 			});
 		})()
 	}, [update]);
-	return [item, setUpdate];
+	function updateItem() {
+		setUpdate({});
+	};
+	return [item, updateItem];
 }
 
 export function useToken() {
