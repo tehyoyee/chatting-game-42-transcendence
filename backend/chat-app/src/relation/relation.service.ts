@@ -18,18 +18,9 @@ export class RelationService {
             throw new HttpException('Friended Already', HttpStatus.UNAUTHORIZED);
         }
        
-        //이미 sender가 receiver를 block했는지 검사
+        //이미 sender가 receiver를 block했는지 검사 -> 바꿔는 줌
         if (this.checkBlocked(sender.user_id, receiverId)) {
-            //exception handler
-            this.logger.debug('Unblock First');
-            throw new HttpException('Unblock First', HttpStatus.UNAUTHORIZED);
-        }
-        
-        //receiver가 sender를 block했는지 검사 => block 당했다면 친구 등록 안되게끔
-        if (this.checkBlocked(receiverId, sender.user_id)) {
-            //exception handler
-            this.logger.debug('You Are Blocked');
-            throw new HttpException('You Are Blocked', HttpStatus.UNAUTHORIZED);
+            this.logger.debug('Block To Friend');
         }
 
         return await this.relationRepository.addFriend(sender, receiverId);
@@ -43,11 +34,9 @@ export class RelationService {
             throw new HttpException('Blocked Already', HttpStatus.UNAUTHORIZED);
         }
        
-        //이미 sender가 receiver를 친구등록 했는지 검사
+        //이미 sender가 receiver를 친구등록 했는지 검사 -> 바꿔는 줌
         if (this.checkFriended(sender.user_id, receiverId)) {
-            //exception handler
-            this.logger.debug('UnFriend First');
-            throw new HttpException('UnFriend First', HttpStatus.UNAUTHORIZED);
+            this.logger.debug('Friend To Block');
         }
 
         return await this.relationRepository.addBlock(sender, receiverId);
