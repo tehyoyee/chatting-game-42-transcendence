@@ -9,12 +9,16 @@ import { typeORMConfig } from './configs/typeorm.config';
 import { ChatModule } from './chat/chat.module';
 import { GameModule } from './game/game.module';
 import { RelationModule } from './relation/relation.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeORMConfig),
     UserModule, AuthModule, ChatModule, 
-    GameModule, RelationModule
+    GameModule, RelationModule, 
+		ConfigModule.forRoot({
+			isGlobal: true,
+		}),
   ],
   controllers: [AppController],
   providers: [AppService],
