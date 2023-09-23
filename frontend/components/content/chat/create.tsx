@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import styles from '@/styles/chat_manage.module.css';
 import useSocketContext from '@/lib/socket';
+import useChatContext from './context';
 
 enum Type {
 	Public = 0,
@@ -18,6 +19,7 @@ const evt_create_normal = "create-group-channel";
 const evt_create_dm = "create-dm-channel";
 
 export function ChatCreate({ onClose }: { onClose: Function }) {
+	const { user, setUser, setJoined } = useChatContext();
 	const [chatType, setChatType] = useState<Type>(Type.Public);
 	const { chatSocket } = useSocketContext();
 
@@ -29,6 +31,8 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 			chatSocket.on('creation-success', (data) => {
 				console.log(`생성 성공: ${JSON.stringify(data)}`)
 				onClose();
+				setUser(data);
+				setJoined(true);
 			});
 			chatSocket.on('creation-fail', (data) => {alert(`생성 실패: ${JSON.stringify(data)}`);});
 	}, [chatSocket]);
@@ -98,7 +102,7 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 						border: "solid 1px black",
 					}}
 					type="text"
-					pattern="[a-zA-Z0-9]{2,16}"
+					pattern="{2,16}"
 					required
 				/>
 				<fieldset onChange={handleTypeChange}>

@@ -8,12 +8,12 @@ export default function UserCard({
 	user: IChatMate,
 }) {
 	return (
-		<div 
+		<button
 			className={`${chatStyles.button} ${styles.playerCard}`}
 			style={{
 			backgroundColor: "lightgray",
 			}}>
 			{user.userNickName}
-		</div>
+		</button>
 	);
 }

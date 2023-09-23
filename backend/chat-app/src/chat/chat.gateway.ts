@@ -17,12 +17,13 @@ import { UserChannelBridge } from './entity/user-channel-bridge.entity';
 import { Channel } from './entity/channel.entity';
 import { RelationService } from 'src/relation/relation.service';
 import { BlockDto } from 'src/relation/dto/block-dto';
+import * as serverConfig from 'config';
 
 @WebSocketGateway({
 	// path: "/api/socket.io",
 	namespace: "/chat",
 	cors: {
-	 	origin: "http://10.18.229.228:3001",
+	 	origin: `${serverConfig.get('server.url')}:${serverConfig.get('server.front_port')}`,
 	 	credentials: true,
 	 	allowedHeaders: 'Content-Type, Authorization, Cookie',
 	 	methods: ["GET", "POST"],

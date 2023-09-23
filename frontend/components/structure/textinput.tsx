@@ -5,14 +5,14 @@ export default function TextInputForm({
 	onSubmit,
 	label = '',
 	pattern = '',
-	tailMassage = '',
+	tailMessage = '',
 	id = 'inputField',
 }: {
 	children: ReactNode,
 	onSubmit: Function,
 	label?: string,
 	pattern?: string,
-	tailMassage?: string,
+	tailMessage?: string,
 	id?: string,
 }) {
 	return (
@@ -42,7 +42,7 @@ export default function TextInputForm({
 			확인
 		</button>
 		<p>
-			{tailMassage}
+			{tailMessage}
 		</p>
 	</form>
 	);
