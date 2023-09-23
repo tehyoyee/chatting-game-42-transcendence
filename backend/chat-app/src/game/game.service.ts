@@ -38,6 +38,5 @@ export class GameService {
 		await this.userRepository.save(loseUser);
 		// User 히스토리에 등록
 		// winUser.match_history
-
 	}
 }

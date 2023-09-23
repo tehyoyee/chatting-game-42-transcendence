@@ -4,6 +4,8 @@ import { UserAchievement } from "../enum/user-achievements.enum";
 import { UserChannelBridge } from "src/chat/entity/user-channel-bridge.entity";
 import { Message } from "src/chat/entity/message.entity";
 import { Relation } from "src/relation/entity/relation.entity";
+import { type } from "os";
+import { GameHistory } from "src/game/game.history.entity";
 
 @Entity()
 export class User extends BaseEntity {
@@ -54,4 +56,6 @@ export class User extends BaseEntity {
     senders: Relation[];
     
     //게임기록 추가 필요
+    @OneToMany(type => GameHistory, game_histories => game_histories.user_id)
+    game_histories: GameHistory[];
 }

@@ -106,7 +106,15 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		if (point1 == this.MAXPOINT) {
 			console.log(`${user1.username} winned !`);
 			this.gameService.updateGameHistory(user1.user_id, user2.user_id);
-			this.server.to(roomName).emit('gameEnd');
+			this.server.to(roomName).emit('endGame', {
+				canvasX: this.MAP_X,
+				canvasY: this.MAP_Y,
+				player1: user1.nickname,
+				player2: user2.nickname,
+				score1: point1,
+				socre2: point2,
+				winner: user1.username
+			});
 			player1.leave(roomName);
 			player2.leave(roomName);
 			this.gameRoomMap.delete(user1.user_id);
@@ -115,7 +123,15 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		} else if (point2 == this.MAXPOINT) {
 			console.log(`${user1.username} winned !`);
 			this.gameService.updateGameHistory(user2.user_id, user1.user_id);
-			this.server.to(roomName).emit('gameEnd');
+			this.server.to(roomName).emit('endGame', {
+				canvasX: this.MAP_X,
+				canvasY: this.MAP_Y,
+				player1: user1.nickname,
+				player2: user2.nickname,
+				score1: point1,
+				socre2: point2,
+				winner: user2.username
+			});
 			player1.leave(roomName);
 			player2.leave(roomName);
 			this.gameRoomMap.delete(user1.user_id);
@@ -258,6 +274,15 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		}
 	}
 
+	@SubscribeMessage('exitGame')
+	async exitGame(@ConnectedSocket() client: any) {
+		const loser = await this.socketToUser(client);
+		const explodedRoomName = this.gameRoomMap.get(loser.user_id);
+		// const winner = 
+		console.log(`[Game] user ${loser.username} has left the game. he's loser.`);
+		// this.gameService.updateGameHistory();
+	}
+
 	@SubscribeMessage('keyW')
 	async updateKeyStatusW (@ConnectedSocket() client: any, @MessageBody() newStatus: string) {
 		const user = await this.socketToUser(client);
@@ -281,6 +306,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
 		if (!user) {
+			this.server.emit('forceLogout');
 			return;
 		}
 
