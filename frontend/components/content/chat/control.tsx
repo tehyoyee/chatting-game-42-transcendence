@@ -10,8 +10,7 @@ enum ControlType {
 	Ban = 0,
 	Kick,
 	Mute,
-	AddPwd,
-	ModPwd,
+	SetPwd,
 	RemPwd,
 	SetAdmin,
 };
@@ -22,7 +21,6 @@ const controlTypeData: {event:string, field:string}[] = [
 	{event: "onMuteUser", field: "muteInput"},
 	{event: "set-password", field: "pwdInput"},
 	{event: "change-password", field: "pwdInput"},
-	{event: "remove-password", field: "pwdInput"},
 	{event: "set-admin", field: "setAdminInput"},
 ];
 
@@ -48,11 +46,12 @@ export default function ChatControl({
 				}}
 				>
 				{'user: '}
-				<select>
+				<select
+					id="userInput">
 					{
 						userList.map((user, index) => {
 							return (
-								<option key={index}>
+								<option key={index} value={user.userId}>
 									{user.userNickName}
 								</option>
 							);
@@ -63,79 +62,105 @@ export default function ChatControl({
 			<button
 				type='button'
 				onClick={(e) => {
-					e.preventDefault(); chatSocket && request(ControlType.Ban, user, chatSocket)
+					e.preventDefault(); chatSocket && requestUser(ControlType.Ban, user, chatSocket)
 				}} 
-				className={`${styles.normalButton}`}
-				id={`${controlTypeData[ControlType.Ban].field}`}>
-				{'Ban'}
+				className={`${styles.normalButton}`}>
+				{'밴'}
 			</button>
 			<button
 				type='button'
 				onClick={(e) => {
-					e.preventDefault(); chatSocket && request(ControlType.Kick, user, chatSocket)
+					e.preventDefault(); chatSocket && requestUser(ControlType.Kick, user, chatSocket)
 				}} 
-				className={styles.normalButton}
-				id={`${controlTypeData[ControlType.Kick].field}`}>
-				{'Kick'}
+				className={styles.normalButton}>
+				{'킥'}
 			</button>
 			<button
 				type='button'
 				onClick={(e) => {
-					e.preventDefault(); chatSocket && request(ControlType.Mute, user, chatSocket)
+					e.preventDefault(); chatSocket && requestUser(ControlType.Mute, user, chatSocket)
 				}} 
-				className={styles.normalButton}
-				id={`${controlTypeData[ControlType.Mute].field}`}>
-				{'Mute'}
+				className={styles.normalButton}>
+				{'뮤트'}
+			</button>
+			<button
+				type='button'
+				onClick={(e) => {
+					e.preventDefault(); chatSocket && requestUser(ControlType.SetAdmin, user, chatSocket)
+				}} 
+				className={styles.normalButton}>
+				{'운영자 권한 부여'}
 			</button>
 			<br />
 			<br />
 			<TextInputForm
-				tailMessage={'빈칸으로 제출시 비밀번호를 해제합니다.'}
-				onSubmit={() => {chatSocket && handlePwd(user, chatSocket)}}
-				id={`${controlTypeData[ControlType.AddPwd].field}`}
+				onSubmit={() => {chatSocket && setPwd(user, chatSocket)}}
+				id={`${controlTypeData[ControlType.SetPwd].field}`}
+				pattern={'[a-zA-Z0-9]{4,16}'}
 				>
 				{'비밀번호 설정'}
 			</TextInputForm>
+			<button 
+				type='button' 
+				className='normalButton'
+				onClick={(e) => {
+					e.preventDefault(); chatSocket && removePwd(user, chatSocket);
+				}}>
+				{'비밀번호 해제'}
+			</button>
 		</div>
 	);
 }
 
-function request(type: ControlType, user: IChatUser, socket: Socket) {
-	const input = document.querySelector(`#${controlTypeData[type].field}`) as HTMLInputElement;
-	const username = input;
-	switch (type) {
-		case ControlType.Ban:
-		case ControlType.Kick:
-		case ControlType.Mute:
-			socket.emit(`${controlTypeData[type].event}`, {
-				targetUserId: Number(input),
-				channelId: user.channel_id,
-			});
-			break;
-		case ControlType.AddPwd:
-		case ControlType.ModPwd:
-			socket.emit(`${controlTypeData[type].event}`, {
-				channelId: user.channel_id,
-				password: '0',
-			});
-			break;
-		case ControlType.RemPwd:
-			socket.emit(`${controlTypeData[type].event}`, {
-				channelId: user.channel_id,
-				password: '0',
-			});
-		case ControlType.SetAdmin:
-			break;
-	};
+function requestUser(type: ControlType, user: IChatUser, socket: Socket) {
+	const input = document.querySelector('select') as HTMLSelectElement;
+	const userid = input.value;
+
+	console.log(`userid = ${userid}`);
+	socket.on('usermod-success', (msg) => {
+		console.log(`usermod-success: ${msg}`);
+		socket.off('usermod-success');
+	});
+	socket.on('usermod-fail', (msg) => {
+		console.log(`usermod-fail: ${msg}`);
+		socket.off('usermod-fail');
+		alert('요청에 실패했습니다.');
+	});
+	socket.emit(`${controlTypeData[type].event}`, {
+		targetUserId: userid,
+		channelId: user.channel_id,
+	});
 }
 
-function handlePwd(user: IChatUser, socket: Socket) {
-	const pwd = document.querySelector(`#${controlTypeData[ControlType.AddPwd].field}`) as HTMLInputElement;
-	if (!pwd.value) {
-		request(ControlType.RemPwd, user, socket);
-		return;
-	}
-	request(ControlType.AddPwd);
+function removePwd(user: IChatUser, socket: Socket) {
+	socket.on('removepwd-success', (msg) => {
+		console.log(`removepwd-success: ${msg}`);
+		socket.off('removepwd-success');
+	});
+	socket.on('removepwd-fail', (msg) => {
+		console.log(`removepwd-fail: ${msg}`);
+		socket.off('removepwd-fail');
+		alert('요청에 실패했습니다.');
+	});
+	socket.emit('remove-password', user.channel_id);
+}
+
+function setPwd(user: IChatUser, socket: Socket) {
+	const input = document.querySelector(`#${controlTypeData[ControlType.SetPwd].field}`) as HTMLInputElement;
+	socket.on('setpwd-success', (msg) => {
+		console.log(`setpwd-success: ${msg}`);
+		socket.off('setpwd-success');
+	});
+	socket.on('setpwd-fail', (msg) => {
+		console.log(`setpwd-fail: ${msg}`);
+		socket.off('setpwd-fail');
+		alert('요청에 실패했습니다.');
+	});
+	if (!input?.value) return;
+	socket.emit('set-password', {
+		channelId: user.channel_id,
+		password: input.value,
+	});
 }
 /*
 				<TextInputForm 

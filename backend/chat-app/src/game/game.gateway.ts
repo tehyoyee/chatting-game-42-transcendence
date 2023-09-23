@@ -259,9 +259,28 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		render();
 	}
 
-	// @SubscribeMessage('launchGame')
-	// async launchGame()
+	@SubscribeMessage('launchGame')
+	async launchGame(@MessageBody() invitation: any) {
+		const playerLeft: User = await this.socketToUser(invitation.hostUserSocket);
+		const playerRight: User = await this.socketToUser(invitation.clientUserSocket);
+		const newRoomName: string = invitation.hostUserSocket.id + invitation.clientUserSocket.id;
+		console.log(`${invitation.gameMode} Match Created !!!`);
+		console.log(`playerLeft: ${playerLeft}`);
+		console.log(`playerRight: ${playerRight}`);
+		console.log(`Game Room ${newRoomName} created !!`);
+		invitation.hostUserSocket.join(newRoomName);
+		invitation.clientUserSocket.join(newRoomName);
+		this.gameRoomMap.set(playerLeft.user_id, newRoomName);
+		this.gameRoomMap.set(playerRight.user_id, newRoomName);
+		this.server.to(newRoomName).emit('gameStart', {
+			roomName: newRoomName
+		});
+		setTimeout(() => this.runGame(invitation.gameMode, newRoomName, invitation.hostUserSocket, invitation.clientUserSocket, 0, 0), 3000);
+	}
 
+
+
+	// 'launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode})
 	@SubscribeMessage('exitQueue')
 	async exitQueue(@ConnectedSocket() client: any) {
 		const user = await this.socketToUser(client);

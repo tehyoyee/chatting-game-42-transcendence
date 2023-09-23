@@ -56,12 +56,32 @@ export default function ChatMenu() {
 
 	useEffect(() => {
 		if (!chatSocket) return;
+
+		chatSocket.off('kick');
+		chatSocket.on('kick', () => {
+			console.log("an user got kicked");
+			updateUserList();
+		});
+
+		chatSocket.off('ban');
+		chatSocket.on('ban', () => {
+			console.log("an user got banned");
+			updateUserList();
+		});
+
+		chatSocket.off('mute');
+		chatSocket.on('mute', () => {
+			console.log("an user got muted");
+			updateUserList();
+		});
+
 		chatSocket.off('leave');
 		chatSocket.on('leave', (msg) => {
 			console.log("an user exited");
 			console.log(`exit: ${JSON.stringify(msg)}`)
 			updateUserList();
 		});
+
 		chatSocket.off('join');
 		chatSocket.on('join', (msg) => {
 			console.log("new user joined");

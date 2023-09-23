@@ -4,6 +4,7 @@ import { Relation } from './entity/relation.entity';
 import { AuthService } from 'src/auth/auth.service';
 import { RelationDto } from './dto/relation-dto';
 import { UserService } from 'src/user/user.service';
+import { SocialDto } from './dto/social-dto';
 
 @Controller('relation')
 export class RelationController {
@@ -47,12 +48,12 @@ export class RelationController {
 
     //user 객체 전체가 아니라 nickname, avatar, status 정도만 불러오도록 수정
     @Get('social/friends/:id')
-    async getFriendsStatusOfUser(@Param('id', ParseIntPipe) userId: number) {
+    async getFriendsStatusOfUser(@Param('id', ParseIntPipe) userId: number): Promise<SocialDto[]> {
         return await this.relationService.getFriendsOfUser(userId);
     }
 
     @Get('social/blocks/:id')
-    async getBlocksStatusOfUser(@Param('id', ParseIntPipe) userId: number) {
+    async getBlocksStatusOfUser(@Param('id', ParseIntPipe) userId: number): Promise<SocialDto[]> {
         return await this.relationService.getBlocksOfUser(userId);
     }
 

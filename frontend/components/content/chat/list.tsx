@@ -52,7 +52,7 @@ export default function ChatList() {
 		chatSocket.on('join-fail', (msg) => {
 			console.log(`join-fail: ${msg}`)
 			setJoined(false)
-			setUser(msg);
+			alert(msg);
 		});
 		chatSocket.on('join-success', (msg) => {
 			console.log(`join-success: ${JSON.stringify(msg)}`); 
