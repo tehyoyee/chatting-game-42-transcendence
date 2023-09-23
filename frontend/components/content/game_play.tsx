@@ -1,7 +1,8 @@
 import usePlayerContext, { EPlayerState } from "./player_state";
 import useSocketContext, { SocketContext } from "@/lib/socket";
 import { useRef, useEffect, useState } from "react";
-import User from '../user/user';
+import User from "../user/user";
+import { useRouter } from "next/navigation";
 
 type GameType = {
   canvas: HTMLCanvasElement;
@@ -13,14 +14,15 @@ type GameType = {
 };
 
 export default function GamePlay() {
-	const { setPlayerState } = usePlayerContext();
+  const router = useRouter();
+  const { setPlayerState } = usePlayerContext();
   const Sock = useSocketContext();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   var Pong: GameType;
 
   useEffect(() => {
-		setPlayerState(EPlayerState.GAME_PLAYING);
+    setPlayerState(EPlayerState.GAME_PLAYING);
     const canvas = canvasRef.current as HTMLCanvasElement;
 
     var Game: GameType = {
@@ -29,8 +31,8 @@ export default function GamePlay() {
       color: "#1bce8a",
 
       initialize: function () {
-        this.canvas.style.width = 1400 / 2 + "px";
-        this.canvas.style.height = 1000 / 2 + "px";
+        this.canvas.style.width = 1800 / 2 + "px";
+        this.canvas.style.height = 1300 / 2 + "px";
         // this.canvas.style.width = this.canvas.width / 2 + "px";
         // this.canvas.style.height = this.canvas.height / 2 + "px";
 
@@ -46,56 +48,67 @@ export default function GamePlay() {
 
         this.context.fillStyle = "#ffffff";
 
-        if (gamingInfo) {
-          this.context.fillRect(
-            gamingInfo.paddle1X,
-            gamingInfo.paddle1Y,
-            20,
-            300
-          );
-          this.context.fillRect(
-            gamingInfo.paddle2X,
-            gamingInfo.paddle2Y,
-            20,
-            300,
+        this.context.fillText(
+          gamingInfo.score1.toString(),
+          gamingInfo.canvasX / 2 - 300,
+          165
+        );
+        this.context.fillText(
+          gamingInfo.score2.toString(),
+          gamingInfo.canvasX / 2 + 300,
+          165
+        );
+        this.context.fillText(
+          gamingInfo.player1,
+          gamingInfo.canvasX / 2 - 300,
+          100
+        );
+        this.context.fillText(
+          gamingInfo.player2,
+          gamingInfo.canvasX / 2 + 300,
+          100
+        );
+
+        this.context.beginPath();
+        this.context.setLineDash([5, 15]);
+        this.context.moveTo(this.canvas.width / 2, this.canvas.height - 140);
+        this.context.lineTo(this.canvas.width / 2, 140);
+        this.context.lineWidth = 10;
+        this.context.strokeStyle = "#ffffff";
+        this.context.stroke();
+
+        this.context.font = "40px sans-serif";
+        this.context.textAlign = "center";
+
+        this.context.font = "20px sans-serif bold";
+
+        this.context.font = "30px sans-serif bold";
+
+          if (!gamingInfo.winner)
+          {
+            this.context.fillRect(
+              gamingInfo.paddle1X,
+              gamingInfo.paddle1Y,
+              gamingInfo.paddleX,
+              gamingInfo.paddleY
             );
-          this.context.fillRect(gamingInfo.ballX, gamingInfo.ballY, 20, 20);
-          this.context.fillText(
-            gamingInfo.score1.toString(),
-            gamingInfo.canvasX / 2 - 300,
-            165
-          );
-          this.context.fillText(
-            gamingInfo.score2.toString(),
-            gamingInfo.canvasX / 2 + 300,
-            165,
-          );
-          this.context.fillText(
-            gamingInfo.player1,
-            gamingInfo.canvasX / 2 - 300,
-            100,
-          );
-          this.context.fillText(
-            gamingInfo.player2,
-            gamingInfo.canvasX / 2 + 300,
-            100,
-          );
-
-          this.context.beginPath();
-          this.context.setLineDash([5, 15]);
-          this.context.moveTo(this.canvas.width / 2, this.canvas.height - 140);
-          this.context.lineTo(this.canvas.width / 2, 140);
-          this.context.lineWidth = 10;
-          this.context.strokeStyle = "#ffffff";
-          this.context.stroke();
-
-          this.context.font = "40px sans-serif";
-          this.context.textAlign = "center";
-
-          this.context.font = "20px sans-serif bold";
-
-          this.context.font = "30px sans-serif bold";
-        }
+            this.context.fillRect(
+              gamingInfo.paddle2X,
+              gamingInfo.paddle2Y,
+              gamingInfo.paddleX,
+              gamingInfo.paddleY
+            );
+            this.context.fillRect(gamingInfo.ballX, gamingInfo.ballY, 20, 20);
+          }
+          else
+          {
+            this.context.font = "500px sans-serif bold";
+            this.context.fillText(
+              "Winner: " + gamingInfo.winner,
+              gamingInfo.canvasX / 2,
+              gamingInfo.canvasY / 2
+            );
+          }
       },
 
       listen: function () {
@@ -117,6 +130,12 @@ export default function GamePlay() {
     Sock.gameSocket?.on("gamingInfo", (gamingInfo) => {
       Pong.draw(gamingInfo);
     });
+    Sock.gameSocket?.on("endGame", (gamingInfo) => {
+      Pong.draw(gamingInfo);
+      // setTimeout(() => {
+      //   router.push("/game");
+      // }, 3000);
+    });
   }, []);
-  return <canvas ref={canvasRef} width="1400" height="1000"></canvas>;
+  return <canvas ref={canvasRef} width="1800" height="1300"></canvas>;
 }
