@@ -8,7 +8,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { NotFoundError, map } from 'rxjs';
 import { ConflictException, ForbiddenException, HttpException, HttpStatus, Logger, NotFoundException, ParseIntPipe, UnauthorizedException } from '@nestjs/common';
 import { UserType } from './enum/user_type.enum';
-import { DmChannelDto, JoinChannelDto, GroupChannelDto } from './dto/channel-dto';
+import { DmChannelDto, JoinGroupChannelDto, GroupChannelDto } from './dto/channel-dto';
 import { UpdatePasswordDto, UpdateUserInfoDto } from './dto/update-dto';
 import { ChannelType } from './enum/channel_type.enum';
 import { DmDto, GroupMessageDto, PreviousMessageDto } from './dto/message-dto';
@@ -60,7 +60,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const privateChannelName = 'user' + user.user_id.toString();
     const privateChannel = await this.chatService.getChannelByName(privateChannelName)
     if (!privateChannel) {
-      await this.chatService.createPrivateChannel(user, user.user_id, privateChannelName);
+      await this.chatService.createPrivateChannelAndBridge(user, user.user_id, privateChannelName);
     }
     client.join(privateChannelName);
     
@@ -87,7 +87,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       this.userSocketMap.delete(user.user_id);
     }
     client.disconnect();
-
   }
 
   //==========================================================================================
@@ -140,7 +139,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
   
-    const newChannel = await this.chatService.createGroupChannel(user, groupChannelDto);
+    const newChannel = await this.chatService.createGroupChannelAndBridge(user, groupChannelDto);
     const newBridge = await this.chatService.checkUserInThisChannel(user.user_id, newChannel.channel_id);
 
     client.emit('creation-success', {channel_id: newChannel.channel_id, user_type: newBridge.user_type});
@@ -162,24 +161,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
     
-    const exist = await this.chatService.checkDmRoomExists(user.user_id, dmChannelDto.receiverId);
-    if (exist) {
-      client.emit('creation-dm-fail', 'dmRoom already exists Error in onCreateDmChannel');
-      return ;
-    }
-    
-    const newChannel = await this.chatService.createDmChannel(user, user.user_id, dmChannelDto.receiverId);
     const receiver = await this.userService.getProfileByUserId(dmChannelDto.receiverId);
     if (!receiver) {
-      client.emit('creation-dm-fail', 'receiver not found Error in onCreateDmChannel');
+      client.emit('creation-dm-fail', 'Receiver Not Found Error in onCreateDmChannel');
       return ;
     }
+
     const receiverSocket = this.userIdToSocket(receiver.user_id);
     if (!receiverSocket) {
       client.emit('creation-dm-fail', 'Unidentified Receiver User Error in onCreateDmChannel');
       return ;
     }
     
+    //만약 closeChannelWindow나 leaveChannel로 dm방을 나가버리면, 이 예외처리문에서 걸려서 다시 들어오지 못한다.
+    //dm방 생성이 안되게 하는 것은 맞는것 같은데.. 그럼 joinDmChannel 함수를 새로 만들어야 하나?
+    const exist = await this.chatService.checkDmRoomExists(user.user_id, dmChannelDto.receiverId);
+    if (exist) {
+      client.emit('creation-dm-fail', 'Already Exists DmChannel Error in onCreateDmChannel');
+      return ;
+    }
+    
+    const newChannel = await this.chatService.createDmChannelAndBridges(user, user.user_id, dmChannelDto.receiverId);
     const newBridge = await this.chatService.checkUserInThisChannel(user.user_id, newChannel.channel_id);
     const newReceiverBridge = await this.chatService.checkUserInThisChannel(receiver.user_id, newChannel.channel_id);
   
@@ -191,8 +193,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     this.server.to(newChannel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
     this.server.to(newChannel.channel_name).emit("join", {user_id: receiver.user_id, user_nickname: receiver.nickname});
-  
-    //return newChannel;
   }
 
   //==========================================================================================  
@@ -200,27 +200,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   @SubscribeMessage('join-group-channel')
   async onJoinChannel(
     @ConnectedSocket() client: Socket,
-    @MessageBody() joinChannelDto: JoinChannelDto) {
+    @MessageBody() joinGroupChannelDto: JoinGroupChannelDto) {
     const user = await this.socketToUser(client);
     if (!user) {
       client.emit('join-fail', 'Unidentified User Error in onJoinChannel');
       return ;
     }
     
-    const bridge = await this.chatService.checkUserInThisChannel(user.user_id, joinChannelDto.channelId);
+    const bridge = await this.chatService.checkUserInThisChannel(user.user_id, joinGroupChannelDto.channelId);
     if (bridge && bridge.is_banned) {
       client.emit('join-fail', 'Banned User Error in onJoinChannel');
       return ;
     }
     
-    const channel = await this.chatService.getChannelById(joinChannelDto.channelId);
+    const channel = await this.chatService.getChannelById(joinGroupChannelDto.channelId);
     if (!channel) {
       client.emit('join-fail', 'Unexist Channel Error in onJoinChannel');
       return ;
     }
     
     if (channel.channel_type === ChannelType.PROTECTED) {
-      if (!(await this.chatService.checkChannelPassword(channel, joinChannelDto.password))) {
+      if (!(await this.chatService.checkChannelPassword(channel, joinGroupChannelDto.password))) {
         client.emit('join-fail', 'Incorrect Password Error in onJoinChannel');
         return ;
       }
@@ -233,14 +233,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     inners = await this.chatService.getAllUsersInChannelByChannelId(channel.channel_id);
 
     let previousMessages: PreviousMessageDto[] = [];
-    previousMessages = await this.chatService.getAllMessagesByChannelId(channel.channel_id);
+    previousMessages = await this.chatService.getAllMessagesExceptBlockByChannelId(user.user_id, channel.channel_id);
 
     client.join(channel.channel_name);
+
     client.emit('join-success', {channel_id: channel.channel_id, user_type: newBridge.user_type});
     // client.emit('get-users-channel', inners);
+
     this.server.to(channel.channel_name).emit("messages", previousMessages);
     this.server.to(channel.channel_name).emit("join", {userId: user.user_id, userNickname: user.nickname});
   }
+
+  //==========================================================================================
+  // @SubscribeMessage('join-dm-channel')
+  // async onDmChannel(
+  //   @ConnectedSocket() client: Socket,
+  //   @MessageBody() dmChannelDto: DmChannelDto) {
+
+
+  //   }
 
   //==========================================================================================
 
@@ -300,7 +311,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   async onPostDm(
     @ConnectedSocket() client: Socket,
     @MessageBody() dmDto: DmDto) {
-      const user = await this.socketToUser(client);
+    const user = await this.socketToUser(client);
     if (!user) {
       client.emit('post-dm-fail', 'Unidentified User Error in onPostDm');
       return ;
@@ -310,6 +321,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('post-dm-fail', 'Empty Content Error in onPostDm');
       return ;
     }
+
     const channel = await this.chatService.checkDmRoomExists(user.user_id, dmDto.receiver_id);
     if (!channel) {
       client.emit('post-dm-fail', 'Unexist Channel Error in onPostDm');
@@ -321,7 +333,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     this.server.to(channel.channel_name).emit('message', {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
     client.emit('post-dm-success', channel.channel_id);
-    //return newMessage;
   }
 
   //==========================================================================================
@@ -589,6 +600,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
 
     await this.chatService.deleteUCBridge(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
+
     targetUserSocket.leave(channel.channel_name);
 
     client.emit('usermod-success', channel.channel_id);
@@ -656,6 +668,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
 
     await this.chatService.updateBanStatus(targetBridge, true);
+
     targetUserSocket.leave(channel.channel_name);
 
     client.emit('usermod-success', channel.channel_id);
@@ -819,6 +832,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       if (!hostUserSocket) {
         client.emit('decline-game-fail', 'Unidentified Host User Socket Error in onDeclineGame');
       }
+
       hostUserSocket.emit('decline-game-success', 'declined');
       client.emit('decline-game-success', 'declined');
   }

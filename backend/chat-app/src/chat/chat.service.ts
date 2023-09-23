@@ -11,11 +11,12 @@ import { UserChannelBridge } from './entity/user-channel-bridge.entity';
 import { AuthService } from 'src/auth/auth.service';
 import { Message } from './entity/message.entity';
 import * as bcrypt from 'bcrypt';
-import { JoinChannelDto, GroupChannelDto } from './dto/channel-dto';
+import { JoinGroupChannelDto, GroupChannelDto } from './dto/channel-dto';
 import { ChannelType } from './enum/channel_type.enum';
 import { DmDto, GroupMessageDto, PreviousMessageDto } from './dto/message-dto';
 import { UpdatePasswordDto } from './dto/update-dto';
 import { BridgeDto } from './dto/bridge-dto';
+import { RelationService } from 'src/relation/relation.service';
 
 @Injectable()
 export class ChatService {
@@ -23,16 +24,17 @@ export class ChatService {
         private messageRepository: MessageRepository,
         private ucbRepository: UcbRepository,
         private userService: UserService,
-        private authService: AuthService) { }
+        private relationService: RelationService,
+        private authService: AuthService) {}
 
-    async createGroupChannel(user: User, groupChannelDto: GroupChannelDto): Promise<Channel> {
+    async createGroupChannelAndBridge(user: User, groupChannelDto: GroupChannelDto): Promise<Channel> {
         const newChannel = await this.channelRepository.createGroupChannel(groupChannelDto);
         await this.createUCBridge(user, newChannel, UserType.OWNER);
         
         return newChannel;
     }
 
-    async createDmChannel(sender: User, senderId: number, receiverId: number): Promise<Channel> {
+    async createDmChannelAndBridges(sender: User, senderId: number, receiverId: number): Promise<Channel> {
         const newChannel = await this.channelRepository.createDmChannel(senderId, receiverId);
         const receiver = await this.userService.getProfileByUserId(receiverId);
         
@@ -42,7 +44,7 @@ export class ChatService {
         return newChannel;
     }
 
-    async createPrivateChannel(user: User, user_id: number, channelName: string): Promise<Channel> {
+    async createPrivateChannelAndBridge(user: User, user_id: number, channelName: string): Promise<Channel> {
         const newChannel = await this.channelRepository.createPrivateChannel(channelName);
         await this.createUCBridge(user, newChannel, UserType.OWNER);
 
@@ -126,10 +128,10 @@ export class ChatService {
         return await this.messageRepository.createDM(sender, channel, content);
     }
 
-    async getAllMessagesByChannelId(channelId: number): Promise<PreviousMessageDto[]> {
+    async getAllMessagesExceptBlockByChannelId(userId: number, channelId: number): Promise<PreviousMessageDto[]> {
         let previousMessages: PreviousMessageDto[] = [];
 
-        const messages = await this.messageRepository
+        const rows = await this.messageRepository
         .createQueryBuilder('m')
         .where('m.channel_id = :channelId', {channelId})
         .select(['m.user_id', 'm.content'])
@@ -137,14 +139,23 @@ export class ChatService {
         .limit(10)
         .getMany();
 
-        for (let m of messages) {
-            let message = { writerId: m.user_id,
-                            content: m.content};
+        for (let r of rows) {
+            let message = { writerId: r.user_id,
+                            content: r.content};
             
             previousMessages.push(message);
         }
 
-        //block 체크 추가해야함
+        let i = 0;
+        while (i < previousMessages.length) {
+            if (await this.relationService.checkBlocked(userId, previousMessages[i].writerId)) {
+                previousMessages.splice(i, 1);
+            }
+            else {
+                i++;
+            }
+        }
+
         return previousMessages;
     }
 
