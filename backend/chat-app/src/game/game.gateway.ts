@@ -15,7 +15,11 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	
 	private readonly MAP_X = 1800;
 	private readonly MAP_Y = 1300;
+<<<<<<< HEAD
 	private readonly SPEED = 10;
+=======
+	private readonly SPEED = 15;
+>>>>>>> 7c11321108d2f3105b34b5d762f2d152f6b88dd3
 	private readonly paddleSpeed = 20;
 	private readonly PADDLE_SIZE = 300;
 	private readonly paddleGap = 20;
@@ -113,7 +117,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				player2: user2.nickname,
 				score1: point1,
 				score2: point2,
-				winner: user1.username
+				winner: user1.nickname
 			});
 			player1.leave(roomName);
 			player2.leave(roomName);
@@ -258,6 +262,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		const id = setInterval(render, this.DELAY);
 		render();
 	}
+
+	@SubscribeMessage('launchGame')
+	async launchGame()
 
 	@SubscribeMessage('exitQueue')
 	async exitQueue(@ConnectedSocket() client: any) {
