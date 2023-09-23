@@ -6,6 +6,7 @@ import styles from '/styles/profile.module.css';
 import ProfileUpdator from '@/components/content/profile/updator';
 import ExpandableButtons from '@/components/content/expandableButtons';
 import BackToTop from '@/components/content/backToTop';
+import usePlayerContext, { EPlayerState } from '../player_state';
 
 // incomplete
 export interface IProfileType {
@@ -43,6 +44,11 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
 	});
 
 	const [ update, setUpdate ] = useState<Object | null>(null);
+	const { setPlayerState } = usePlayerContext();
+
+	useEffect(() => {
+		setPlayerState(EPlayerState.PROFILE);
+	}, []);
 
   useEffect(() => {
     (async() => {
