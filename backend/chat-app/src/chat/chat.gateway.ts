@@ -90,9 +90,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   //==========================================================================================
     
   private async socketToUser(client: Socket): Promise<User> {
+    //throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
     const token: any = client.handshake.query.token;
-    if (!token)
-      return null;
+    if (!token) {
+      throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
+    }
   
     try {
       const decoded = await this.authService.verifyToken(token);
@@ -101,7 +103,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
     catch (error) {
         this.logger.error(error);
-        return undefined;
+        throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
     }
   }
   
@@ -684,5 +686,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   }
 
   // @SubscribeMessage('invite-game')
+  // async onInviteGame(
+  //   @ConnectedSocket() client: Socket,
+  //   @MessageBody() targetUserId: number) {
+  //   const user = await this.socketToUser(client);
+  //   if (!user) {
+  //     client.emit('invite-game-fail', 'Unidentified User Error in onInviteGame');
+  //     return ;
+  //   }
+
+  // }
+
   // @SubscribeMessage('accept-game')
+  // async onAcceptGame() {
+
+  // }
+
 }
