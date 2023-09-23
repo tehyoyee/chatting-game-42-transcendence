@@ -11,14 +11,15 @@ import { UserType } from './enum/user_type.enum';
 import { DmChannelDto, JoinChannelDto, GroupChannelDto } from './dto/channel-dto';
 import { UpdatePasswordDto, UpdateUserInfoDto } from './dto/update-dto';
 import { ChannelType } from './enum/channel_type.enum';
-import { DmDto, GroupMessageDto } from './dto/message-dto';
+import { DmDto, GroupMessageDto, PreviousMessageDto } from './dto/message-dto';
 import { UserStatus } from 'src/user/enum/user-status.enum';
 import { UserChannelBridge } from './entity/user-channel-bridge.entity';
 import { Channel } from './entity/channel.entity';
 import { RelationService } from 'src/relation/relation.service';
 import { BlockDto } from 'src/relation/dto/block-dto';
 import * as serverConfig from 'config';
-import { InviteGameDto } from './dto/invite-game-dto';
+import { AcceptGameDto, InviteGameDto } from './dto/game-dto';
+import { BridgeDto } from './dto/bridge-dto';
 
 @WebSocketGateway({
 	// path: "/api/socket.io",
@@ -228,11 +229,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     await this.chatService.createUCBridge(user, channel, UserType.MEMBER);
     const newBridge = await this.chatService.checkUserInThisChannel(user.user_id, channel.channel_id);
 
-    let inners = await this.chatService.getAllUsersInChannelByChannelId(channel.channel_id);
+    let inners: BridgeDto[] = [];
+    inners = await this.chatService.getAllUsersInChannelByChannelId(channel.channel_id);
+
+    let previousMessages: PreviousMessageDto[] = [];
+    previousMessages = await this.chatService.getAllMessagesByChannelId(channel.channel_id);
 
     client.join(channel.channel_name);
     client.emit('join-success', {channel_id: channel.channel_id, user_type: newBridge.user_type});
-//    client.emit('get-users-channel', inners);
+    // client.emit('get-users-channel', inners);
+    this.server.to(channel.channel_name).emit("messages", previousMessages);
     this.server.to(channel.channel_name).emit("join", {userId: user.user_id, userNickname: user.nickname});
   }
 
@@ -769,7 +775,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //targetUser에게 game invitation을 보냈습니다.
     client.emit('invite-game-success', {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
     //user가 [inviteGameDto.game_mode] 모드 game invitaion을 보냈습니다.
-    targetUserSocket.emit('invite-game-success', {user_id: user.user_id, user_nickname: user.nickname, game_mode: inviteGameDto.game_mode});
+    targetUserSocket.emit('invite-game-success', {user_id: user.user_id, user_nickname: user.nickname, game_mode: inviteGameDto.gameMode});
   }
 
   //==========================================================================================
@@ -777,14 +783,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   @SubscribeMessage('accept-game')
   async onAcceptGame(
     @ConnectedSocket() client: Socket,
-    @MessageBody() hostId: number) {
+    @MessageBody() acceptGameDto: AcceptGameDto) {
       const invitedUser = await this.socketToUser(client);
       if (!invitedUser) {
         client.emit('accept-game-fail', 'Unidentified Invited User Error in onAcceptGame');
         return ;
       }
 
-      const hostUserSocket = this.userIdToSocket(hostId);
+      const hostUserSocket = this.userIdToSocket(acceptGameDto.hostUserId);
       if (!hostUserSocket) {
         client.emit('accept-game-fail', 'Unidentified Host User Socket Error in onAcceptGame');
       }
@@ -792,7 +798,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('accept-game-success', 'accepted');
       //hostUserSocket.emit('accept-game-success', 'accepted');
 
-      this.server.of('/game').emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client})
+      this.server.of('/game').emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode})
   }
 
   //==========================================================================================

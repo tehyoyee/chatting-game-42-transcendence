@@ -6,6 +6,16 @@ export class InviteGameDto {
     targetUserId: number;
 
     @IsString()
-    game_mode: string;
+    gameMode: string;
+    //NORMAL or ADVANCED
+}
+
+export class AcceptGameDto {
+    @IsNumber()
+    @IsPositive()
+    hostUserId: number;
+
+    @IsString()
+    gameMode: string;
     //NORMAL or ADVANCED
 }
