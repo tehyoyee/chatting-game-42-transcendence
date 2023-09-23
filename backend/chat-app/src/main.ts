@@ -3,8 +3,9 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser'; // cookie-parser REF-https://docs.nestjs.com/techniques/cookies
 import * as serverConfig from 'config';
-import { HttpExceptionFilter } from './auth/http.exception.filter';
+import { HttpExceptionFilter } from './exception/http.exception.filter';
 import { Logger } from '@nestjs/common';
+import { BaseWsExceptionFilter } from '@nestjs/websockets';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,7 +19,7 @@ async function bootstrap() {
   })
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());
-  
+    
   const config = new DocumentBuilder()
     .setTitle('jiwkwon')
     .setDescription('user API description')
