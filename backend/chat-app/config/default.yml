@@ -1,4 +1,5 @@
 server:
+  #url: 'http://10.18.229.228'
   url: 'http://localhost'
   front_port: 3001
   port: 3000

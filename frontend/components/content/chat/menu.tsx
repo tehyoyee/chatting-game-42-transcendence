@@ -12,6 +12,7 @@ import SideBar from '@/components/structure/sidebar';
 import useChatContext, { IChatUser, IChatMate, EChatUserType, TChatContext } from './context';
 import ChatControl from './control';
 import usePlayerContext, { EPlayerState, TPlayerContext } from '@/components/content/player_state';
+import UserList from '@/components/structure/userList';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`
 const chatInfoReqUrl = `${serverUrl}/chat/users-in-channel/`;
@@ -38,39 +39,7 @@ export default function ChatMenu() {
 
 	useEffect(() => {
 		if (!chatSocket) return;
-
-		chatSocket.off('kick');
-		chatSocket.on('kick', () => {
-			console.log("an user got kicked");
-			updateUserList();
-		});
-
-		chatSocket.off('ban');
-		chatSocket.on('ban', () => {
-			console.log("an user got banned");
-			updateUserList();
-		});
-
-		chatSocket.off('mute');
-		chatSocket.on('mute', () => {
-			console.log("an user got muted");
-			updateUserList();
-		});
-
-		chatSocket.off('leave');
-		chatSocket.on('leave', (msg) => {
-			console.log("an user exited");
-			console.log(`exit: ${JSON.stringify(msg)}`)
-			updateUserList();
-		});
-
-		chatSocket.off('join');
-		chatSocket.on('join', (msg) => {
-			console.log("new user joined");
-			console.log(`join: ${JSON.stringify(msg)}`)
-			updateUserList();
-		});
-		socketInit(chatSocket, chatContext, playerContext);
+		socketInit(chatSocket, chatContext, playerContext, updateUserList);
 	}, [chatSocket]);
 
 	return (
@@ -126,15 +95,15 @@ export default function ChatMenu() {
 					</button>
 				</li>
 				{
-					userList.map((user, index) => {
-						return (
-							<li key={index}>
-								<UserCard
-									user={user}
-								></UserCard>
-							</li>
-						);
-					})
+					<div>
+					<UserList users={userList}></UserList>
+						{/*
+					<UserList users={userList} onUserClick={handleUserClick}></UserList>
+					{isModalOpen && (
+						<UserModal user={selectedUser} onClose={handleCloseModal} />
+					  )}
+						*/}
+					</div>
 				}
 			</ul>
 		</SideBar>
@@ -142,7 +111,7 @@ export default function ChatMenu() {
 }
 
 function exitChat(user: IChatUser, socket: Socket) {
-	if (!confirm("채널에서 나가시겠습니까?")) return;
+	if (!confirm("채널에서 탈퇴하시겠습니까?")) return;
 	console.log('exitChat request');
 	socket.emit('leave-channel', user.channel_id);
 }
@@ -152,7 +121,12 @@ function closeChat(user: IChatUser, socket: Socket) {
 	socket.emit('close-channel-window', user.channel_id);
 }
 
-function socketInit(chatSocket: Socket, chatContext: TChatContext, playerContext: TPlayerContext) {
+function socketInit(
+	chatSocket: Socket,
+	chatContext: TChatContext,
+	playerContext: TPlayerContext,
+	updateUserList: Function,
+) {
 	const { user, setUser, joined, setJoined } = chatContext;
 	const { setPlayerState, setPlayerData } = playerContext;
 
@@ -166,8 +140,9 @@ function socketInit(chatSocket: Socket, chatContext: TChatContext, playerContext
 	}
 
 	chatSocket.off('leave-fail')
-	chatSocket.off('leave-success')
 	chatSocket.on('leave-fail', (msg) => {console.log(`leave-fail error: ${msg}`)})
+
+	chatSocket.off('leave-success')
 	chatSocket.on('leave-success', (msg) => {
 		console.log(`leave-success: ${msg}`)
 		close();
@@ -175,11 +150,67 @@ function socketInit(chatSocket: Socket, chatContext: TChatContext, playerContext
 	});
 
 	chatSocket.off('close-fail')
-	chatSocket.off('close-success')
 	chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
+
+	chatSocket.off('close-success')
 	chatSocket.on('close-success', (msg) => {
 		console.log(`close-success: ${msg}`)
 		close();
 		chatSocket.off(); // NOTE
+	});
+
+	chatSocket.off('got-kicked');
+	chatSocket.on('got-kicked', (msg) => {
+		console.log(`got-kicked: ${msg}`)
+		close();
+		alert('채널에서 퇴장당했습니다.');
+		chatSocket.off(); // NOTE
+	});
+
+	chatSocket.off('got-banned');
+	chatSocket.on('got-banned', (msg) => {
+		console.log(`got-banned: ${msg}`)
+		close();
+		alert('채널에서 영구 퇴장당했습니다.');
+		chatSocket.off(); // NOTE
+	});
+
+	/*
+	chatSocket.off('got-mutted');
+	chatSocket.on('got-mutted', (msg) => {
+		console.log(`got-mutted: ${msg}`)
+	});
+	*/
+
+	chatSocket.off('kick');
+	chatSocket.on('kick', () => {
+		console.log("an user got kicked");
+		updateUserList();
+	});
+
+	chatSocket.off('ban');
+	chatSocket.on('ban', () => {
+		console.log("an user got banned");
+		updateUserList();
+	});
+
+	chatSocket.off('mute');
+	chatSocket.on('mute', () => {
+		console.log("an user got muted");
+		updateUserList();
+	});
+
+	chatSocket.off('leave');
+	chatSocket.on('leave', (msg) => {
+		console.log("an user exited");
+		console.log(`exit: ${JSON.stringify(msg)}`)
+		updateUserList();
+	});
+
+	chatSocket.off('join');
+	chatSocket.on('join', (msg) => {
+		console.log("new user joined");
+		console.log(`join: ${JSON.stringify(msg)}`)
+		updateUserList();
 	});
 }
