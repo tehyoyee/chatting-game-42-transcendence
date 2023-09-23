@@ -15,11 +15,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	
 	private readonly MAP_X = 1800;
 	private readonly MAP_Y = 1300;
-<<<<<<< HEAD
-	private readonly SPEED = 10;
-=======
 	private readonly SPEED = 15;
->>>>>>> 7c11321108d2f3105b34b5d762f2d152f6b88dd3
 	private readonly paddleSpeed = 20;
 	private readonly PADDLE_SIZE = 300;
 	private readonly paddleGap = 20;
