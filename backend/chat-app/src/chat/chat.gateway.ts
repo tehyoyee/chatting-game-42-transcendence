@@ -719,7 +719,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     await this.chatService.updateMuteStatus(targetBridge, true);
 
     client.emit('usermod-success', channel.channel_id);
-    targetUserSocket.emit('got-muted', channel.channel_id);
+    targetUserSocket.emit('got-mutted', channel.channel_id);
 
     this.server.to(channel.channel_name).emit("mute", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
     

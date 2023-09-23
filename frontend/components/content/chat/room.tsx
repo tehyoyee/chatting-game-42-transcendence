@@ -37,18 +37,25 @@ function ChatBox() {
 	const logRef = useRef<HTMLDivElement | null>(null);
 	const { user } = useChatContext();
 
+	const addMsg = (msg: string) => {
+		setChatLog((chatLog) => {
+			return [
+			...chatLog,
+		]});
+	};
+
 	useEffect(() => {
 		if (!chatSocket) return;
+		chatSocket.off('got-mutted');
+		chatSocket.on('got-mutted', (msg) => {
+			addMsg("10초 동안 메세지를 보낼 수 없습니다.");
+		});
 		chatSocket.off('message');
 		chatSocket.on('message', (data: TRecvMsg) => {
 			console.log('message data');
 			console.log(data);
-			setChatLog((chatLog) => {
-				return [
-				...chatLog,
-				`${data.user_nickname}: ${data.message}`,
-			]});
-		});
+			addMsg(`${data.user_nickname}: ${data.message}`)
+		})
 	}, [chatSocket]);
 
 	useEffect(() => {
