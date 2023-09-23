@@ -45,6 +45,7 @@ export class RelationController {
         return {state: true};
     }
 
+    //user 객체 전체가 아니라 nickname, avatar, status 정도만 불러오도록 수정
     @Get('social/friends/:id')
     async getFriendsStatusOfUser(@Param('id', ParseIntPipe) userId: number) {
         return await this.relationService.getFriendsOfUser(userId);

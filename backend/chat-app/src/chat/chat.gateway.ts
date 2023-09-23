@@ -18,6 +18,7 @@ import { Channel } from './entity/channel.entity';
 import { RelationService } from 'src/relation/relation.service';
 import { BlockDto } from 'src/relation/dto/block-dto';
 import * as serverConfig from 'config';
+import { InviteGameDto } from './dto/invite-game-dto';
 
 @WebSocketGateway({
 	// path: "/api/socket.io",
@@ -81,20 +82,24 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (user) {
       this.userSocketMap.delete(user.user_id);
+      this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
+      this.userSocketMap.delete(user.user_id);
     }
-    this.userSocketMap.delete(user.user_id);
     client.disconnect();
 
-    this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
   }
 
   //==========================================================================================
     
   private async socketToUser(client: Socket): Promise<User> {
-    //throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
+    // exception 날리지 않고 disconnect하도록 수정
     const token: any = client.handshake.query.token;
     if (!token) {
-      throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
+      // throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
+      this.logger.debug('Null Token');
+      client.emit('disconnect');
+      client.disconnect();
+      return;
     }
   
     try {
@@ -102,9 +107,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       const user: User = await this.userService.getProfileByUserId(decoded.id);
       return user;
     }
-    catch (error) {
-        this.logger.error(error);
-        throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
+    catch (err) {
+        this.logger.debug(err);
+        client.emit('disconnect');
+        client.disconnect();
+        return;
     }
   }
   
@@ -168,7 +175,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
     const receiverSocket = this.userIdToSocket(receiver.user_id);
     if (!receiverSocket) {
-      client.emit('creation-dm-fail', 'Unidentified User Error in onCreateDmChannel');
+      client.emit('creation-dm-fail', 'Unidentified Receiver User Error in onCreateDmChannel');
       return ;
     }
     
@@ -533,6 +540,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
     
+    const userBridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
+    if (!userBridge) {
+      client.emit('usermod-fail', 'Unexist Bridge Error in onKickUser');
+      return ;
+    }
+    if (userBridge.user_type !== UserType.OWNER && userBridge.user_type !== UserType.ADMIN) {
+      client.emit('usermod-fail', 'Member Cannot Kick User Error in onKickUser');
+      return ;
+    }
+
     const channel = await this.chatService.getChannelById(updateUserInfoDto.channelId);
     if (!channel) {
       client.emit('usermod-fail', 'Unexist Channel Error in onKickUser');
@@ -543,16 +560,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
     
-    const userBridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
-    if (!userBridge) {
-      client.emit('usermod-fail', 'Unexist Bridge Error in onKickUser');
+    const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
+    if (!targetUser) {
+      client.emit('usermod-fail', 'Unexist Target User Error in onKickUser');
       return ;
     }
-    if (userBridge.user_type !== UserType.OWNER && userBridge.user_type !== UserType.ADMIN) {
-      client.emit('usermod-fail', 'Member Cannot Kick User Error in onKickUser');
-      return ;
-    }
-    
+
     const targetBridge = await this.chatService.checkUserInThisChannel(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
     if (!targetBridge) {
       client.emit('usermod-fail', 'Unexist Bridge Error in onKickUser');
@@ -563,12 +576,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
 
-    const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
+    const targetUserSocket = this.userIdToSocket(targetUser.user_id);
+    if (!targetUserSocket) {
+      client.emit('invite-game-fail', 'Unidentified Target User Socket Error in onKickUser');
+      return ;
+    }
 
     await this.chatService.deleteUCBridge(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
-    client.leave(channel.channel_name);
+    targetUserSocket.leave(channel.channel_name);
+
     client.emit('usermod-success', channel.channel_id);
-    this.server.to(channel.channel_name).emit("usermod", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
+    targetUserSocket.emit('got-kicked', channel.channel_id);
+
+    this.server.to(channel.channel_name).emit("kick", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
   }
 
   //==========================================================================================
@@ -583,16 +603,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
     
-    const channel = await this.chatService.getChannelById(updateUserInfoDto.channelId);
-    if (!channel) {
-      client.emit('usermod-fail', 'Unexist Channel Error in onBanUser');
-      return ;
-    }
-    if (channel.channel_type === ChannelType.DM) {
-      client.emit('usermod-fail', 'Cannot Ban User On DM Channel Error in onBanUser');
-      return ;
-    }
-
     const userBridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
     if (!userBridge) {
       client.emit('usermod-fail', 'Unexist Bridge Error in onBanUser');
@@ -602,7 +612,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('usermod-fail', 'Member Cannot Ban Others Error in onBanUser');
       return ;
     }
+
+    const channel = await this.chatService.getChannelById(updateUserInfoDto.channelId);
+    if (!channel) {
+      client.emit('usermod-fail', 'Unexist Channel Error in onBanUser');
+      return ;
+    }
+    if (channel.channel_type === ChannelType.DM) {
+      client.emit('usermod-fail', 'Cannot Ban User On DM Channel Error in onBanUser');
+      return ;
+    }
     
+    const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
+    if (!targetUser) {
+      client.emit('usermod-fail', 'Unexist Target User Error in onBanUser');
+      return ;
+    }
+
     const targetBridge = await this.chatService.checkUserInThisChannel(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
     if (!targetBridge) {
       client.emit('usermod-fail', 'Unexist Bridge Error in onBanUser');
@@ -613,15 +639,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
     if (targetBridge.is_banned) {
-      client.emit('usermod-fail', 'User Already Banned Error in onBanUser');
+      client.emit('usermod-fail', 'Target User Already Banned Error in onBanUser');
+      return ;
+    }
+
+    const targetUserSocket = this.userIdToSocket(targetUser.user_id);
+    if (!targetUserSocket) {
+      client.emit('usermod-fail', 'Unidentified Target User Socket Error in onBanUser');
       return ;
     }
 
     await this.chatService.updateBanStatus(targetBridge, true);
-    const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
-    
-    client.leave(channel.channel_name);
+    targetUserSocket.leave(channel.channel_name);
+
     client.emit('usermod-success', channel.channel_id);
+    targetUserSocket.emit('got-banned', channel.channel_id);
+
     this.server.to(channel.channel_name).emit("ban", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
   }
 
@@ -637,6 +670,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
     
+    const userBridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
+    if (!userBridge) {
+      client.emit('onmute-fail', 'Unexist Bridge Error in onMuteUser');
+      return ;
+    }
+    if (userBridge.user_type !== UserType.OWNER && userBridge.user_type !== UserType.ADMIN) {
+      client.emit('onmute-fail', 'Member Cannot Mute Others Error in onMuteUser');
+      return ;
+    }
+
     const channel = await this.chatService.getChannelById(updateUserInfoDto.channelId);
     if (!channel) {
       client.emit('usermod-fail', 'Unexist Channel Error in onMuteUser');
@@ -647,13 +690,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
     
-    const userBridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
-    if (!userBridge) {
-      client.emit('usermod-fail', 'Unexist Bridge Error in onMuteUser');
-      return ;
-    }
-    if (userBridge.user_type !== UserType.OWNER && userBridge.user_type !== UserType.ADMIN) {
-      client.emit('usermod-fail', 'Member Cannot Mute Others Error in onMuteUser');
+    const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
+    if (!targetUser) {
+      client.emit('usermod-fail', 'Unexist Target User Error in onMuteUser');
       return ;
     }
     
@@ -667,14 +706,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
     if (targetBridge.is_muted) {
-      client.emit('usermod-fail', 'User Already Muted Error in onMuteUser');
+      client.emit('usermod-fail', 'Target User Already Muted Error in onMuteUser');
       return ;
     }
 
-    const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
+    const targetUserSocket = this.userIdToSocket(targetUser.user_id);
+    if (!targetUserSocket) {
+      client.emit('usermod-fail', 'Unidentified Target User Socket Error in onMuteUser');
+      return ;
+    }
 
     await this.chatService.updateMuteStatus(targetBridge, true);
+
     client.emit('usermod-success', channel.channel_id);
+    targetUserSocket.emit('got-muted', channel.channel_id);
+
     this.server.to(channel.channel_name).emit("mute", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
     
     setTimeout(() => {
@@ -690,21 +736,85 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit("unmute", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
   }
 
-  // @SubscribeMessage('invite-game')
-  // async onInviteGame(
-  //   @ConnectedSocket() client: Socket,
-  //   @MessageBody() targetUserId: number) {
-  //   const user = await this.socketToUser(client);
-  //   if (!user) {
-  //     client.emit('invite-game-fail', 'Unidentified User Error in onInviteGame');
-  //     return ;
-  //   }
+  //==========================================================================================
 
-  // }
+  @SubscribeMessage('invite-game')
+  async onInviteGame(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() inviteGameDto: InviteGameDto) {
+    const user = await this.socketToUser(client);
+    if (!user) {
+      client.emit('invite-game-fail', 'Unidentified User Error in onInviteGame');
+      return ;
+    }
 
-  // @SubscribeMessage('accept-game')
-  // async onAcceptGame() {
+    const targetUser = await this.userService.getProfileByUserId(inviteGameDto.targetUserId);
+    if (!targetUser) {
+      client.emit('invite-game-fail', 'Unidentified Target User Error in onInviteGame');
+      return ;
+    }
+    if (targetUser.status === UserStatus.PLAYING) {
+      client.emit('invite-game-fail', 'Target User PLAYING Error in onInviteGame');
+      return ;
+    }
+    if (targetUser.status === UserStatus.OFFLINE) {
+      client.emit('invite-game-fail', 'Target User OFFLINE Error in onInviteGame');
+      return ;
+    }
 
-  // }
+    const targetUserSocket = this.userIdToSocket(targetUser.user_id);
+    if (!targetUserSocket) {
+      client.emit('invite-game-fail', 'Unidentified Target User Socket Error in onInviteGame');
+      return ;
+    }
+
+    //targetUser에게 game invitation을 보냈습니다.
+    client.emit('invite-game-success', {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
+    //user가 [inviteGameDto.game_mode] 모드 game invitaion을 보냈습니다.
+    targetUserSocket.emit('got-invited', {user_id: user.user_id, user_nickname: user.nickname, game_mode: inviteGameDto.game_mode});
+  }
+
+  //==========================================================================================
+
+  @SubscribeMessage('accept-game')
+  async onAcceptGame(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() hostId: number) {
+      const invitedUser = await this.socketToUser(client);
+      if (!invitedUser) {
+        client.emit('accept-game-fail', 'Unidentified Invited User Error in onAcceptGame');
+        return ;
+      }
+
+      const hostUserSocket = this.userIdToSocket(hostId);
+      if (!hostUserSocket) {
+        client.emit('accept-game-fail', 'Unidentified Host User Socket Error in onAcceptGame');
+      }
+
+      client.emit('accept-game-success', 'accepted');
+      hostUserSocket.emit('accept-game-success', 'accepted');
+
+      this.server.of('/game').emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client})
+  }
+
+  //==========================================================================================
+
+  @SubscribeMessage('decline-game')
+  async onDeclineGame(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() hostId: number) {
+      const invitedUser = await this.socketToUser(client);
+      if (!invitedUser) {
+        client.emit('decline-game-fail', 'Unidentified Invited User Error in onDeclineGame');
+        return ;
+      }
+
+      const hostUserSocket = this.userIdToSocket(hostId);
+      if (!hostUserSocket) {
+        client.emit('decline-game-fail', 'Unidentified Host User Socket Error in onDeclineGame');
+      }
+      hostUserSocket.emit('decline-game-success', 'declined');
+      client.emit('decline-game-success', 'declined');
+  }
 
 }

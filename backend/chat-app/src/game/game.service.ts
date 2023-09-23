@@ -13,7 +13,7 @@ export class GameService {
 		private userRepository: UserRepository
 	) {}
 
-	async updateGameHistory(winId: number, loseId: number) {
+	async updateGameHistory(winId: number, loseId: number, point1: number, point2: number) {
 		const winUser = await this.userRepository.getProfileByUserId(winId);
 		const loseUser = await this.userRepository.getProfileByUserId(loseId);
 		
@@ -34,9 +34,18 @@ export class GameService {
 			winUser.point += (25 + surplus);
 			loseUser.point -= (25 + surplus);
 		}
+
+		// GameHistory 업데이트
+		// winUser.game_histories.push({
+		// 	winner_id: winUser.user_id,
+		// 	loser_id: loseUser.user_id,
+		// 	score1: point1,
+		// 	score2: point2,
+		// });
+		
+
 		await this.userRepository.save(winUser);
 		await this.userRepository.save(loseUser);
-		// User 히스토리에 등록
 		// winUser.match_history
 	}
 }
