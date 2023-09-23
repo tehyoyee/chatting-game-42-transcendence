@@ -259,8 +259,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		render();
 	}
 
-	@SubscribeMessage('launchGame')
-	async launchGame()
+	// @SubscribeMessage('launchGame')
+	// async launchGame()
 
 	@SubscribeMessage('exitQueue')
 	async exitQueue(@ConnectedSocket() client: any) {
