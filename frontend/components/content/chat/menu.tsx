@@ -12,6 +12,8 @@ import SideBar from '@/components/structure/sidebar';
 import useChatContext, { IChatUser, IChatMate, EChatUserType, TChatContext } from './context';
 import ChatControl from './control';
 import usePlayerContext, { EPlayerState, TPlayerContext } from '@/components/content/player_state';
+import UserList from '@/components/structure/userList';
+import UserModal from '@/components/structure/userModal';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`
 const chatInfoReqUrl = `${serverUrl}/chat/users-in-channel/`;
@@ -35,6 +37,22 @@ export default function ChatMenu() {
 	const [userList, updateUserList] = useFetch<IChatMate[]>(`${chatInfoReqUrl}${user.channel_id}`, [], fetcher);
 	const [controlModal, setControlModal] = useState<boolean>(false);
 	const playerContext = usePlayerContext();
+
+	const [selectedUser, setSelectedUser] = useState<IChatMate>({userId: 0,
+		userNickName: '',
+		userType: 'string',
+		isMuted: false});
+
+	const [isModalOpen, setIsModalOpen] = useState(false);
+
+	const handleUserClick = (user: any) => {
+		setSelectedUser(user);
+		setIsModalOpen(true);
+	};
+
+	const handleCloseModal = () => {
+		setIsModalOpen(false);
+	  };
 
 	useEffect(() => {
 		if (!chatSocket) return;
@@ -106,15 +124,12 @@ export default function ChatMenu() {
 					</button>
 				</li>
 				{
-					userList.map((user, index) => {
-						return (
-							<li key={index}>
-								<UserCard
-									user={user}
-								></UserCard>
-							</li>
-						);
-					})
+					<div>
+					<UserList users={userList} onUserClick={handleUserClick}></UserList>
+					{isModalOpen && (
+						<UserModal user={selectedUser} onClose={handleCloseModal} />
+					  )}
+					</div>
 				}
 			</ul>
 		</SideBar>

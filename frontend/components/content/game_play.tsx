@@ -42,6 +42,9 @@ export default function GamePlay() {
       draw: function (gamingInfo: any) {
         this.context.clearRect(0, 0, gamingInfo.canvasX, gamingInfo.canvasY);
 
+        this.context.font = "55px Arial";
+        this.context.textAlign = "center";
+
         this.context.fillStyle = this.color;
 
         this.context.fillRect(0, 0, gamingInfo.canvasX, gamingInfo.canvasY);
@@ -51,12 +54,12 @@ export default function GamePlay() {
         this.context.fillText(
           gamingInfo.score1.toString(),
           gamingInfo.canvasX / 2 - 300,
-          165
+          180
         );
         this.context.fillText(
           gamingInfo.score2.toString(),
           gamingInfo.canvasX / 2 + 300,
-          165
+          180
         );
         this.context.fillText(
           gamingInfo.player1,
@@ -69,23 +72,14 @@ export default function GamePlay() {
           100
         );
 
-        this.context.beginPath();
-        this.context.setLineDash([5, 15]);
-        this.context.moveTo(this.canvas.width / 2, this.canvas.height - 140);
-        this.context.lineTo(this.canvas.width / 2, 140);
-        this.context.lineWidth = 10;
-        this.context.strokeStyle = "#ffffff";
-        this.context.stroke();
+        
 
-        this.context.font = "40px sans-serif";
-        this.context.textAlign = "center";
+        
 
-        this.context.font = "20px sans-serif bold";
-
-        this.context.font = "30px sans-serif bold";
 
           if (!gamingInfo.winner)
           {
+
             this.context.fillRect(
               gamingInfo.paddle1X,
               gamingInfo.paddle1Y,
@@ -99,14 +93,48 @@ export default function GamePlay() {
               gamingInfo.paddleY
             );
             this.context.fillRect(gamingInfo.ballX, gamingInfo.ballY, 20, 20);
+            this.context.beginPath();
+            this.context.setLineDash([5, 15]);
+            this.context.moveTo(this.canvas.width / 2, this.canvas.height - 140);
+            this.context.lineTo(this.canvas.width / 2, 140);
+            this.context.lineWidth = 10;
+            this.context.strokeStyle = "#ffffff";
+            this.context.stroke();
           }
           else
           {
-            this.context.font = "500px sans-serif bold";
+            this.context.font = "150px Arial";
             this.context.fillText(
               "Winner: " + gamingInfo.winner,
               gamingInfo.canvasX / 2,
               gamingInfo.canvasY / 2
+              );
+              
+              this.context.font = "55px Arial";
+            this.context.fillText(
+              gamingInfo.score1.toString(),
+              gamingInfo.canvasX / 2 - 300,
+              180
+            );
+            this.context.fillText(
+              gamingInfo.score2.toString(),
+              gamingInfo.canvasX / 2 + 300,
+              180
+            );
+            this.context.fillText(
+              gamingInfo.player1,
+              gamingInfo.canvasX / 2 - 300,
+              100
+            );
+            this.context.fillText(
+              gamingInfo.player2,
+              gamingInfo.canvasX / 2 + 300,
+              100
+            );
+            this.context.fillText(
+              "3초 후에 종료됩니다.",
+              gamingInfo.canvasX / 2,
+              8 * gamingInfo.canvasY / 10
             );
           }
       },
@@ -132,9 +160,9 @@ export default function GamePlay() {
     });
     Sock.gameSocket?.on("endGame", (gamingInfo) => {
       Pong.draw(gamingInfo);
-      // setTimeout(() => {
-      //   router.push("/game");
-      // }, 3000);
+      setTimeout(() => {
+        router.push("/game");
+      }, 3000);
     });
   }, []);
   return <canvas ref={canvasRef} width="1800" height="1300"></canvas>;

@@ -1,7 +1,7 @@
 import React from 'react';
+import { IChatMate } from '../content/chat/context';
 
-const UserList = ({ onUserClick }: {onUserClick: Function}) => {
-  const users = ['유저1', '유저2', '유저3']; // 유저 목록 데이터
+const UserList = ({users, onUserClick }: {users: IChatMate[], onUserClick: Function}) => {
 
   return (
     <div>
@@ -9,7 +9,7 @@ const UserList = ({ onUserClick }: {onUserClick: Function}) => {
       <ul>
         {users.map((user, index) => (
           <li key={index} onClick={() => onUserClick(user)}>
-            {user}
+            {user.userNickName}
           </li>
         ))}
       </ul>
