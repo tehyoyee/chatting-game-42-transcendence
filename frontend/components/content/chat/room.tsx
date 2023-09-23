@@ -40,7 +40,8 @@ function ChatBox() {
 	const addMsg = (msg: string) => {
 		setChatLog((chatLog) => {
 			return [
-			...chatLog,
+				...chatLog,
+				msg,
 		]});
 	};
 
