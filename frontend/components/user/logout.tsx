@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '/styles/logout.module.css';
-import { useAuthContext } from '@/components/user/auth';
+import useAuthContext from '@/components/user/auth';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 const logoutUrl = `${serverUrl}/auth/signout`;

@@ -1,6 +1,7 @@
 import usePlayerContext, { EPlayerState } from "./player_state";
 import useSocketContext, { SocketContext } from "@/lib/socket";
 import { useRef, useEffect, useState } from "react";
+import User from '../user/user';
 
 type GameType = {
   canvas: HTMLCanvasElement;
@@ -25,7 +26,7 @@ export default function GamePlay() {
     var Game: GameType = {
       canvas: canvas,
       context: canvas.getContext("2d") as CanvasRenderingContext2D,
-      color: "#000000",
+      color: "#1bce8a",
 
       initialize: function () {
         this.canvas.style.width = 1400 / 2 + "px";
@@ -56,18 +57,28 @@ export default function GamePlay() {
             gamingInfo.paddle2X,
             gamingInfo.paddle2Y,
             20,
-            300
-          );
+            300,
+            );
           this.context.fillRect(gamingInfo.ballX, gamingInfo.ballY, 20, 20);
           this.context.fillText(
             gamingInfo.score1.toString(),
             gamingInfo.canvasX / 2 - 300,
-            200
+            165
           );
           this.context.fillText(
             gamingInfo.score2.toString(),
             gamingInfo.canvasX / 2 + 300,
-            200
+            165,
+          );
+          this.context.fillText(
+            gamingInfo.player1,
+            gamingInfo.canvasX / 2 - 300,
+            100,
+          );
+          this.context.fillText(
+            gamingInfo.player2,
+            gamingInfo.canvasX / 2 + 300,
+            100,
           );
 
           this.context.beginPath();

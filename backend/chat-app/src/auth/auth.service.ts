@@ -1,16 +1,13 @@
 import { Request, Response } from 'express';
 import { HttpService } from '@nestjs/axios';
-import { HttpException, HttpStatus, Injectable, NestInterceptor, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
-import { Observable, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import * as config from 'config';
 import { AxiosRequestConfig } from 'axios';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { User } from 'src/user/entity/user.entity';
 import { MailService } from './mail.service';
-import { Res } from '@nestjs/common';
-import { compareSync } from 'bcrypt';
 
 const dbconfig = config.get('intra');
 const grant_type = dbconfig.get('grant_type');
@@ -29,7 +26,6 @@ export class AuthService {
 	
 	async signUp(code: string, res: Response) {
 		try {
-			// throw new HttpException('message', 400);
 			const generateRandomString = async ( len: number) => {
 				const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
 				let randomString: string = '';
@@ -52,7 +48,6 @@ export class AuthService {
 			}
 			const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
 			const payload = { username: user.data.login, id: user.data.id };
-			console.log(config.jwt.secret);
 			const newAccessToken = this.jwtService.sign({ payload });
 			const found = await this.userService.getProfileByUserId(user.data.id);
 
@@ -95,14 +90,13 @@ export class AuthService {
 			})
 			return;
 		} catch (err) {
-			console.log(`signUp error: ${err}`);
+			throw new HttpException('SignUp Error', HttpStatus.UNAUTHORIZED);
 		}
-		return ;
 	}
 
 	async checkLoginState(req: Request, res: Response) {
 			const token = req.cookies['token'];
-
+			
 			if (!token) {
 				throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
 			}
@@ -137,7 +131,7 @@ export class AuthService {
 			if (payload)
 				return payload;
 		
-			throw new UnauthorizedException('token is not verified');
+			throw new HttpException('test error Token', HttpStatus.UNAUTHORIZED);
 		} catch (error) {
 			throw new HttpException(`Invalid Token: ${error}`, HttpStatus.UNAUTHORIZED)
 		}

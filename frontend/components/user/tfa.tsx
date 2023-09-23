@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../../styles/tfa.module.css';
 import { LoginData } from '@/components/user/callback';
-import { useAuthContext } from '@/components/user/auth';
+import useAuthContext from '@/components/user/auth';
 import { setTimeout } from 'timers';
 
 const authUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/twofactor`

@@ -1,10 +1,27 @@
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, useRef, ReactNode } from 'react';
 import styles from "@/styles/chat.module.css";
 import useSocketContext from '@/lib/socket';
 
 import ChatMenu from './menu';
+import usePlayerContext, { EPlayerState } from '../player_state';
+import useChatContext from './context';
+
+type TRecvMsg = {
+	message: string,
+	user_id: number,
+	user_nickname: string,
+};
+
+type TSendMsg = {
+	channel_id: number,
+	content: string,
+};
 
 export default function ChatRoom() {
+	const { setPlayerState } = usePlayerContext();
+	useEffect(() => {
+		setPlayerState(EPlayerState.CHAT_JOINING);
+	}, []);
 	return (
 		<>
 			<ChatMenu></ChatMenu>
@@ -16,20 +33,38 @@ export default function ChatRoom() {
 function ChatBox() {
 	const { chatSocket } = useSocketContext();
 	const [chatLog, setChatLog] = useState<string[]>([]);
+	const inputRef = useRef<HTMLInputElement | null>(null);
+	const logRef = useRef<HTMLDivElement | null>(null);
+	const { user } = useChatContext();
 
 	useEffect(() => {
-		const chatLogList = document.querySelector('#chatLogList') as HTMLDivElement;
-		chatLogList && (chatLogList.scrollTop = chatLogList.scrollHeight);
+		if (!chatSocket) return;
+		chatSocket.off('message');
+		chatSocket.on('message', (data: TRecvMsg) => {
+			console.log('message data');
+			console.log(data);
+			setChatLog((chatLog) => {
+				return [
+				...chatLog,
+				`${data.user_nickname}: ${data.message}`,
+			]});
+		});
+	}, [chatSocket]);
+
+	useEffect(() => {
+		logRef.current && (logRef.current.scrollTop = logRef.current.scrollHeight);
 	}, [chatLog]);
 
 	const sendMsg = () => {
-		const inputField = document.querySelector('#chatInputField') as HTMLInputElement;
+		const inputField = inputRef.current;
 
-		if (!inputField?.value || !chatLog) return;
-		setChatLog([
-			...chatLog,
-			inputField.value
-		]);
+		if (!inputField?.value || !chatLog || !chatSocket) return;
+
+		const sendMsg: TSendMsg = {
+			channel_id: user.channel_id,
+			content: inputField.value,
+		}
+		chatSocket.emit('post-group-message', sendMsg);
 		inputField.focus();
 		inputField.value = '';
 	};
@@ -37,6 +72,7 @@ function ChatBox() {
 	return (
 		<div className={styles.chatBox}>
 			<div
+				ref={logRef}
 				id="chatLogList"
 				style={{
 					height: '96%',
@@ -46,7 +82,7 @@ function ChatBox() {
 					{chatLog.map((log, key) => {
 						return (
 							<li key={key}>
-								{`: ${log}`}
+								{log}
 							</li>
 						);
 					})}
@@ -64,6 +100,7 @@ function ChatBox() {
 					}}
 					>Enter</button>
 				<input 
+					ref={inputRef}
 					id="chatInputField"
 					autoComplete='off'
 					style={{

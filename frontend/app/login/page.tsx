@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthContext } from "@/components/user/auth";
+import useAuthContext from "@/components/user/auth";
 import Login from "@/components/user/login";
 
 export default function Page() {

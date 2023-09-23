@@ -1,16 +1,16 @@
-import { OnModuleInit } from "@nestjs/common";
-import { WebSocketServer, MessageBody, SubscribeMessage, WebSocketGateway } from "@nestjs/websockets";
+import { OnModuleInit, UseFilters } from "@nestjs/common";
+import { WebSocketServer, MessageBody, SubscribeMessage, WebSocketGateway, BaseWsExceptionFilter, WsException } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io';
 import { AuthService } from "src/auth/auth.service";
 import { User } from "src/user/entity/user.entity";
 import { UserService } from "src/user/user.service";
 import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
-import { Message } from "src/chat/entity/message.entity";
 import { GameService } from "./game.service";
 import { KeyStatus } from "./game.keystatus.enum";
+import { WebsocketExceptionsFilter } from "src/exception/ws.exception.filter";
 
-// @WebSocketGateway()
 @WebSocketGateway({ namespace: '/game'})
+@UseFilters(WebsocketExceptionsFilter)
 export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect {
 	
 	private readonly MAP_X = 1400;
@@ -26,7 +26,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		private authService: AuthService,
 		private userService: UserService,
 		private gameService: GameService,
-		) {}
+	) {}
 	
 	userMap = [];
 	userSocketMap = new Map<number, Socket>(); // userid, socketid
@@ -40,7 +40,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	onModuleInit() {
 		this.server.on('connection', (socket) => {
-			console.log(`socket_id = ${socket.id}`);
+			console.log(`GameSocket_id = ${socket.id}`);
 			console.log('Connected');
 		});
 	}
@@ -50,9 +50,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		const user = await this.socketToUser(client);
 		if (gameMode === 'NORMAL') {
 			this.gameNormalQueue.push(user.user_id);
-			// if (this.gameNormalQueue[0] === user.user_id) {
-			// 	return;
-			// }
 			console.log(this.gameNormalQueue);
 			console.log(`added normalQueue user : ${user.username}`);
 			if (this.gameNormalQueue.length >= 2) {
@@ -109,7 +106,15 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		if (point1 == this.MAXPOINT) {
 			console.log(`${user1.username} winned !`);
 			this.gameService.updateGameHistory(user1.user_id, user2.user_id);
-			this.server.to(roomName).emit('gameEnd');
+			this.server.to(roomName).emit('endGame', {
+				canvasX: this.MAP_X,
+				canvasY: this.MAP_Y,
+				player1: user1.nickname,
+				player2: user2.nickname,
+				score1: point1,
+				socre2: point2,
+				winner: user1.username
+			});
 			player1.leave(roomName);
 			player2.leave(roomName);
 			this.gameRoomMap.delete(user1.user_id);
@@ -118,7 +123,15 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		} else if (point2 == this.MAXPOINT) {
 			console.log(`${user1.username} winned !`);
 			this.gameService.updateGameHistory(user2.user_id, user1.user_id);
-			this.server.to(roomName).emit('gameEnd');
+			this.server.to(roomName).emit('endGame', {
+				canvasX: this.MAP_X,
+				canvasY: this.MAP_Y,
+				player1: user1.nickname,
+				player2: user2.nickname,
+				score1: point1,
+				socre2: point2,
+				winner: user2.username
+			});
 			player1.leave(roomName);
 			player2.leave(roomName);
 			this.gameRoomMap.delete(user1.user_id);
@@ -214,7 +227,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				player1: user1.nickname,
 				player2: user2.nickname,
 				score1: point1,
-				socre2: point2,
+				score2: point2,
 				ballX: ball.x,
 				ballY: ball.y,
 				paddle1X: paddle1.x,
@@ -261,6 +274,15 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		}
 	}
 
+	@SubscribeMessage('exitGame')
+	async exitGame(@ConnectedSocket() client: any) {
+		const loser = await this.socketToUser(client);
+		const explodedRoomName = this.gameRoomMap.get(loser.user_id);
+		// const winner = 
+		console.log(`[Game] user ${loser.username} has left the game. he's loser.`);
+		// this.gameService.updateGameHistory();
+	}
+
 	@SubscribeMessage('keyW')
 	async updateKeyStatusW (@ConnectedSocket() client: any, @MessageBody() newStatus: string) {
 		const user = await this.socketToUser(client);
@@ -284,8 +306,10 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
 		if (!user) {
+			this.server.emit('forceLogout');
 			return;
 		}
+
 		this.userSocketMap.set(user.user_id, client);
 		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 	}

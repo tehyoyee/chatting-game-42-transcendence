@@ -4,9 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import defaultImage from '../../public/default.png';
 import React, { useEffect, useContext, useState, useRef } from 'react';
-import { useRouter, notFound } from 'next/navigation';
+import { useRouter, notFound, useSearchParams } from 'next/navigation';
 import styles from '@/styles/matching.module.css';
 import DotLoader from './dotLoader';
+// import queryRouter from 'next/router';
+
 
 
 // import { GameKeyContext } from './GameKeyProvider';
@@ -15,6 +17,7 @@ import { io, Socket } from 'socket.io-client';
 // import "./Pong.css";
 import WebSocketContex, { SocketContext, SocketContextProvider } from '@/lib/socket'
 import useSocketContext from '@/lib/socket';
+import usePlayerContext, { EPlayerState } from './player_state';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 	const chatUrl = `${serverUrl}/chat`;
@@ -40,7 +43,9 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
     const [queue, setQueue] = useState(0);
     const [countdown, setCountdown] = useState(3);
     const SocketContext = useSocketContext();
-    
+    const searchParams = useSearchParams();
+		const { setPlayerState } = usePlayerContext();
+
     SocketContext.gameSocket?.on('gameStart', () => { setReady(true); });
 
     
@@ -48,14 +53,19 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
       console.log("exitQueue handler worked!");
       SocketContext.gameSocket?.emit('exitQueue');
     };
+
+		useEffect(() => {
+			setPlayerState(EPlayerState.GAME_MATCHING);
+		}, []);
     
     useEffect(() => {
 
       if (!queue)
       {
           const JoinQueue = () => {
-            console.log("test_useEffect");
-              SocketContext.gameSocket?.emit('joinQueue', "NORMAL");
+            searchParams.get('normal') ?
+              SocketContext.gameSocket?.emit('joinQueue', 'NORMAL') :
+              SocketContext.gameSocket?.emit('joinQueue', 'ADVANCED');
             }
           if (ref.current)
             return;
