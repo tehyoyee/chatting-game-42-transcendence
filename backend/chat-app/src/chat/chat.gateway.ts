@@ -734,6 +734,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit("unmute", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
   }
 
+  //==========================================================================================
+
   @SubscribeMessage('invite-game')
   async onInviteGame(
     @ConnectedSocket() client: Socket,
@@ -770,6 +772,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     targetUserSocket.emit('invite-game-success', {user_id: user.user_id, user_nickname: user.nickname, game_mode: inviteGameDto.game_mode});
   }
 
+  //==========================================================================================
+
   @SubscribeMessage('accept-game')
   async onAcceptGame(
     @ConnectedSocket() client: Socket,
@@ -790,6 +794,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
       this.server.of('/game').emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client})
   }
+
+  //==========================================================================================
 
   @SubscribeMessage('decline-game')
   async onDeclineGame(
