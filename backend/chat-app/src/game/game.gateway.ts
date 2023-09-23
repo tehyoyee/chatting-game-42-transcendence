@@ -112,7 +112,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				player1: user1.nickname,
 				player2: user2.nickname,
 				score1: point1,
-				socre2: point2,
+				score2: point2,
 				winner: user1.username
 			});
 			player1.leave(roomName);
@@ -129,7 +129,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				player1: user1.nickname,
 				player2: user2.nickname,
 				score1: point1,
-				socre2: point2,
+				score2: point2,
 				winner: user2.username
 			});
 			player1.leave(roomName);
