@@ -17,12 +17,13 @@ import { UserChannelBridge } from './entity/user-channel-bridge.entity';
 import { Channel } from './entity/channel.entity';
 import { RelationService } from 'src/relation/relation.service';
 import { BlockDto } from 'src/relation/dto/block-dto';
+import * as serverConfig from 'config';
 
 @WebSocketGateway({
 	// path: "/api/socket.io",
 	namespace: "/chat",
 	cors: {
-	 	origin: "http://10.18.229.228:3001",
+	 	origin: `${serverConfig.get('server.url')}:${serverConfig.get('server.front_port')}`,
 	 	credentials: true,
 	 	allowedHeaders: 'Content-Type, Authorization, Cookie',
 	 	methods: ["GET", "POST"],
@@ -90,9 +91,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   //==========================================================================================
     
   private async socketToUser(client: Socket): Promise<User> {
+    //throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
     const token: any = client.handshake.query.token;
-    if (!token)
-      return null;
+    if (!token) {
+      throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
+    }
   
     try {
       const decoded = await this.authService.verifyToken(token);
@@ -101,7 +104,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
     catch (error) {
         this.logger.error(error);
-        return undefined;
+        throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
     }
   }
   
@@ -684,5 +687,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   }
 
   // @SubscribeMessage('invite-game')
+  // async onInviteGame(
+  //   @ConnectedSocket() client: Socket,
+  //   @MessageBody() targetUserId: number) {
+  //   const user = await this.socketToUser(client);
+  //   if (!user) {
+  //     client.emit('invite-game-fail', 'Unidentified User Error in onInviteGame');
+  //     return ;
+  //   }
+
+  // }
+
   // @SubscribeMessage('accept-game')
+  // async onAcceptGame() {
+
+  // }
+
 }
