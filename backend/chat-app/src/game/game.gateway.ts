@@ -1,16 +1,16 @@
-import { OnModuleInit } from "@nestjs/common";
-import { WebSocketServer, MessageBody, SubscribeMessage, WebSocketGateway } from "@nestjs/websockets";
+import { OnModuleInit, UseFilters } from "@nestjs/common";
+import { WebSocketServer, MessageBody, SubscribeMessage, WebSocketGateway, BaseWsExceptionFilter, WsException } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io';
 import { AuthService } from "src/auth/auth.service";
 import { User } from "src/user/entity/user.entity";
 import { UserService } from "src/user/user.service";
 import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
-import { Message } from "src/chat/entity/message.entity";
 import { GameService } from "./game.service";
 import { KeyStatus } from "./game.keystatus.enum";
+import { WebsocketExceptionsFilter } from "src/exception/ws.exception.filter";
 
-// @WebSocketGateway()
 @WebSocketGateway({ namespace: '/game'})
+@UseFilters(WebsocketExceptionsFilter)
 export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect {
 	
 	private readonly MAP_X = 1400;
@@ -26,7 +26,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		private authService: AuthService,
 		private userService: UserService,
 		private gameService: GameService,
-		) {}
+	) {}
 	
 	userMap = [];
 	userSocketMap = new Map<number, Socket>(); // userid, socketid
@@ -40,7 +40,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	onModuleInit() {
 		this.server.on('connection', (socket) => {
-			console.log(`socket_id = ${socket.id}`);
+			console.log(`GameSocket_id = ${socket.id}`);
 			console.log('Connected');
 		});
 	}
@@ -50,9 +50,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		const user = await this.socketToUser(client);
 		if (gameMode === 'NORMAL') {
 			this.gameNormalQueue.push(user.user_id);
-			// if (this.gameNormalQueue[0] === user.user_id) {
-			// 	return;
-			// }
 			console.log(this.gameNormalQueue);
 			console.log(`added normalQueue user : ${user.username}`);
 			if (this.gameNormalQueue.length >= 2) {
@@ -286,6 +283,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		if (!user) {
 			return;
 		}
+
 		this.userSocketMap.set(user.user_id, client);
 		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 	}
