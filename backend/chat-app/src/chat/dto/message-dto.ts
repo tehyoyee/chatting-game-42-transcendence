@@ -17,3 +17,12 @@ export class DmDto {
     @IsString()
     content: string;
 }
+
+export class PreviousMessageDto {
+    @IsInt()
+    @IsPositive()
+    writerId: number;
+
+    @IsString()
+    content: string;
+}

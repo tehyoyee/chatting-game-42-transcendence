@@ -13,7 +13,7 @@ import { Message } from './entity/message.entity';
 import * as bcrypt from 'bcrypt';
 import { JoinChannelDto, GroupChannelDto } from './dto/channel-dto';
 import { ChannelType } from './enum/channel_type.enum';
-import { DmDto, GroupMessageDto } from './dto/message-dto';
+import { DmDto, GroupMessageDto, PreviousMessageDto } from './dto/message-dto';
 import { UpdatePasswordDto } from './dto/update-dto';
 import { BridgeDto } from './dto/bridge-dto';
 
@@ -126,21 +126,27 @@ export class ChatService {
         return await this.messageRepository.createDM(sender, channel, content);
     }
 
-    // async getMessagesByChannelId(channelId: number, userId: number): Promise<Message[]> {
-    //     let messages: Message[] = [];
-    //     if (await this.isMember(channelId, userId)) {
-    //         const query = await this.messageRepository.createQueryBuilder('m')
-    //         .select(['m.content', 'm.user_id', 'm.channel_id'])
-    //         .where('m.channel_id = :channelId', {channelId})
-    //         .orderBy('m.created_at');
+    async getAllMessagesByChannelId(channelId: number): Promise<PreviousMessageDto[]> {
+        let previousMessages: PreviousMessageDto[] = [];
 
-    //         messages = await query.getMany();
+        const messages = await this.messageRepository
+        .createQueryBuilder('m')
+        .where('m.channel_id = :channelId', {channelId})
+        .select(['m.user_id', 'm.content'])
+        .orderBy('m.created_at', 'ASC')
+        .limit(10)
+        .getMany();
 
-    //         //block 유저의 메세지 지우는 부분 필요
-    //     }
-    
-    //     return messages;
-    // }
+        for (let m of messages) {
+            let message = { writerId: m.user_id,
+                            content: m.content};
+            
+            previousMessages.push(message);
+        }
+
+        //block 체크 추가해야함
+        return previousMessages;
+    }
 
     async deleteUCBridge(userId: number, channelId: number) {
         return await this.ucbRepository.deleteUCBridge(userId, channelId, );
