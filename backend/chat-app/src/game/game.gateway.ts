@@ -105,14 +105,14 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		// 게임 종료 조건
 		if (point1 == this.MAXPOINT) {
 			console.log(`${user1.username} winned !`);
-			this.gameService.updateGameHistory(user1.user_id, user2.user_id);
+			this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 			this.server.to(roomName).emit('endGame', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
 				player1: user1.nickname,
 				player2: user2.nickname,
 				score1: point1,
-				socre2: point2,
+				score2: point2,
 				winner: user1.username
 			});
 			player1.leave(roomName);
@@ -122,14 +122,14 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			return;
 		} else if (point2 == this.MAXPOINT) {
 			console.log(`${user1.username} winned !`);
-			this.gameService.updateGameHistory(user2.user_id, user1.user_id);
+			this.gameService.updateGameHistory(user2.user_id, user1.user_id, point1, point2);
 			this.server.to(roomName).emit('endGame', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
 				player1: user1.nickname,
 				player2: user2.nickname,
 				score1: point1,
-				socre2: point2,
+				score2: point2,
 				winner: user2.username
 			});
 			player1.leave(roomName);
@@ -154,11 +154,11 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		}
 		const paddle1 = {
 			x: this.paddleGap,
-			y: this.MAP_Y / 2
+			y: (this.MAP_Y + this.PADDLE_SIZE) / 2
 		};
 		const paddle2 = {
 			x: this.MAP_X - this.paddleGap,
-			y: this.MAP_Y / 2
+			y: (this.MAP_Y + this.PADDLE_SIZE) / 2
 		};
 
 		var winFlag = 0;
@@ -234,6 +234,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				paddle1Y: paddle1.y,
 				paddle2X: paddle2.x,
 				paddle2Y: paddle2.y,
+				paddleX: this.paddleGap,
+				paddleY: this.PADDLE_SIZE
 			});
 			/**
 			 * Earning Point Condition
