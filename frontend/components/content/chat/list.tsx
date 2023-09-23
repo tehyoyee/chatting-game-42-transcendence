@@ -7,6 +7,7 @@ import { ChatCreate } from '@/components/content/chat/create';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 import useChatContext, { IChatUser } from './context';
+import usePlayerContext, { EPlayerState } from '@/components/content/player_state';
 
 enum ChatType {
 	public = 'public',
@@ -33,6 +34,7 @@ export default function ChatList() {
 	const [pubChatList, updatePub] = useFetch<IChatRoom[]>(pubChatReqUrl, []);
 	const [protChatList, updateProt] = useFetch<IChatRoom[]>(protChatReqUrl, []);
   const list = protChatList.concat(pubChatList);
+	const {setPlayerData, setPlayerState} = usePlayerContext();
 
 	useEffect(() => {
 		updateProt();
@@ -52,6 +54,9 @@ export default function ChatList() {
 			console.log(`join-success: ${JSON.stringify(msg)}`); 
 			setJoined(true)
 			setUser(msg);
+			setPlayerState(EPlayerState.CHAT_JOINING);
+			setPlayerData(msg);
+			chatSocket.off();
 		});
 	}, [chatSocket])
 
