@@ -14,7 +14,7 @@ import { RelationModule } from './relation/relation.module';
   imports: [
     TypeOrmModule.forRoot(typeORMConfig),
     UserModule, AuthModule, ChatModule, 
-    GameModule, RelationModule
+    GameModule, RelationModule, 
   ],
   controllers: [AppController],
   providers: [AppService],

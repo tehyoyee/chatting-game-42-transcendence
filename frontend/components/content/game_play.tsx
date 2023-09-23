@@ -1,3 +1,4 @@
+import usePlayerContext, { EPlayerState } from "./player_state";
 import useSocketContext, { SocketContext } from "@/lib/socket";
 import { useRef, useEffect, useState } from "react";
 import User from '../user/user';
@@ -12,12 +13,14 @@ type GameType = {
 };
 
 export default function GamePlay() {
+	const { setPlayerState } = usePlayerContext();
   const Sock = useSocketContext();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   var Pong: GameType;
 
   useEffect(() => {
+		setPlayerState(EPlayerState.GAME_PLAYING);
     const canvas = canvasRef.current as HTMLCanvasElement;
 
     var Game: GameType = {

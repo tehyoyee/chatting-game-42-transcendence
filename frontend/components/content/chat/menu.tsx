@@ -11,6 +11,7 @@ import Modal from '@/components/structure/modal';
 import SideBar from '@/components/structure/sidebar';
 import useChatContext, { IChatUser, IChatMate, EChatUserType, TChatContext } from './context';
 import ChatControl from './control';
+import usePlayerContext, { EPlayerState, TPlayerContext } from '@/components/content/player_state';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`
 const chatInfoReqUrl = `${serverUrl}/chat/users-in-channel/`;
@@ -33,6 +34,7 @@ export default function ChatMenu() {
 	const { user, setUser, joined, setJoined } = chatContext;
 	const [userList, updateUserList] = useFetch<IChatMate[]>(`${chatInfoReqUrl}${user.channel_id}`, [], fetcher);
 	const [controlModal, setControlModal] = useState<boolean>(false);
+	const playerContext = usePlayerContext();
 
 	useEffect(() => {
 		if (!chatSocket) return;
@@ -48,7 +50,7 @@ export default function ChatMenu() {
 			console.log(`join: ${JSON.stringify(msg)}`)
 			updateUserList();
 		});
-		socketInit(chatSocket, chatContext);
+		socketInit(chatSocket, chatContext, playerContext);
 	}, [chatSocket]);
 
 	return (
@@ -88,7 +90,7 @@ export default function ChatMenu() {
 						style={{
 							backgroundColor: 'lightsalmon',
 						}}>
-						{'채널 나가기'} 
+						{'채널 탈퇴'} 
 					</button>
 				</li>
 				<li>
@@ -123,28 +125,34 @@ function exitChat(user: IChatUser, socket: Socket) {
 	if (!confirm("채널에서 나가시겠습니까?")) return;
 	console.log('exitChat request');
 	socket.emit('leave-channel', user.channel_id);
-	socket.off(); // NOTE
 }
 
 function closeChat(user: IChatUser, socket: Socket) {
 	console.log('closeChat request');
 	socket.emit('close-channel-window', user.channel_id);
-	socket.off(); // NOTE
 }
 
-function socketInit(chatSocket: Socket, chatContext: TChatContext) {
+function socketInit(chatSocket: Socket, chatContext: TChatContext, playerContext: TPlayerContext) {
 	const { user, setUser, joined, setJoined } = chatContext;
+	const { setPlayerState, setPlayerData } = playerContext;
+
+	function close() {
+		setJoined(false);
+		setUser({
+			...user,
+			channel_id: -1,
+		});
+		setPlayerState(EPlayerState.NORMAL);
+		setPlayerData(null);
+	}
 
 	chatSocket.off('leave-fail')
 	chatSocket.off('leave-success')
 	chatSocket.on('leave-fail', (msg) => {console.log(`leave-fail error: ${msg}`)})
 	chatSocket.on('leave-success', (msg) => {
 		console.log(`leave-success: ${msg}`)
-		setJoined(false);
-		setUser({
-			...user,
-			channel_id: -1,
-		});
+		close();
+		chatSocket.off(); // NOTE
 	});
 
 	chatSocket.off('close-fail')
@@ -152,10 +160,7 @@ function socketInit(chatSocket: Socket, chatContext: TChatContext) {
 	chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
 	chatSocket.on('close-success', (msg) => {
 		console.log(`close-success: ${msg}`)
-		setJoined(false);
-		setUser({
-			...user,
-			channel_id: -1,
-		});
+		close();
+		chatSocket.off(); // NOTE
 	});
 }
