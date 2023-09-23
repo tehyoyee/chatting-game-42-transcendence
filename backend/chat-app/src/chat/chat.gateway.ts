@@ -777,7 +777,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //targetUser에게 game invitation을 보냈습니다.
     client.emit('invite-game-success', {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
     //user가 [inviteGameDto.game_mode] 모드 game invitaion을 보냈습니다.
-    targetUserSocket.emit('got-invited', {user_id: user.user_id, user_nickname: user.nickname, game_mode: inviteGameDto.game_mode});
+    targetUserSocket.emit('got-invited', {user_id: user.user_id, user_nickname: user.nickname, gameMode: inviteGameDto.gameMode});
   }
 
   //==========================================================================================
