@@ -50,6 +50,10 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		const user = await this.socketToUser(client);
 		if (gameMode === 'NORMAL') {
 			this.gameNormalQueue.push(user.user_id);
+			// if (this.gameNormalQueue[0] === user.user_id) {
+			// 	return;
+			// }
+			console.log(this.gameNormalQueue);
 			console.log(`added normalQueue user : ${user.username}`);
 			if (this.gameNormalQueue.length >= 2) {
 				const playerIdLeft = this.gameNormalQueue[0];

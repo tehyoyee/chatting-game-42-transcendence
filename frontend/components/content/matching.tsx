@@ -3,11 +3,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import defaultImage from '../../public/default.png';
-import React, { useEffect, useContext, useState } from 'react';
+import React, { useEffect, useContext, useState, useRef } from 'react';
 import { useRouter, notFound } from 'next/navigation';
 import styles from '@/styles/matching.module.css';
 import DotLoader from './dotLoader';
-
 
 
 // import { GameKeyContext } from './GameKeyProvider';
@@ -34,6 +33,7 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 
   
   export default function Matching() {
+    const ref = useRef(false);
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [ready, setReady] = useState(false);
@@ -54,8 +54,12 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
       if (!queue)
       {
           const JoinQueue = () => {
+            console.log("test_useEffect");
               SocketContext.gameSocket?.emit('joinQueue', "NORMAL");
             }
+          if (ref.current)
+            return;
+          ref.current = true;
           JoinQueue();
           setQueue(queue + 1);
       }
