@@ -13,13 +13,13 @@ import { WebsocketExceptionsFilter } from "src/exception/ws.exception.filter";
 @UseFilters(WebsocketExceptionsFilter)
 export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect {
 	
-	private readonly MAP_X = 1400;
-	private readonly MAP_Y = 1000;
-	private readonly SPEED = 5;
+	private readonly MAP_X = 1800;
+	private readonly MAP_Y = 1300;
+	private readonly SPEED = 10;
 	private readonly paddleSpeed = 20;
 	private readonly PADDLE_SIZE = 300;
 	private readonly paddleGap = 20;
-	private readonly DELAY = 16;
+	private readonly DELAY = 25;
 	private readonly MAXPOINT = 5;
 
 	constructor(
