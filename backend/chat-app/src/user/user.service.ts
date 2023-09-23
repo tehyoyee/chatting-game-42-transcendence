@@ -6,7 +6,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserStatus } from './enum/user-status.enum';
 import { UserAchievement } from './enum/user-achievements.enum';
 import { CreateUserDto } from './dto/create-user.dto';
-
+import { GameHistory } from 'src/game/game.history.entity';
+import * as fs from 'fs';
+// import { map } from 'rxjs';
+import { memoryStorage } from 'multer';
 @Injectable()
 export class UserService {
     constructor(private userRepository: UserRepository) {}
@@ -81,16 +84,39 @@ export class UserService {
         return found;
     }
 
-    async updateAvatar(id: number, avatar: string): Promise<User> {
+    async updateAvatar(id: number, avatar: any): Promise<User> {
         const found = await this.userRepository.getProfileByUserId(id);
         if (!found)
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
 
-        if (avatar && found.avatar !== avatar)
-            await this.userRepository.updateAvatar(found, avatar);
 
         return found;
     }
+
+    // async uploadFileMemory(user_id: number, file: File): any {
+    //     //유저별 폴더 생성
+    //     const uploadFilePath = `uploads/${user_id}`;
+    
+    //     if (!fs.existsSync(uploadFilePath)) {
+    //         fs.mkdirSync(uploadFilePath);
+    //     }
+    
+    //     //파일 이름
+    //     const fileName = user_id;
+    //     //파일 업로드 경로
+    //     const uploadPath =
+    //     __dirname + `/../../${uploadFilePath + '/' + fileName}`;
+
+    //     //파일 생성
+    //     fs.writeFileSync(uploadPath, file);
+
+    //     //업로드 경로 반환
+    //     // return uploadFileURL(uploadFilePath + '/' + fileName);
+    //     this.userRepository.updateAvatar(found, avatar);
+
+    //     };
+    // }
+
 
     async updateTwoFactor(id: number, twoFactor: boolean): Promise<User> {
         const found = await this.userRepository.getProfileByUserId(id);
@@ -109,6 +135,18 @@ export class UserService {
 
     async updateAchievement(id: number, achievement: UserAchievement): Promise<User> {
         return await this.userRepository.updateAchievement(id, achievement);
+    }
+
+    async getGameHistoryByUserId(id: number) {
+        return await this.userRepository.getGameHistoryByUserId(id);
+    }
+
+    async updateGameHistory(id: number, gameHistory: GameHistory): Promise<void> {
+        await this.userRepository.updateGameHistory(id, gameHistory);
+    }
+
+    async updateGamePoint(id: number, value: number) {
+        await this.userRepository.updateGamePoint(id, value);
     }
 
     async winGame(id: number): Promise<User> {

@@ -6,6 +6,7 @@ import { UserStatus } from "./enum/user-status.enum";
 import { UserAchievement } from "./enum/user-achievements.enum";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { verify } from "crypto";
+import { GameHistory } from "src/game/game.history.entity";
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -104,6 +105,29 @@ export class UserRepository extends Repository<User> {
 
         found.achievement = newAchievement;
         return await this.save(found);
+    }
+
+    async getGameHistoryByUserId(id: number) {
+        const found = await this.getProfileByUserId(id);
+        if (!found)
+            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+        return found.gameHistories;
+    }
+
+    async updateGameHistory(id: number, gameHistory: GameHistory) {
+        const found = await this.getProfileByUserId(id);
+        if (!found)
+            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+        found.gameHistories.push(gameHistory);
+        this.save(found);
+    }
+
+    async updateGamePoint(id: number, value: number): Promise<void> {
+        const found = await this.getProfileByUserId(id);
+        if(!found)
+            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+        found.point += value;
+        await this.save(found);
     }
 
     async winGame(id: number): Promise<User> {

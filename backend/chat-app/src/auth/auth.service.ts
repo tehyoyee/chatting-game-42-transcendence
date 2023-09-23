@@ -97,9 +97,9 @@ export class AuthService {
 	async checkLoginState(req: Request, res: Response) {
 			const token = req.cookies['token'];
 			
-			if (!token) {
-				throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
-			}
+			// if (!token) {
+			// 	return;
+			// }
 			try {
 				const { payload } = this.jwtService.verify(token);
 			} catch (err) {
