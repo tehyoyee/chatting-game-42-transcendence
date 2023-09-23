@@ -57,8 +57,6 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
       if (!queue)
       {
           const JoinQueue = () => {
-            console.log("test_useEffect");
-            console.log(searchParams.get('normal'));
             searchParams.get('normal') ?
               SocketContext.gameSocket?.emit('joinQueue', 'NORMAL') :
               SocketContext.gameSocket?.emit('joinQueue', 'ADVANCED');
