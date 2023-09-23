@@ -13,13 +13,13 @@ import { WebsocketExceptionsFilter } from "src/exception/ws.exception.filter";
 @UseFilters(WebsocketExceptionsFilter)
 export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect {
 	
-	private readonly MAP_X = 1400;
-	private readonly MAP_Y = 1000;
-	private readonly SPEED = 5;
+	private readonly MAP_X = 1800;
+	private readonly MAP_Y = 1300;
+	private readonly SPEED = 15;
 	private readonly paddleSpeed = 20;
 	private readonly PADDLE_SIZE = 300;
 	private readonly paddleGap = 20;
-	private readonly DELAY = 16;
+	private readonly DELAY = 25;
 	private readonly MAXPOINT = 5;
 
 	constructor(
@@ -113,7 +113,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				player2: user2.nickname,
 				score1: point1,
 				score2: point2,
-				winner: user1.username
+				winner: user1.nickname
 			});
 			player1.leave(roomName);
 			player2.leave(roomName);
@@ -258,6 +258,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		const id = setInterval(render, this.DELAY);
 		render();
 	}
+
+	@SubscribeMessage('launchGame')
+	async launchGame()
 
 	@SubscribeMessage('exitQueue')
 	async exitQueue(@ConnectedSocket() client: any) {
