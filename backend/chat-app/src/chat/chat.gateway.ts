@@ -257,7 +257,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
 
-    const newMessage = await this.chatService.createGroupMessage(user, channel, groupMessageDto.content);
+    const messageEntity = await this.chatService.createGroupMessage(user, channel, groupMessageDto.content);
+		const newMessage = messageEntity.content;
 
     let listOfWhoBlockedMe: BlockDto[] = [];
     listOfWhoBlockedMe = await this.relationServie.getEveryoneWhoBlockedMe(user.user_id);
@@ -275,7 +276,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     //채널 전체에 메세지 발송
     //this.server.to(channel.channel_name).emit('message', {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
-    client.emit('post-success', channel.channel_id);
+		console.log("'post-group-message'");
+   	client.emit("message", {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
     //return newMessage;
   }
 

@@ -23,7 +23,7 @@
 	height: 85%;
 	width: 100%;
 	position: absolute;
-	left: 220px; /* sync with .sideBar width */
+	left: 240px; /* sync with .sideBar width */
 }
 
 .chatBar {
