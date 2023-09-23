@@ -1,6 +1,8 @@
 import { HttpException, Injectable } from '@nestjs/common';
 // import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/user/user.repository';
+import { GameRepository } from './game.repository';
+import { UserService } from 'src/user/user.service';
 
 // Logistic function
 const logisticFunction = (p1: number, p2: number): number => {
@@ -10,42 +12,33 @@ const logisticFunction = (p1: number, p2: number): number => {
 @Injectable()
 export class GameService {
 	constructor(
-		private userRepository: UserRepository
+		private userRepository: UserRepository,
+		private userService: UserService,
+		private gameRepository: GameRepository,
 	) {}
 
 	async updateGameHistory(winId: number, loseId: number, point1: number, point2: number) {
-		const winUser = await this.userRepository.getProfileByUserId(winId);
-		const loseUser = await this.userRepository.getProfileByUserId(loseId);
-		
-		if (!winUser || !loseUser) {
-			throw new HttpException('User not Found', 404);
-		}
+		const winUser = await this.userService.getProfileByUserId(winId);
+		const loseUser = await this.userService.getProfileByUserId(loseId);
 
-		winUser.win_count++;
-		loseUser.lose_count++;
+		// 승패 변경
+		this.userService.winGame(winUser.user_id);
+		this.userService.loseGame(loseUser.user_id);
 
 		// 점수 변경
 		const surplus = logisticFunction(winUser.point, loseUser.point);
-		console.log(surplus);
 		if (winUser.point > loseUser.point) {
-			winUser.point += (25 - surplus);
-			loseUser.point -= (25 - surplus);
+			this.userService.updateGamePoint(winUser.user_id, (25 - surplus));
+			this.userService.updateGamePoint(loseUser.user_id, -(25 + surplus));
 		} else {
-			winUser.point += (25 + surplus);
-			loseUser.point -= (25 + surplus);
+			this.userService.updateGamePoint(winUser.user_id, 25 + surplus);
+			this.userService.updateGamePoint(loseUser.user_id, -(25 + surplus));
 		}
 
-		// GameHistory 업데이트
-		// winUser.game_histories.push({
-		// 	winner_id: winUser.user_id,
-		// 	loser_id: loseUser.user_id,
-		// 	score1: point1,
-		// 	score2: point2,
-		// });
-		
-
-		await this.userRepository.save(winUser);
-		await this.userRepository.save(loseUser);
-		// winUser.match_history
+		// 게임기록 변경
+		let newGameHistory = await this.gameRepository.createGameHistory(winUser, winUser.user_id, loseUser.user_id, point1, point2);
+		await this.userService.updateGameHistory(winUser.user_id, newGameHistory);
+		newGameHistory = await this.gameRepository.createGameHistory(loseUser, winUser.user_id, loseUser.user_id, point2, point1);
+		await this.userService.updateGameHistory(winUser.user_id, newGameHistory);
 	}
 }

@@ -1,28 +1,3 @@
-// import { Catch, ArgumentsHost, HttpException } from '@nestjs/common';
-// import { BaseWsExceptionFilter, WsException } from '@nestjs/websockets';
-// import { HttpStatus } from '@nestjs/common';
-// import { Response } from 'express';
-
-// @Catch(WsException)
-// export class WsExceptionFilter extends BaseWsExceptionFilter {
-//   catch(exception: HttpException, host: ArgumentsHost) {
-//     // super.catch(exception, host);
-//   	// console.log('test', host);
-// 	  const ctx = host.switchToHttp();
-// 	  const response = ctx.getResponse<Response>();
-// 	  const status = exception.getStatus();
-// 	  const err = exception.getResponse() as
-// 		  | string
-// 		  | { error: string; statusCode: 400; message: string[] };
-
-// 	  console.log(status, err);
-// 	  if (status === HttpStatus.UNAUTHORIZED) {
-// 		  response.clearCookie('token').status(status).json({ loggedIn: false, errCode: status, errMsg: err });
-// 	  } else {
-// 		  response.status(status).json({ msg: err});
-// 	  }
-//   }
-// }
 import { ArgumentsHost, Catch, HttpException } from "@nestjs/common";
 import { BaseWsExceptionFilter, WsException } from "@nestjs/websockets";
 import { Socket } from "socket.io";

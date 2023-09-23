@@ -1,5 +1,5 @@
 import { User } from 'src/user/entity/user.entity';
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class GameHistory extends BaseEntity {
@@ -7,8 +7,9 @@ export class GameHistory extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	game_id: number;
 
-	@ManyToOne(type => User)
-	user_id: number;
+	@ManyToOne(() => User, (user) => user.user_id)
+	@JoinColumn()
+	player: User;
 
 	@Column()
 	winner_id: number;

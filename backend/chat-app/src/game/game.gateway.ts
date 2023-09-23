@@ -15,11 +15,11 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	
 	private readonly MAP_X = 1800;
 	private readonly MAP_Y = 1300;
-	private readonly SPEED = 15;
+	private readonly SPEED = 25;
 	private readonly paddleSpeed = 20;
-	private readonly PADDLE_SIZE = 300;
+	private readonly PADDLE_SIZE = 100;
 	private readonly paddleGap = 20;
-	private readonly DELAY = 25;
+	private readonly DELAY = 20;
 	private readonly MAXPOINT = 5;
 
 	constructor(
@@ -28,7 +28,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		private gameService: GameService,
 	) {}
 	
-	userMap = [];
 	userSocketMap = new Map<number, Socket>(); // userid, socketid
 	gameRoomMap = new Map<number, string>(); // userid, room
 	gameNormalQueue: number[] = [];
@@ -40,8 +39,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	onModuleInit() {
 		this.server.on('connection', (socket) => {
-			console.log(`GameSocket_id = ${socket.id}`);
-			console.log('Connected');
+			console.log(`[Game] GameSocket_id: ${socket.id} connected.`);
 		});
 	}
 
@@ -50,49 +48,48 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		const user = await this.socketToUser(client);
 		if (gameMode === 'NORMAL') {
 			this.gameNormalQueue.push(user.user_id);
-			console.log(this.gameNormalQueue);
-			console.log(`added normalQueue user : ${user.username}`);
+			console.log(`[Game] added normalQueue user : ${user.username}`);
 			if (this.gameNormalQueue.length >= 2) {
 				const playerIdLeft = this.gameNormalQueue[0];
 				const playerIdRight = this.gameNormalQueue[1];
 				const playerSocketLeft = this.userSocketMap.get(playerIdLeft);
 				const playerSocketRight = this.userSocketMap.get(playerIdRight);
 				const newRoomName = playerSocketLeft.id + playerSocketRight.id;
-				console.log("Normal Match Created !!!");
-				console.log(`playerLeft: ${playerIdLeft}`);
-				console.log(`playerRight: ${playerIdRight}`);
-				console.log(`Game Room ${newRoomName} created !!`);
+				console.log(`[Game] playerLeft: ${playerIdLeft}`);
+				console.log(`[Game] playerRight: ${playerIdRight}`);
 				playerSocketLeft.join(newRoomName);
 				playerSocketRight.join(newRoomName);
+				console.log(`[Game] Game Room ${newRoomName} created !!`);
 				this.gameRoomMap.set(playerIdLeft, newRoomName);
 				this.gameRoomMap.set(playerIdRight, newRoomName);
 				this.server.to(newRoomName).emit('gameStart', {
 					roomName: newRoomName
 				});
 				this.gameNormalQueue = this.gameNormalQueue.slice(2);
+				console.log("[Game] Normal Match Created !!!");
 				setTimeout(() => this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0), 3000);
 			}
 		} else if (gameMode === 'ADVANCED') {
 			this.gameAdvancedQueue.push(user.user_id);
-			console.log(`added normalQueue user : ${user.username}`);
+			console.log(`added advancedQueue user : ${user.username}`);
 			if (this.gameAdvancedQueue.length >= 2) {
 				const playerIdLeft = this.gameAdvancedQueue[0];
 				const playerIdRight = this.gameAdvancedQueue[1];
 				const playerSocketLeft = this.userSocketMap.get(playerIdLeft);
 				const playerSocketRight = this.userSocketMap.get(playerIdRight);
 				const newRoomName = playerSocketLeft.id + playerSocketRight.id;
-				console.log("Advanced Match Created !!!");
-				console.log(`playerLeft: ${playerIdLeft}`);
-				console.log(`playerRight: ${playerIdRight}`);
-				console.log(`Game Room ${newRoomName} created !!`);
+				console.log(`[Game] playerLeft: ${playerIdLeft}`);
+				console.log(`[Game] playerRight: ${playerIdRight}`);
 				playerSocketLeft.join(newRoomName);
 				playerSocketRight.join(newRoomName);
 				this.gameRoomMap.set(playerIdLeft, newRoomName);
 				this.gameRoomMap.set(playerIdRight, newRoomName);
+				console.log(`[Game] Game Room ${newRoomName} created !!`);
 				this.server.to(newRoomName).emit('gameStart', {
 					roomName: newRoomName
 				});
-				this.gameNormalQueue = this.gameNormalQueue.slice(2);
+				this.gameAdvancedQueue = this.gameAdvancedQueue.slice(2);
+				console.log("[Game] Advanced Match Created !!!");
 				setTimeout(() => this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0), 3000);
 			}
 		}
@@ -101,10 +98,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async runGame(gameMode: string, roomName: string, player1: Socket, player2: Socket, point1: number, point2: number) {
 		const user1 = await this.socketToUser(player1);
 		const user2 = await this.socketToUser(player2);
-
 		// 게임 종료 조건
 		if (point1 == this.MAXPOINT) {
-			console.log(`${user1.username} winned !`);
+			console.log(`[Game] ${user1.nickname} winned !`);
 			this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 			this.server.to(roomName).emit('endGame', {
 				canvasX: this.MAP_X,
@@ -117,12 +113,14 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			});
 			player1.leave(roomName);
 			player2.leave(roomName);
+			console.log(`[Game] ${user1.nickname} and ${user2.nickname} left the game.`);
 			this.gameRoomMap.delete(user1.user_id);
 			this.gameRoomMap.delete(user2.user_id);
+			console.log(`[Game] room ${roomName} removed.`);
 			return;
 		} else if (point2 == this.MAXPOINT) {
-			console.log(`${user1.username} winned !`);
-			this.gameService.updateGameHistory(user2.user_id, user1.user_id, point1, point2);
+			console.log(`[Game] ${user1.username} winned !`);
+			this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
 			this.server.to(roomName).emit('endGame', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
@@ -130,12 +128,14 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				player2: user2.nickname,
 				score1: point1,
 				score2: point2,
-				winner: user2.username
+				winner: user2.nickname
 			});
 			player1.leave(roomName);
 			player2.leave(roomName);
+			console.log(`[Game] ${user1.nickname} and ${user2.nickname} left the game.`);
 			this.gameRoomMap.delete(user1.user_id);
 			this.gameRoomMap.delete(user2.user_id);
+			console.log(`[Game] room ${roomName} removed.`);
 			return;
 		}
 
@@ -145,13 +145,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			dx: this.SPEED * 0.866,
 			dy: this.SPEED * 0.5,
 		};
-		if (gameMode === 'ADVANCED') {
-			ball.dx += this.SPEED * ((point1 + point2) / this.MAXPOINT);
-			ball.dy += this.SPEED * ((point1 + point2) / this.MAXPOINT);
-		}
-		if (Math.random() >= 0.5) {
-			ball.dx = -ball.dx;
-		}
 		const paddle1 = {
 			x: this.paddleGap,
 			y: (this.MAP_Y + this.PADDLE_SIZE) / 2
@@ -161,14 +154,20 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			y: (this.MAP_Y + this.PADDLE_SIZE) / 2
 		};
 
+		if (gameMode === 'ADVANCED') {
+			ball.dx += this.SPEED * ((point1 + point2) * 1.5 / this.MAXPOINT);
+			ball.dy += this.SPEED * ((point1 + point2) * 1.5 / this.MAXPOINT);
+		}
+		if (Math.random() >= 0.5) {
+			ball.dx = -ball.dx;
+		}
+
 		var winFlag = 0;
 
 		const render = () => {
 			// Update Paddle Position
 			const user1paddleDir = this.userKeyMap.get(user1.user_id);
-			console.log('user1 Paddle DIR : ', user1paddleDir);
 			const user2paddleDir = this.userKeyMap.get(user2.user_id);
-			console.log('user2 Paddle DIR : ', user2paddleDir);
 
 			if (user1paddleDir === KeyStatus.UP) {
 				if (paddle1.y - this.paddleSpeed >= 0) {
@@ -188,7 +187,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					paddle2.y += this.paddleSpeed;
 				}
 			}
-
 			// Ball Reflection at Bottom
 			if (ball.dy > 0 && ball.y + ball.dy >= this.MAP_Y) {
 				ball.dy = -ball.dy;
@@ -215,12 +213,35 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					ball.x += ball.dx;
 				}
 			}
-			console.log(`Paddle1 : { ${paddle1.x}, ${paddle1.y} }`);
-			console.log(`Paddle2 : { ${paddle2.x}, ${paddle2.y} }`);
-			console.log(`ball x: ${ball.x} // y: ${ball.y}`);
 			/**
 			 * Gaming Info to Front-end
 			 */
+			if (!this.gameRoomMap.has(user1.user_id)) {
+				this.server.to(roomName).emit('endGame', {
+					canvasX: this.MAP_X,
+					canvasY: this.MAP_Y,
+					player1: user1.nickname,
+					player2: user2.nickname,
+					score1: point1,
+					score2: point2,
+					winner: user2.nickname
+				});
+				this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
+				return;
+			} else if (!this.gameRoomMap.has(user2.user_id)) {
+				this.server.to(roomName).emit('endGame', {
+					canvasX: this.MAP_X,
+					canvasY: this.MAP_Y,
+					player1: user1.nickname,
+					player2: user2.nickname,
+					score1: point1,
+					score2: point2,
+					winner: user1.nickname
+				});
+				this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
+				return;
+			}
+
 			this.server.to(roomName).emit('gamingInfo', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
@@ -246,7 +267,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				winFlag = 1;
 			}
 			if (winFlag != 0) {
-				console.log('clear Interval');
 				clearInterval(id);
 				if (winFlag == 1) {
 					this.runGame(gameMode, roomName, player1, player2, point1+1, point2);
@@ -264,28 +284,25 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		const playerLeft: User = await this.socketToUser(invitation.hostUserSocket);
 		const playerRight: User = await this.socketToUser(invitation.clientUserSocket);
 		const newRoomName: string = invitation.hostUserSocket.id + invitation.clientUserSocket.id;
-		console.log(`${invitation.gameMode} Match Created !!!`);
-		console.log(`playerLeft: ${playerLeft}`);
-		console.log(`playerRight: ${playerRight}`);
-		console.log(`Game Room ${newRoomName} created !!`);
+		console.log(`[Game] ${invitation.gameMode} match created by invitation.`);
+		console.log(`[Game] playerLeft: ${playerLeft}`);
+		console.log(`[Game] playerRight: ${playerRight}`);
 		invitation.hostUserSocket.join(newRoomName);
 		invitation.clientUserSocket.join(newRoomName);
 		this.gameRoomMap.set(playerLeft.user_id, newRoomName);
 		this.gameRoomMap.set(playerRight.user_id, newRoomName);
+		console.log(`[Game] Game room ${newRoomName} created.`);
 		this.server.to(newRoomName).emit('gameStart', {
 			roomName: newRoomName
 		});
+		console.log(`[Game] ${invitation.gameMode} match created.`);
 		setTimeout(() => this.runGame(invitation.gameMode, newRoomName, invitation.hostUserSocket, invitation.clientUserSocket, 0, 0), 3000);
 	}
 
-
-
-	// 'launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode})
 	@SubscribeMessage('exitQueue')
 	async exitQueue(@ConnectedSocket() client: any) {
 		const user = await this.socketToUser(client);
 
-		console.log(`[Game] gameQueue : ${user.username} removed.`);
 		for (let i = 0; i < this.gameNormalQueue.length; i++) {
 			if (this.gameNormalQueue[i] === user.user_id) {
 				this.gameNormalQueue.splice(i, 1);
@@ -296,15 +313,20 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				this.gameAdvancedQueue.splice(i, 1);
 			}
 		}
+		console.log(`[Game] ${user.username} left the game matching queue.`);
 	}
 
 	@SubscribeMessage('exitGame')
 	async exitGame(@ConnectedSocket() client: any) {
 		const loser = await this.socketToUser(client);
 		const explodedRoomName = this.gameRoomMap.get(loser.user_id);
-		// const winner = 
-		console.log(`[Game] user ${loser.username} has left the game. he's loser.`);
-		// this.gameService.updateGameHistory();
+		if (!explodedRoomName) {
+			return ;
+		}
+		const winnerId = parseInt(this.getKeyByValue(this.gameRoomMap, explodedRoomName));
+		this.gameRoomMap.delete(loser.user_id);
+		this.gameRoomMap.delete(winnerId);
+		console.log(`[Game] ${loser.username} has left the game. he/she's loser.`);
 	}
 
 	@SubscribeMessage('keyW')
@@ -329,11 +351,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
-		if (!user) {
-			this.server.emit('forceLogout');
-			return;
-		}
-
+		console.log(user.gameHistories);
 		this.userSocketMap.set(user.user_id, client);
 		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 	}
@@ -341,13 +359,10 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async handleDisconnect(client: any) {
 		console.log(`[Game] ${client.id} has left.`);
 		const user = await this.socketToUser(client);
-		if (user) {
-			this.userSocketMap.delete(user.user_id);
-		}
 		this.userSocketMap.delete(user.user_id);
+		this.gameRoomMap.delete(user.user_id);
 		this.userKeyMap.delete(user.user_id);
 
-		console.log(`[Game] userlist : ${user.username} removed.`);
 		for (let i = 0; i < this.gameNormalQueue.length; i++) {
 			if (this.gameNormalQueue[i] === user.user_id) {
 				this.gameNormalQueue.splice(i, 1);
@@ -363,16 +378,19 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	private async socketToUser(client: Socket): Promise<User> {
 		const token: any = client.handshake.query.token;
 		if (!token)
-		  return null;
-	  
+			this.server.to(client.id).emit('forceLogout');	
 		try {
-		  const decoded = await this.authService.verifyToken(token);
-		  const user: User = await this.userService.getProfileByUserId(decoded.id);
-		  return user;
+			const decoded = await this.authService.verifyToken(token);
+			const user: User = await this.userService.getProfileByUserId(decoded.id);
+			return user;
 		}
 		catch (error) {
-			console.log("error");
+			this.server.to(client.id).emit('forceLogout');
 			return undefined;
 		}
+	}
+
+	getKeyByValue(map, value) {
+		return Object.keys(map).find(key => map[key] === value);
 	}
 }

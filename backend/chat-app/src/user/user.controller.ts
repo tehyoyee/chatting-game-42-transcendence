@@ -1,15 +1,22 @@
-import { Body, Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Bind, Body, Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Patch, Post, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entity/user.entity';
 // import { getUser } from './decorator/get-user.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiOperation } from '@nestjs/swagger';
+import { GameHistory } from 'src/game/game.history.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 const g_debug = true;
 
 @Controller()
 export class UserController {
     constructor(private userService: UserService) {}
+
+    @Get('/profile/game/:id')
+    async getGameHistoryByUserId(@Param('id', ParseIntPipe) id: number): Promise<GameHistory[]> {
+        return await this.userService.getGameHistoryByUserId(id);
+    }
 
     @Get('/profile')
     //가드 처리
@@ -33,14 +40,21 @@ export class UserController {
         await this.userService.updateNickName(id, nickName);
     }
     
-    @Patch('/updateAvatar/:id/:avatar')
-    async updateAvatar(@Param('id', ParseIntPipe) id: number,
-                        @Param('avatar') avatar: string): Promise<void> {
-				if (g_debug)
-					console.log('/updateAvatar/:id/:avatar');
-        await this.userService.updateAvatar(id, avatar);
+    // @Patch('/updateAvatar/:id/:avatar')
+    // async updateAvatar(@Param('id', ParseIntPipe) id: number,
+    //                     @Param('avatar') avatar: string): Promise<void> {
+	// 			if (g_debug)
+	// 				console.log('/updateAvatar/:id/:avatar');
+    //     await this.userService.updateAvatar(id, avatar);
+    // }
+    @Post('/updateAvatar/:id')
+    @UseInterceptors(FileInterceptor('file'))
+    @Bind(UploadedFile())
+    updateAvatar(@UploadedFile() file: Express.Multer.File, @Param('id', ParseIntPipe)id: number, @Res() res: Response) {
+        this.userService.updateAvatar(id, file);
+        console.log(file);
     }
-    
+
     @Patch('/updateTFA/:id/:twoFactor')
     async updateTwoFactor(@Param('id', ParseIntPipe) id: number,
                        @Param('twoFactor', ParseBoolPipe) twoFactor: boolean): Promise<void> {

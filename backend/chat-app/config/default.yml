@@ -1,5 +1,5 @@
 server:
-  #url: 'http://10.18.229.228'
+  # url: 'http://10.18.229.228'
   url: 'http://localhost'
   front_port: 3001
   port: 3000
@@ -12,13 +12,11 @@ db:
 jwt:
   expiresIn: 3600
 
-
 intra:
   grant_type: 'authorization_code'
   client_id: 'u-s4t2ud-75652da54aee75146d3762082688b50e87435656fec9351d9b54b29fc375128a'
   client_secret: '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'
   redirect_uri: 'http://localhost:3001/auth'
-  #client_id: 'u-s4t2ud-994bc058927a239da2cfef14d20a9ac758a337a4e706408c3406f2fc3f656477'
-  #client_secret: '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'
-  #redirect_uri: 'http://10.18.229.228:3001/auth'
-
+  # client_id: 'u-s4t2ud-994bc058927a239da2cfef14d20a9ac758a337a4e706408c3406f2fc3f656477'
+  # client_secret: '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'
+  # redirect_uri: 'http://10.18.229.228:3001/auth'
