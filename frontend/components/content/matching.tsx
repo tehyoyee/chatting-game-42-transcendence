@@ -4,9 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import defaultImage from '../../public/default.png';
 import React, { useEffect, useContext, useState, useRef } from 'react';
-import { useRouter, notFound } from 'next/navigation';
+import { useRouter, notFound, useSearchParams } from 'next/navigation';
 import styles from '@/styles/matching.module.css';
 import DotLoader from './dotLoader';
+// import queryRouter from 'next/router';
+
 
 
 // import { GameKeyContext } from './GameKeyProvider';
@@ -40,7 +42,8 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
     const [queue, setQueue] = useState(0);
     const [countdown, setCountdown] = useState(3);
     const SocketContext = useSocketContext();
-    
+    const searchParams = useSearchParams();
+
     SocketContext.gameSocket?.on('gameStart', () => { setReady(true); });
 
     
@@ -55,7 +58,10 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
       {
           const JoinQueue = () => {
             console.log("test_useEffect");
-              SocketContext.gameSocket?.emit('joinQueue', "NORMAL");
+            console.log(searchParams.get('normal'));
+            searchParams.get('normal') ?
+              SocketContext.gameSocket?.emit('joinQueue', 'NORMAL') :
+              SocketContext.gameSocket?.emit('joinQueue', 'ADVANCED');
             }
           if (ref.current)
             return;
