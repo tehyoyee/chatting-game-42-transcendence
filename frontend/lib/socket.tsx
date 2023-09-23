@@ -2,6 +2,8 @@
 
 import { ReactNode, useState, useEffect, useContext, createContext } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { useRouter } from 'next/navigation';
+import useAuthContext from '@/components/user/auth';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 const chatUrl = `${serverUrl}/chat`;
@@ -24,10 +26,31 @@ export default function useSocketContext() {
 }
 
 export function SocketContextProvider({ children }: { children: ReactNode }) {
+	const router = useRouter();
+	const { updateLoginState } = useAuthContext();
 	const [socketContext, setSocketContext] = useState<SocketContextType>({
 		chatSocket: null,
 		gameSocket: null,
 	});
+
+	function initChatSocket(socket: Socket) {
+		socket.on('connect', () => {
+			console.log("chatsocket connected");
+		});
+	}
+
+	function initGameSocket(socket: Socket) {
+		socket.on('connect', () => {
+			console.log("gamesocket connected");
+		});
+		socket.on('forceLogout', async () => {
+			console.log('gameSocket disconnected');
+			sessionStorage.removeItem('tfa');
+			document.cookie = '';
+			await updateLoginState();
+			router.push('/');
+		});
+	}
 
 	useEffect(() => {
 		const userToken = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
@@ -62,16 +85,4 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 		</SocketContext.Provider>
 	</>
 	);
-}
-
-function initChatSocket(socket: Socket) {
-	socket.on('connect', () => {
-		console.log("chatsocket connected");
-	});
-}
-
-function initGameSocket(socket: Socket) {
-	socket.on('connect', () => {
-		console.log("gamesocket connected");
-	});
 }
