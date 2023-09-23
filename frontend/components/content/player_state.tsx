@@ -1,12 +1,16 @@
 'use client'
 
+import useSocketContext from "@/lib/socket";
 import React, { useEffect, useContext, createContext, useState } from "react";
 
 export enum EPlayerState {
-	NORMAL,
+	CHAT = 0,
+	CHAT_JOINING,
+	SOCIAL,
+	GAME,
 	GAME_MATCHING,
 	GAME_PLAYING,
-	CHAT_JOINING,
+	PROFILE,
 };
 
 export type TPlayerContext = {
@@ -27,12 +31,35 @@ export default function usePlayerContext() {
 }
 
 export function PlayerContextProvider({ children }: { children: React.ReactNode }) {
-	const [state, setState] = useState<EPlayerState>(EPlayerState.NORMAL);
+	const [state, setState] = useState<EPlayerState>(EPlayerState.PROFILE);
 	const [data, setData] = useState<any>(null);
+	const [prevState, setPrevState] = useState<EPlayerState>(state);
+	const { chatSocket, gameSocket } = useSocketContext();
 
 	useEffect(() => {
-		console.log(`playerState=${state}, playerData=${JSON.stringify(data)}`);
-	}, [state, data]);
+		console.log(`playerState [${prevState} -> ${state}], playerData=${JSON.stringify(data)}`);
+
+		switch (prevState) {
+			case EPlayerState.GAME_PLAYING:
+				gameSocket?.emit('exitGame',);
+				console.log('exitGame');
+				break;
+			case EPlayerState.GAME_MATCHING:
+				if (state === EPlayerState.GAME) break;
+				gameSocket?.emit('exitQueue',);
+				console.log('exitQueue');
+				break;
+			case EPlayerState.CHAT_JOINING:
+				if (state === EPlayerState.CHAT) break;
+				chatSocket?.emit('close-channel-window', data.channel_id);
+				console.log('close-channel-window');
+				break;
+			default:
+				break;
+		}
+		setPrevState(state);
+	}, [state]);
+
 	return (
 		<PlayerContext.Provider value={{
 			playerState: state, 

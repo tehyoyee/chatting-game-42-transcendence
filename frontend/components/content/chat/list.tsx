@@ -37,6 +37,10 @@ export default function ChatList() {
 	const {setPlayerData, setPlayerState} = usePlayerContext();
 
 	useEffect(() => {
+		setPlayerState(EPlayerState.CHAT);
+	}, []);
+
+	useEffect(() => {
 		updateProt();
 		updatePub();
 	}, [menuModal]);

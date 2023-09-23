@@ -3,8 +3,13 @@ import styles from "@/styles/chat.module.css";
 import useSocketContext from '@/lib/socket';
 
 import ChatMenu from './menu';
+import usePlayerContext, { EPlayerState } from '../player_state';
 
 export default function ChatRoom() {
+	const { setPlayerState } = usePlayerContext();
+	useEffect(() => {
+		setPlayerState(EPlayerState.CHAT_JOINING);
+	}, []);
 	return (
 		<>
 			<ChatMenu></ChatMenu>

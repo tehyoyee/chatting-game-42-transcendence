@@ -2,9 +2,16 @@ import Link from "next/link";
 import styles from "../../styles/game.module.css"
 import BackToTop from "./backToTop";
 import Matching from '../../components/content/matching';
+import usePlayerContext, { EPlayerState } from "./player_state";
+import { useEffect } from "react";
 
 
 export default function Game() {
+	const { setPlayerState } = usePlayerContext();
+
+	useEffect(() => {
+		setPlayerState(EPlayerState.GAME);
+	}, []);
   
 
   return (

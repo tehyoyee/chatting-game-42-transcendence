@@ -17,6 +17,7 @@ import { io, Socket } from 'socket.io-client';
 // import "./Pong.css";
 import WebSocketContex, { SocketContext, SocketContextProvider } from '@/lib/socket'
 import useSocketContext from '@/lib/socket';
+import usePlayerContext, { EPlayerState } from './player_state';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 	const chatUrl = `${serverUrl}/chat`;
@@ -43,6 +44,7 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
     const [countdown, setCountdown] = useState(3);
     const SocketContext = useSocketContext();
     const searchParams = useSearchParams();
+		const { setPlayerState } = usePlayerContext();
 
     SocketContext.gameSocket?.on('gameStart', () => { setReady(true); });
 
@@ -51,6 +53,10 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
       console.log("exitQueue handler worked!");
       SocketContext.gameSocket?.emit('exitQueue');
     };
+
+		useEffect(() => {
+			setPlayerState(EPlayerState.GAME_MATCHING);
+		}, []);
     
     useEffect(() => {
 

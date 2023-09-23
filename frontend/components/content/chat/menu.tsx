@@ -142,7 +142,6 @@ function socketInit(chatSocket: Socket, chatContext: TChatContext, playerContext
 			...user,
 			channel_id: -1,
 		});
-		setPlayerState(EPlayerState.NORMAL);
 		setPlayerData(null);
 	}
 
