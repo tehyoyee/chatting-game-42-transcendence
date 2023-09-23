@@ -4,7 +4,7 @@ import titleStyles from '@/styles/title.module.css';
 import React from 'react';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import AuthContextProvider from '@/components/user/auth';
+import { AuthContextProvider } from '@/components/user/auth';
 
 const inter = Inter({ subsets: ['latin'] })
 

@@ -1,7 +1,7 @@
 'use client'
 
 import Profile from '@/components/content/profile/profile';
-import { useAuthContext } from '@/components/user/auth';
+import useAuthContext from '@/components/user/auth';
 
 export default function Page() {
 	const { user } = useAuthContext();

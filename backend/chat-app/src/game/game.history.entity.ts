@@ -3,6 +3,7 @@ import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 't
 
 @Entity()
 export class GameHistory extends BaseEntity {
+
 	@PrimaryGeneratedColumn()
 	game_id: number;
 
@@ -10,14 +11,15 @@ export class GameHistory extends BaseEntity {
 	user_id: number;
 
 	@Column()
-	winner_id: string;
+	winner_id: number;
 
 	@Column()
-	loser_id: string;
+	loser_id: number;
 
 	@Column()
 	score1: number;
 
 	@Column()
 	score2: number;
+
 }

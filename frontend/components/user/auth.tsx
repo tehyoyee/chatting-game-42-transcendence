@@ -18,7 +18,7 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function useAuthContext() {
+export default function useAuthContext() {
   const currentAuthContext = useContext(AuthContext);
   if (currentAuthContext == null) {
     throw new Error("AuthContext is null. it must be used within <AuthContextProvider>");
@@ -26,7 +26,7 @@ export function useAuthContext() {
   return currentAuthContext;
 }
 
-export default function AuthContextProvider({ children }: { children: ReactNode }) {
+export function AuthContextProvider({ children }: { children: ReactNode }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [updated, setUpdated] = useState(false);
   const [user, setUser] = useState({

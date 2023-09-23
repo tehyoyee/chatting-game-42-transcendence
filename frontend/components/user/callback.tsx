@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/components/user/auth';
+import useAuthContext from '@/components/user/auth';
 import Tfa from '@/components/user/tfa';
 
 const serverUrl = process.env.NEXT_PUBLIC_APP_SERVER_URL;
