@@ -13,13 +13,13 @@ import { WebsocketExceptionsFilter } from "src/exception/ws.exception.filter";
 @UseFilters(WebsocketExceptionsFilter)
 export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect {
 	
-	private readonly MAP_X = 1400;
-	private readonly MAP_Y = 1000;
-	private readonly SPEED = 5;
+	private readonly MAP_X = 1800;
+	private readonly MAP_Y = 1300;
+	private readonly SPEED = 15;
 	private readonly paddleSpeed = 20;
 	private readonly PADDLE_SIZE = 300;
 	private readonly paddleGap = 20;
-	private readonly DELAY = 16;
+	private readonly DELAY = 25;
 	private readonly MAXPOINT = 5;
 
 	constructor(
@@ -105,15 +105,15 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		// 게임 종료 조건
 		if (point1 == this.MAXPOINT) {
 			console.log(`${user1.username} winned !`);
-			this.gameService.updateGameHistory(user1.user_id, user2.user_id);
+			this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 			this.server.to(roomName).emit('endGame', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
 				player1: user1.nickname,
 				player2: user2.nickname,
 				score1: point1,
-				socre2: point2,
-				winner: user1.username
+				score2: point2,
+				winner: user1.nickname
 			});
 			player1.leave(roomName);
 			player2.leave(roomName);
@@ -122,14 +122,14 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			return;
 		} else if (point2 == this.MAXPOINT) {
 			console.log(`${user1.username} winned !`);
-			this.gameService.updateGameHistory(user2.user_id, user1.user_id);
+			this.gameService.updateGameHistory(user2.user_id, user1.user_id, point1, point2);
 			this.server.to(roomName).emit('endGame', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
 				player1: user1.nickname,
 				player2: user2.nickname,
 				score1: point1,
-				socre2: point2,
+				score2: point2,
 				winner: user2.username
 			});
 			player1.leave(roomName);
@@ -154,11 +154,11 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		}
 		const paddle1 = {
 			x: this.paddleGap,
-			y: this.MAP_Y / 2
+			y: (this.MAP_Y + this.PADDLE_SIZE) / 2
 		};
 		const paddle2 = {
 			x: this.MAP_X - this.paddleGap,
-			y: this.MAP_Y / 2
+			y: (this.MAP_Y + this.PADDLE_SIZE) / 2
 		};
 
 		var winFlag = 0;
@@ -234,6 +234,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				paddle1Y: paddle1.y,
 				paddle2X: paddle2.x,
 				paddle2Y: paddle2.y,
+				paddleX: this.paddleGap,
+				paddleY: this.PADDLE_SIZE
 			});
 			/**
 			 * Earning Point Condition
@@ -257,6 +259,28 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		render();
 	}
 
+	@SubscribeMessage('launchGame')
+	async launchGame(@MessageBody() invitation: any) {
+		const playerLeft: User = await this.socketToUser(invitation.hostUserSocket);
+		const playerRight: User = await this.socketToUser(invitation.clientUserSocket);
+		const newRoomName: string = invitation.hostUserSocket.id + invitation.clientUserSocket.id;
+		console.log(`${invitation.gameMode} Match Created !!!`);
+		console.log(`playerLeft: ${playerLeft}`);
+		console.log(`playerRight: ${playerRight}`);
+		console.log(`Game Room ${newRoomName} created !!`);
+		invitation.hostUserSocket.join(newRoomName);
+		invitation.clientUserSocket.join(newRoomName);
+		this.gameRoomMap.set(playerLeft.user_id, newRoomName);
+		this.gameRoomMap.set(playerRight.user_id, newRoomName);
+		this.server.to(newRoomName).emit('gameStart', {
+			roomName: newRoomName
+		});
+		setTimeout(() => this.runGame(invitation.gameMode, newRoomName, invitation.hostUserSocket, invitation.clientUserSocket, 0, 0), 3000);
+	}
+
+
+
+	// 'launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode})
 	@SubscribeMessage('exitQueue')
 	async exitQueue(@ConnectedSocket() client: any) {
 		const user = await this.socketToUser(client);

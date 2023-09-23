@@ -57,5 +57,5 @@ export class User extends BaseEntity {
     
     //게임기록 추가 필요
     @OneToMany(type => GameHistory, game_histories => game_histories.user_id)
-    game_histories: GameHistory[];
+    game_histories_id: GameHistory[];
 }
