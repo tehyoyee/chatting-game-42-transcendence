@@ -57,7 +57,7 @@ export default function GamePlay() {
     const Game: GameType = {
       canvas: canvas,
       context: canvas.getContext("2d") as CanvasRenderingContext2D,
-      color: "#1bce8a",
+      color: "#0ea1d6",
 
       initialize: function () {
         this.canvas.style.width = 1800 / 2 + "px";
@@ -123,6 +123,12 @@ export default function GamePlay() {
 			},
 
 			drawEndGame: function (endGameInfo: TEndGameInfo) {
+        this.context.clearRect(0, 0, endGameInfo.canvasX, endGameInfo.canvasY);
+        this.context.fillStyle = this.color;
+        this.context.fillRect(0, 0, endGameInfo.canvasX, endGameInfo.canvasY);
+
+        this.context.fillStyle = "#ffffff";
+
 				this.context.font = "150px Arial";
 				this.context.fillText(
 					"Winner: " + endGameInfo.winner,
