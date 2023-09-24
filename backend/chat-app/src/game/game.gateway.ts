@@ -360,6 +360,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async handleDisconnect(client: any) {
 		console.log(`[Game] ${client.id} has left.`);
 		const user = await this.socketToUser(client);
+//		if (!user) return;
 		this.userSocketMap.delete(user.user_id);
 		this.gameRoomMap.delete(user.user_id);
 		this.userKeyMap.delete(user.user_id);
