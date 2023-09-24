@@ -39,7 +39,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
 		user_id: 0,
 		username: '',
 		nickname: '',
-		avartar: '',
+		avartar: '/default.png',
 		email: '',
 	});
 
@@ -114,7 +114,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
 			}
       <div className={`${"centerItemBlock gridRow1_2 gridCol1_2"} ${styles.profileImage}`}>
         <Image
-          src={'/default.png'}
+          src={profile.avartar}
           height={128}
           width={128}
           alt={"profile image"} />

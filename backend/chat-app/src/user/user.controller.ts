@@ -14,13 +14,13 @@ const g_debug = true;
 export class UserController {
     constructor(private userService: UserService) {}
 
-    @UseGuards(AuthGuard())
+//    @UseGuards(AuthGuard())
     @Get('/profile/game/:id')
     async getGameHistoryByUserId(@Param('id', ParseIntPipe) id: number): Promise<GameHistory[]> {
         return await this.userService.getGameHistoryByUserId(id);
     }
 
-    @UseGuards(AuthGuard())
+//    @UseGuards(AuthGuard())
     @Get('/profile')
     //가드 처리
     async getMyProfile(@Body('user_id') id: number, @Req() req: Request): Promise<User> {
@@ -28,7 +28,7 @@ export class UserController {
         return await this.userService.getMyProfile(id);
     }
 
-    @UseGuards(AuthGuard())
+//    @UseGuards(AuthGuard())
     @Get('/profile/:id')
     async getProfileByUserId(@Param('id', ParseIntPipe) id: number): Promise<User> {
 				if (g_debug)
@@ -36,7 +36,7 @@ export class UserController {
         return await this.userService.getProfileByUserId(id);
     }
 
-    @UseGuards(AuthGuard())
+//    @UseGuards(AuthGuard())
     @Patch('/updateName/:id/:nickName')
     async updateNickName(@Param('id', ParseIntPipe) id: number,
                         @Param('nickName') nickName: string): Promise<void> {
@@ -55,7 +55,7 @@ export class UserController {
     }
 
     @Patch('/updateTFA/:id/:twoFactor')
-    @UseGuards(AuthGuard())
+//    @UseGuards(AuthGuard())
     async updateTwoFactor(@Param('id', ParseIntPipe) id: number,
                        @Param('twoFactor', ParseBoolPipe) twoFactor: boolean): Promise<void> {
 				if (g_debug)
