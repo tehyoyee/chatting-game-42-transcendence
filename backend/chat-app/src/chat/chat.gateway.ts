@@ -148,78 +148,95 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   }
 
   //==========================================================================================
-    
-  @SubscribeMessage('create-dm-channel')
-  async onCreateDmChannel(
+  
+  //dm방은 leave 없고, close window만 가능 -> 한 번 생성되면 db에 남아있음.
+  //dm방은 소셜에서 유저를 클릭했을 때 나오는 dm 버튼을 클릭해서 입장 => 기존 생성된 dm방 있으면 join, 없으면 create and join되도록 수정
+  //dm방의 2명은 모두 member로 설정
+  //receiver는 게임중일 수도 있으므로 emit으로 join이벤트 할 필요 없음,, <- receiver가 online 일 때만 가능하도록 하면 되지 않을까?
+  
+  @SubscribeMessage('enter-dm-channel')
+  async onEnterDmChannel(
     @ConnectedSocket() client: Socket,
-    @MessageBody()dmChannelDto: DmChannelDto) {
+    @MessageBody() dmChannelDto: DmChannelDto) {
     const user = await this.socketToUser(client);
     if (!user) {
-      client.emit('creation-dm-fail', 'Unidentified User Error in onCreateDmChannel');
+      client.emit('enter-dm-fail', 'Unidentified User Error in onEnterDmChannel');
       return ;
     }
     
     const receiver = await this.userService.getProfileByUserId(dmChannelDto.receiverId);
     if (!receiver) {
-      client.emit('creation-dm-fail', 'Receiver Not Found Error in onCreateDmChannel');
+      client.emit('enter-dm-fail', 'Receiver Not Found Error in onEnterDmChannel');
+      return ;
+    }
+    if (receiver.status !== UserStatus.ONLINE) {
+      client.emit('enter-dm-fail', 'Receiver Not ONLINE Error in onEnterDmChannel');
       return ;
     }
 
     const receiverSocket = this.userIdToSocket(receiver.user_id);
     if (!receiverSocket) {
-      client.emit('creation-dm-fail', 'Unidentified Receiver User Error in onCreateDmChannel');
+      client.emit('enter-dm-fail', 'Unidentified Receiver User Error in onEnterDmChannel');
       return ;
     }
-    
-    //만약 closeChannelWindow나 leaveChannel로 dm방을 나가버리면, 이 예외처리문에서 걸려서 다시 들어오지 못한다.
-    //dm방 생성이 안되게 하는 것은 맞는것 같은데.. 그럼 joinDmChannel 함수를 새로 만들어야 하나?
+
+    let channel, bridge, receiverBridge;
     const exist = await this.chatService.checkDmRoomExists(user.user_id, dmChannelDto.receiverId);
     if (exist) {
-      client.emit('creation-dm-fail', 'Already Exists DmChannel Error in onCreateDmChannel');
-      return ;
+      channel = exist;
+      let previousMessages: PreviousMessageDto[] = [];
+      previousMessages = await this.chatService.getAllMessagesExceptBlockByChannelId(user.user_id, channel.channel_id);
+
+      this.server.to(channel.channel_name).emit("messages", previousMessages);
     }
-    
-    const newChannel = await this.chatService.createDmChannelAndBridges(user, user.user_id, dmChannelDto.receiverId);
-    const newBridge = await this.chatService.checkUserInThisChannel(user.user_id, newChannel.channel_id);
-    const newReceiverBridge = await this.chatService.checkUserInThisChannel(receiver.user_id, newChannel.channel_id);
+    else {
+      channel = await this.chatService.createDmChannelAndBridges(user, user.user_id, dmChannelDto.receiverId);
+    }
+
+    bridge = await this.chatService.checkUserInThisChannel(user.user_id, channel.channel_id);
+    receiverBridge = await this.chatService.checkUserInThisChannel(dmChannelDto.receiverId, channel.channel_id);
   
-    client.join(newChannel.channel_name);
-    receiverSocket.join(newChannel.channel_name);
+    client.join(channel.channel_name);
+    receiverSocket.join(channel.channel_name);
 
-    client.emit('creation-dm-success', {channel_id: newChannel.channel_id, user_type: newBridge.user_type});
-    receiverSocket.emit('creation-dm-success', {channel_id: newChannel.channel_id, user_type: newReceiverBridge.user_type});
+    client.emit('enter-dm-success', {channel_id: channel.channel_id, user_type: bridge.user_type});
+    // receiverSocket.emit('enter-dm-success', {channel_id: channel.channel_id, user_type: receiverBridge.user_type});
 
-    this.server.to(newChannel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
-    this.server.to(newChannel.channel_name).emit("join", {user_id: receiver.user_id, user_nickname: receiver.nickname});
+    this.server.to(channel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
+    this.server.to(channel.channel_name).emit("join", {user_id: receiver.user_id, user_nickname: receiver.nickname});
+    
+    // this.server.to(channel.channel_name).emit("join", {
+    //   user_id: user.user_id, user_nickname: user.nickname,
+    //   receiver_id: receiver.user_id, receiver_nickname: receiver.nickname});
   }
 
   //==========================================================================================  
 
   @SubscribeMessage('join-group-channel')
-  async onJoinChannel(
+  async onJoinGroupChannel(
     @ConnectedSocket() client: Socket,
     @MessageBody() joinGroupChannelDto: JoinGroupChannelDto) {
     const user = await this.socketToUser(client);
     if (!user) {
-      client.emit('join-fail', 'Unidentified User Error in onJoinChannel');
+      client.emit('join-fail', 'Unidentified User Error in onJoinGroupChannel');
       return ;
     }
     
     const bridge = await this.chatService.checkUserInThisChannel(user.user_id, joinGroupChannelDto.channelId);
     if (bridge && bridge.is_banned) {
-      client.emit('join-fail', 'Banned User Error in onJoinChannel');
+      client.emit('join-fail', 'Banned User Error in onJoinGroupChannel');
       return ;
     }
     
     const channel = await this.chatService.getChannelById(joinGroupChannelDto.channelId);
     if (!channel) {
-      client.emit('join-fail', 'Unexist Channel Error in onJoinChannel');
+      client.emit('join-fail', 'Unexist Channel Error in onJoinGroupChannel');
       return ;
     }
     
     if (channel.channel_type === ChannelType.PROTECTED) {
       if (!(await this.chatService.checkChannelPassword(channel, joinGroupChannelDto.password))) {
-        client.emit('join-fail', 'Incorrect Password Error in onJoinChannel');
+        client.emit('join-fail', 'Incorrect Password Error in onJoinGroupChannel');
         return ;
       }
     }
@@ -241,15 +258,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.to(channel.channel_name).emit("messages", previousMessages);
     this.server.to(channel.channel_name).emit("join", {userId: user.user_id, userNickname: user.nickname});
   }
-
-  //==========================================================================================
-  // @SubscribeMessage('join-dm-channel')
-  // async onDmChannel(
-  //   @ConnectedSocket() client: Socket,
-  //   @MessageBody() dmChannelDto: DmChannelDto) {
-
-
-  //   }
 
   //==========================================================================================
 
@@ -314,21 +322,45 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('post-dm-fail', 'Unidentified User Error in onPostDm');
       return ;
     } 
+
+    const receiver = await this.userService.getProfileByUserId(dmDto.receiver_id);
+    if (!receiver) {
+      client.emit('post-dm-fail', 'Receiver Not Found Error in onPostDm');
+      return ;
+    }
+    if (receiver.status !== UserStatus.ONLINE) {
+      client.emit('post-dm-fail', 'Receiver Not ONLINE Error in onPostDm');
+      return ;
+    }
+    if (await this.relationServie.checkBlocked(user.user_id, receiver.user_id)) {
+      client.emit('post-dm-fail', 'Receiver Not ONLINE Error in onPostDm');
+      return ;
+    }
+
+    const receiverSocket = this.userIdToSocket(receiver.user_id);
+    if (!receiverSocket) {
+      client.emit('post-dm-fail', 'Unidentified Receiver User Error in onPostDm');
+      return ;
+    }
     
     if (dmDto.content === '') {
       client.emit('post-dm-fail', 'Empty Content Error in onPostDm');
       return ;
     }
 
-    const channel = await this.chatService.checkDmRoomExists(user.user_id, dmDto.receiver_id);
+    const channel = await this.chatService.checkDmRoomExists(user.user_id, receiver.user_id);
     if (!channel) {
       client.emit('post-dm-fail', 'Unexist Channel Error in onPostDm');
       return ;
     }
-    // block 검사 필요
-
+    
     const newMessage = await this.chatService.createDM(user, channel, dmDto.content);
 
+    //dm 받을 사람이 나를 차단했는지 검사 -> 차단했다면, 나는 내 메세지가 보이는데, dm 받을 사람은 내 메세지 보이면 안됨
+    if (await this.relationServie.checkBlocked(receiver.user_id, user.user_id)) {
+      //do nothig
+      return ;
+    }
     this.server.to(channel.channel_name).emit('message', {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
     client.emit('post-dm-success', channel.channel_id);
   }

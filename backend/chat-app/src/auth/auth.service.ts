@@ -78,7 +78,7 @@ export class AuthService {
 				username: user.data.login,
 				nickname: await generateRandomString(12),
 				email: user.data.email,
-				avatar: "Temporary Avator",
+				avatar: '/default.png',
 			};
 
 			this.userService.createUser(createUserDto);

@@ -57,12 +57,14 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
         credentials: 'include',
       })
       .then(res => res.json())
-      .then(data => {setProfile(data)})
+      .then(data => {setProfile(data);})
       .catch(err => {
         console.log(`${profileUrl}: fetch failed: ${err}`);
       });
     })()
+    console.log("profile.avartar:", profile.avartar);
   }, [update]);
+  useEffect(() => { console.log(profile);}, [profile]);
 	//////////////////////////////
   const userProps = [
     {
