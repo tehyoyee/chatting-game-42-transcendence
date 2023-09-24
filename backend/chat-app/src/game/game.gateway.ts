@@ -324,8 +324,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			return ;
 		}
 		const winnerId = parseInt(this.getKeyByValue(this.gameRoomMap, explodedRoomName));
+		this.server.to(explodedRoomName).emit('endGame');
 		this.gameRoomMap.delete(loser.user_id);
-		this.gameRoomMap.delete(winnerId);
 		console.log(`[Game] ${loser.username} has left the game. he/she's loser.`);
 	}
 
