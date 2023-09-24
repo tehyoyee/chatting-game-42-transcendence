@@ -227,20 +227,29 @@ function ImgUpdator({
   setUpdate: React.Dispatch<SetStateAction<Object>>;
 }) {
   const [showModal, setShowModal] = useState(false);
+	const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      uploadAvatar(formData);
+  const handleFileChange = (targetFile: File) => {
+		console.log(`input=${JSON.stringify(targetFile)}`);
+    if (targetFile) {
+			if (targetFile.type != 'image/png' || targetFile.size > (40 * 1024)) {
+				alert('파일의 확장자명은 .png, 크기는 40kB 이하여야 합니다.');
+				return;
+			}
+			console.log(`avatar image type=${targetFile.type}, size=${targetFile.size}`);
+			setImageFile(targetFile);
     }
   };
 
-  const uploadAvatar = async (formData: FormData) => {
+  const uploadAvatar = async () => {
+		const formData = new FormData();
     const updateUrl = `${serverUrl}/updateAvatar/${uid}`;
 
+		if (!imageFile) {
+			alert('이미지가 선택되지 않았습니다.');
+			return;
+		}
+		formData.append('file', imageFile);
     try {
       const response = await fetch(updateUrl, {
         method: 'POST',
@@ -253,6 +262,7 @@ function ImgUpdator({
         setUpdate({});
       } else {
         console.error('업로드 실패:', response.statusText);
+				alert('업로드 실패');
       }
     } catch (error) {
       console.error('업로드 오류:', error);
@@ -273,21 +283,29 @@ function ImgUpdator({
           height: "200px",
           width: "400px",
         }}
-        onClose={() => setShowModal(false)}
-      >
-        <div>
-          <form encType="multipart/form-data">
-            <div>
-              <label htmlFor="file">Choose file to upload</label>
-              <input type="file" id="file" name="file" onChange={handleFileChange} />
-            </div>
-            <div>
-              <button className="normalButton" type="button" onClick={() => setShowModal(false)}>
-                Submit
-              </button>
-            </div>
-          </form>
-        </div>
+        onClose={() => setShowModal(false)}>
+					<div>
+						<form 
+							encType="multipart/form-data"
+							onSubmit={(e) => {
+								e.preventDefault(); uploadAvatar();
+							}}>
+							<div>
+								<label htmlFor="file">Choose file to upload</label>
+								<input 
+									type="file" 
+									id="file" 
+									name="file" 
+									accept="image/png" 
+									onChange={(e) => {e?.target?.files?.[0] && handleFileChange(e.target.files[0]);}}/>
+							</div>
+							<div>
+								<button className="normalButton" type="submit">
+									Submit
+								</button>
+							</div>
+						</form>
+					</div>
         </Modal>
       )}
     </>
