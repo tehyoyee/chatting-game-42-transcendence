@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import defaultImage from '../../public/default.png';
-import React, { useEffect, useContext, useState, useRef } from 'react';
+import React, { useEffect, useContext, useState, useRef, useCallback } from 'react';
 import { useRouter, notFound, useSearchParams } from 'next/navigation';
 import styles from '@/styles/matching.module.css';
 import DotLoader from './dotLoader';
@@ -45,9 +45,9 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
     const SocketContext = useSocketContext();
     const searchParams = useSearchParams();
 		const { setPlayerState } = usePlayerContext();
+		let interval: any;
 
     SocketContext.gameSocket?.on('gameStart', () => { setReady(true); });
-
 
     const exitQueueHandler = () => {
       console.log("exitQueue handler worked!");
@@ -74,16 +74,18 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
       }
 			if (ready) {
 				setPlayerState(EPlayerState.GAME_PLAYING);
-				const countdownInterval = setInterval(() => {
-				if (countdown <= 1) {
-					clearInterval(countdownInterval);
-					router.push('/game/play');
-				} else {
-					setCountdown(countdown - 1);
-				}
-      }, 1000);
+				interval = setInterval(() => {
+					setCountdown(countdown => countdown - 1);
+	      }, 1000);
     }
   }, [ready, router]);
+
+	useEffect(() => {
+		if (countdown <= 0) {
+			clearInterval(interval);
+			router.push('/game/play');
+		}
+	}, [countdown]);
 
   return (
     <div>

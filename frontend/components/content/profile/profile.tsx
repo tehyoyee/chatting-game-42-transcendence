@@ -47,7 +47,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
 	const { setPlayerState } = usePlayerContext();
 
 	useEffect(() => {
-		setPlayerState(EPlayerState.PROFILE);
+		isMyProfile && setPlayerState(EPlayerState.PROFILE);
 	}, []);
 
   useEffect(() => {
@@ -103,14 +103,15 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
   }, []);
 
   return (
-    <>
-    {isMyProfile &&
-				// NOTE: it doesn't re-render when setProfile is called.
-      <ProfileUpdator
-        uid={uid}
-        name={profile.nickname}
-        update={{setUpdate}}
-      ></ProfileUpdator>}
+    <div className={styles.profile}>
+    	{
+				isMyProfile &&
+				<ProfileUpdator
+					uid={uid}
+					name={profile.nickname}
+					update={{setUpdate}}
+				></ProfileUpdator>
+			}
       <div className={`${"centerItemBlock gridRow1_2 gridCol1_2"} ${styles.profileImage}`}>
         <Image
           src={'/default.png'}
@@ -137,7 +138,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
         achievement={gameProfile.achievement}
       ></ExpandableButtons>
       <BackToTop></BackToTop>
-    </>
+    </div>
   );
 }
 

@@ -123,7 +123,17 @@ export default function GamePlay() {
 			},
 
 			drawEndGame: function (endGameInfo: TEndGameInfo) {
+        this.context.clearRect(0, 0, endGameInfo.canvasX, endGameInfo.canvasY);
 				this.context.font = "150px Arial";
+
+        this.context.font = "55px Arial";
+        this.context.textAlign = "center";
+
+        this.context.fillStyle = this.color;
+
+        this.context.fillRect(0, 0, endGameInfo.canvasX, endGameInfo.canvasY);
+
+        this.context.fillStyle = "#ffffff";
 				this.context.fillText(
 					"Winner: " + endGameInfo.winner,
 					endGameInfo.canvasX / 2,
