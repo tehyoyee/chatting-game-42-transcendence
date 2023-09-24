@@ -11,25 +11,16 @@ db:
   database: 'chat-app'
 
 jwt:
-  expiresIn: 3600
+  expiresIn: '60m'
 
 intra:
   grant_type: 'authorization_code'
-<<<<<<< HEAD
-  # client_id: 'u-s4t2ud-75652da54aee75146d3762082688b50e87435656fec9351d9b54b29fc375128a'
-  # client_secret: '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'
-  # redirect_uri: 'http://localhost:3001/auth'
-  client_id: 'u-s4t2ud-994bc058927a239da2cfef14d20a9ac758a337a4e706408c3406f2fc3f656477'
-  client_secret: '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'
-  redirect_uri: 'http://10.18.229.228:3001/auth'
-=======
   client_id: 'u-s4t2ud-75652da54aee75146d3762082688b50e87435656fec9351d9b54b29fc375128a'
   client_secret: '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'
   redirect_uri: 'http://localhost:3001/auth'
   # client_id: 'u-s4t2ud-994bc058927a239da2cfef14d20a9ac758a337a4e706408c3406f2fc3f656477'
   # client_secret: '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'
   # redirect_uri: 'http://10.18.229.228:3001/auth'
->>>>>>> 35cb06124052705b3e5fc24e251b7705ec8e3a02
   # client_id: 'u-s4t2ud-4672a4f7c1749f91d47d20b15a8b542e0fa67cbe425271520224fdf8d3ebc76e'
   # client_secret: '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'
   # redirect_uri: 'http://10.14.9.5:3001/auth'
