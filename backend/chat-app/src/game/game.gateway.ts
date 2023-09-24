@@ -271,9 +271,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			if (winFlag != 0) {
 				clearInterval(id);
 				if (winFlag == 1) {
-					this.runGame(gameMode, roomName, player1, player2, point1+1, point2);
+					await this.runGame(gameMode, roomName, player1, player2, point1+1, point2);
 				} else {
-					this.runGame(gameMode, roomName, player1, player2, point1, point2+1);
+					await this.runGame(gameMode, roomName, player1, player2, point1, point2+1);
 				}
 			}
 		};
