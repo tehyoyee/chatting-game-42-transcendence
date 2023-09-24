@@ -1,4 +1,4 @@
-import { OnModuleInit, UseFilters } from "@nestjs/common";
+import { OnModuleInit, UseFilters, UseGuards } from '@nestjs/common';
 import { WebSocketServer, MessageBody, SubscribeMessage, WebSocketGateway, BaseWsExceptionFilter, WsException } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io';
 import { AuthService } from "src/auth/auth.service";
@@ -8,6 +8,7 @@ import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect } from '@nest
 import { GameService } from "./game.service";
 import { KeyStatus } from "./game.keystatus.enum";
 import { WebsocketExceptionsFilter } from "src/exception/ws.exception.filter";
+import { AuthGuard } from "@nestjs/passport";
 
 @WebSocketGateway({ namespace: '/game'})
 @UseFilters(WebsocketExceptionsFilter)
