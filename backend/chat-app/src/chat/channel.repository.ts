@@ -36,7 +36,7 @@ export class ChannelRepository extends Repository<Channel> {
     async createDmChannel(senderId: number, receiverId: number): Promise<Channel> {
         const newChannel = new Channel();
 
-        newChannel.channel_name = 'user' + senderId + ":" + 'user' + receiverId;
+        newChannel.channel_name = 'user' + senderId.toString() + ":" + 'user' + receiverId.toString();
         newChannel.channel_type = ChannelType.DM;
         // newChannel.is_channel = false;
         // newChannel.is_public = false;

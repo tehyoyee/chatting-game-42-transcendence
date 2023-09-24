@@ -143,8 +143,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     client.emit('creation-success', {channel_id: newChannel.channel_id, user_type: newBridge.user_type});
     client.join(newChannel.channel_name);
     this.server.to(newChannel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
-
-    //return newChannel;
   }
 
   //==========================================================================================
@@ -174,11 +172,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
 
-    const receiverSocket = this.userIdToSocket(receiver.user_id);
-    if (!receiverSocket) {
-      client.emit('enter-dm-fail', 'Unidentified Receiver User Error in onEnterDmChannel');
-      return ;
-    }
+    // const receiverSocket = this.userIdToSocket(receiver.user_id);
+    // if (!receiverSocket) {
+    //   client.emit('enter-dm-fail', 'Unidentified Receiver User Error in onEnterDmChannel');
+    //   return ;
+    // }
 
     let channel, bridge, receiverBridge;
     const exist = await this.chatService.checkDmRoomExists(user.user_id, dmChannelDto.receiverId);
@@ -197,7 +195,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     receiverBridge = await this.chatService.checkUserInThisChannel(dmChannelDto.receiverId, channel.channel_id);
   
     client.join(channel.channel_name);
-    receiverSocket.join(channel.channel_name);
+    //receiverSocket.join(channel.channel_name);
 
     client.emit('enter-dm-success', {channel_id: channel.channel_id, user_type: bridge.user_type});
     // receiverSocket.emit('enter-dm-success', {channel_id: channel.channel_id, user_type: receiverBridge.user_type});
@@ -261,6 +259,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
   //==========================================================================================
 
+  //그룹메세지 + dm에 모두 사용
   @SubscribeMessage('post-group-message')
   async onPostGroupMessage(
     @ConnectedSocket() client: Socket,
@@ -298,7 +297,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       .then((sockets) => { 
         sockets.forEach((socket) => { 
           let user = socket.data.user;
-          if (listOfWhoBlockedMe.includes(user.user_id)) {
+          if (!listOfWhoBlockedMe.includes(user.user_id)) {
             socket.emit("message", {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
           }
         })
@@ -313,60 +312,61 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
   //==========================================================================================
 
-  @SubscribeMessage('post-dm')
-  async onPostDm(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() dmDto: DmDto) {
-    const user = await this.socketToUser(client);
-    if (!user) {
-      client.emit('post-dm-fail', 'Unidentified User Error in onPostDm');
-      return ;
-    } 
+  // @SubscribeMessage('post-dm')
+  // async onPostDm(
+  //   @ConnectedSocket() client: Socket,
+  //   @MessageBody() dmDto: DmDto) {
+  //   const user = await this.socketToUser(client);
+  //   if (!user) {
+  //     client.emit('post-dm-fail', 'Unidentified User Error in onPostDm');
+  //     return ;
+  //   } 
 
-    const receiver = await this.userService.getProfileByUserId(dmDto.receiver_id);
-    if (!receiver) {
-      client.emit('post-dm-fail', 'Receiver Not Found Error in onPostDm');
-      return ;
-    }
-    if (receiver.status !== UserStatus.ONLINE) {
-      client.emit('post-dm-fail', 'Receiver Not ONLINE Error in onPostDm');
-      return ;
-    }
-    if (await this.relationServie.checkBlocked(user.user_id, receiver.user_id)) {
-      client.emit('post-dm-fail', 'Receiver Not ONLINE Error in onPostDm');
-      return ;
-    }
+  //   const receiver = await this.userService.getProfileByUserId(dmDto.receiver_id);
+  //   if (!receiver) {
+  //     client.emit('post-dm-fail', 'Receiver Not Found Error in onPostDm');
+  //     return ;
+  //   }
+  //   if (receiver.status !== UserStatus.ONLINE) {
+  //     client.emit('post-dm-fail', 'Receiver Not ONLINE Error in onPostDm');
+  //     return ;
+  //   }
+  //   if (await this.relationServie.checkBlocked(user.user_id, receiver.user_id)) {
+  //     client.emit('post-dm-fail', 'Receiver Not ONLINE Error in onPostDm');
+  //     return ;
+  //   }
 
-    const receiverSocket = this.userIdToSocket(receiver.user_id);
-    if (!receiverSocket) {
-      client.emit('post-dm-fail', 'Unidentified Receiver User Error in onPostDm');
-      return ;
-    }
+  //   const receiverSocket = this.userIdToSocket(receiver.user_id);
+  //   if (!receiverSocket) {
+  //     client.emit('post-dm-fail', 'Unidentified Receiver User Error in onPostDm');
+  //     return ;
+  //   }
     
-    if (dmDto.content === '') {
-      client.emit('post-dm-fail', 'Empty Content Error in onPostDm');
-      return ;
-    }
+  //   if (dmDto.content === '') {
+  //     client.emit('post-dm-fail', 'Empty Content Error in onPostDm');
+  //     return ;
+  //   }
 
-    const channel = await this.chatService.checkDmRoomExists(user.user_id, receiver.user_id);
-    if (!channel) {
-      client.emit('post-dm-fail', 'Unexist Channel Error in onPostDm');
-      return ;
-    }
+  //   const channel = await this.chatService.checkDmRoomExists(user.user_id, receiver.user_id);
+  //   if (!channel) {
+  //     client.emit('post-dm-fail', 'Unexist Channel Error in onPostDm');
+  //     return ;
+  //   }
     
-    const newMessage = await this.chatService.createDM(user, channel, dmDto.content);
+  //   const newMessage = await this.chatService.createDM(user, channel, dmDto.content);
 
-    //dm 받을 사람이 나를 차단했는지 검사 -> 차단했다면, 나는 내 메세지가 보이는데, dm 받을 사람은 내 메세지 보이면 안됨
-    if (await this.relationServie.checkBlocked(receiver.user_id, user.user_id)) {
-      //do nothig
-      return ;
-    }
-    this.server.to(channel.channel_name).emit('message', {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
-    client.emit('post-dm-success', channel.channel_id);
-  }
+  //   //dm 받을 사람이 나를 차단했는지 검사 -> 차단했다면, 나는 내 메세지가 보이는데, dm 받을 사람은 내 메세지 보이면 안됨
+  //   if (await this.relationServie.checkBlocked(receiver.user_id, user.user_id)) {
+  //     //do nothig
+  //     return ;
+  //   }
+  //   this.server.to(channel.channel_name).emit('message', {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
+  //   client.emit('post-dm-success', channel.channel_id);
+  // }
 
   //==========================================================================================
 
+  //dm방 나가기 -> 둘 중 한명만 나가도 방과 브리지 삭제
   @SubscribeMessage('leave-channel')
   async onLeaveChannel(
     @ConnectedSocket() client: Socket,
@@ -376,7 +376,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('leave-fail', 'Unidentified User Error in onLeaveChannel');
       return ;
     }
-    
+
     const bridge = await this.chatService.checkUserInThisChannel(user.user_id, channelId);
     if (!bridge) {
       client.emit('leave-fail', 'Unexist Bridge Error in onLeaveChannel');
@@ -386,6 +386,35 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const channel = await this.chatService.getChannelById(channelId);
     if (!channel) {
       client.emit('leave-fail', 'Unexist Channel Error in onLeaveChannel');
+      return ;
+    }
+    if (channel.channel_type === ChannelType.PRIVATE) {
+      client.emit('leave-fail', 'Cannot Leave Private Channel Error in onLeaveChannel');
+      return ;
+    }
+    if (channel.channel_type === ChannelType.DM) {
+      const receiverId = await this.chatService.getReceiverIdByDmChannelName(user.user_id, channel.channel_name);
+      if (!receiverId) {
+        client.emit('leave-fail', 'Unidentified Receiver User Error in onLeaveChannel');
+        return ;
+      }
+
+      const receiverBridge = await this.chatService.checkUserInThisChannel(receiverId, channel.channel_id);
+      if (receiverBridge) {
+        await this.chatService.deleteUCBridge(receiverId, channelId);
+      }
+      const receiverSocket = await this.userIdToSocket(receiverId);
+      if (receiverSocket) {
+        receiverSocket.leave(channel.channel_name);
+        receiverSocket.emit('leave-success', channel.channel_id);
+      }
+
+      await this.chatService.deleteUCBridge(user.user_id, channelId);
+      client.leave(channel.channel_name);
+      client.emit('leave-success', channel.channel_id);
+
+      await this.chatService.deleteDmChannel(channel.channel_id);
+
       return ;
     }
 
@@ -625,7 +654,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     const targetUserSocket = this.userIdToSocket(targetUser.user_id);
     if (!targetUserSocket) {
-      client.emit('invite-game-fail', 'Unidentified Target User Socket Error in onKickUser');
+      client.emit('usermod-fail', 'Unidentified Target User Socket Error in onKickUser');
       return ;
     }
 
