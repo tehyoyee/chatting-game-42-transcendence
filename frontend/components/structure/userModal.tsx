@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IChatMate } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 
-const UserModal = ({ user }: {user: IChatMate }) => {
+const UserModal = ({ 
+	user,
+	onClose,
+	setShowProfile,
+}: {
+	user: IChatMate,
+	onClose: Function,
+	setShowProfile: React.Dispatch<React.SetStateAction<boolean>>,
+}) => {
 	const { chatSocket } = useSocketContext();
 
-	function handleInvite() {
-		chatSocket?.emit('', () => {
-		});
+	function handleProfile() {
+		onClose();
+		setShowProfile(true);
 	}
 
 	function handleDm() {
@@ -26,38 +34,35 @@ const UserModal = ({ user }: {user: IChatMate }) => {
 	}
 
   return (
-		<dialog id='userDialog'>
-			<p>{user.userId}</p>
+		<ul>
+			<li>
+				<p>{user.userNickName}</p>
+			</li>
+			<li>
 			<button 
 				className='normalButton'
-				onClick={handleInvite}
+				onClick={handleProfile}
 				>{'see profile'}</button>
-			<button 
-				className='normalButton'
-				onClick={handleInvite}
-				>{'invite'}</button>
+			</li>
+			<li>
 			<button 
 				className='normalButton'
 				onClick={handleDm}
 				>{'dm'}</button>
+			</li>
+			<li>
 			<button 
 				className='normalButton'
 				onClick={handleGameNormal}
 				>{'game normal'}</button>
+			</li>
+			<li>
 			<button 
 				className='normalButton'
 				onClick={handleGameFast}
 				>{'game fast'}</button>
-			<button className='normalButton' 
-				value='cancel' 
-				formMethod="dialog"
-				onClick={(e) => {
-					e.preventDefault();
-					const dialog = document.querySelector('dialog');
-					dialog?.close();
-				}}
-				>{'exit'}</button>
-		</dialog>
+			</li>
+		</ul>
 
 		/*
     <div className="modal">

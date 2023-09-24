@@ -33,7 +33,6 @@ export class UserController {
         return await this.userService.getMyProfile(id);
     }
 
-    // @UseGuards(AuthGuard())
     @Get('/profile/:id')
     async getProfileByUserId(@Param('id', ParseIntPipe) id: number): Promise<User> {
 		if (g_debug)
@@ -80,7 +79,6 @@ export class UserController {
     }
 
     @Patch('/updateTFA/:id/:twoFactor')
-    // @UseGuards(AuthGuard())
     async updateTwoFactor(@Param('id', ParseIntPipe) id: number,
                        @Param('twoFactor', ParseBoolPipe) twoFactor: boolean): Promise<void> {
 				if (g_debug)
