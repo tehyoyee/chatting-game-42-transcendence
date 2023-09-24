@@ -79,6 +79,13 @@ export class UserRepository extends Repository<User> {
         await this.save(user);
     }
     
+    async getAvatarByUserId(id: number): Promise<string> {
+        const found = await this.findOne({
+            where: {user_id: id}
+        })
+        return found.avatar;
+    }
+
     async updateAvatar(user: User, newAvatar: string): Promise<void> {
         user.avatar = newAvatar;
         await this.save(user);
