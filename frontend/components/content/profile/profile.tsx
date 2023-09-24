@@ -13,7 +13,7 @@ export interface IProfileType {
 	user_id: number,
 	username: string,
 	nickname: string,
-	avartar: string, // path to profile image stored in frontend server local directory
+	avatar: string, // path to profile image stored in frontend server local directory
 	email: string,
 };
 
@@ -29,6 +29,7 @@ export interface IGameProfileType {
   lose_count: number,
   point: number,
   achievement: UserAchievement,
+  gameHistories: any,
 };
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
@@ -39,7 +40,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
 		user_id: 0,
 		username: '',
 		nickname: '',
-		avartar: '/default.png',
+		avatar: '/default.png',
 		email: '',
 	});
 
@@ -62,7 +63,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
         console.log(`${profileUrl}: fetch failed: ${err}`);
       });
     })()
-    console.log("profile.avartar:", profile.avartar);
+    console.log("profile.avatar:", profile.avatar);
   }, [update]);
   useEffect(() => { console.log(profile);}, [profile]);
 	//////////////////////////////
@@ -86,22 +87,26 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
     lose_count: 0,
     point: 0,
     achievement: UserAchievement.A0,
+    gameHistories: '',
 	});
   
 	// const [ updateGame, setGameUpdate ] = useState<Object | null>(null);
 
   useEffect(() => {
-    (async() => {
-      await fetch(`${profileUrl}/${uid}`, {
-        method: 'GET',
-        credentials: 'include',
-      })
-      .then(res => res.json())
-      .then(data => {setGameProfile(data)})
-      .catch(err => {
-        console.log(`${profileUrl}: fetch failed: ${err}`);
-      });
-    })()
+    setTimeout(() => {
+      (async() =>  {
+        await fetch(`${profileUrl}/${uid}`, {
+          method: 'GET',
+          credentials: 'include',
+        })
+        .then(res => res.json())
+        .then(data => {setGameProfile(data)})
+        .catch(err => {
+          console.log(`${profileUrl}: fetch failed: ${err}`);
+        });
+      })()
+      
+    }, 1000);
   }, []);
 
   return (
@@ -116,7 +121,8 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
 			}
       <div className={`${"centerItemBlock gridRow1_2 gridCol1_2"} ${styles.profileImage}`}>
         <Image
-          src={profile.avartar}
+          // src={`${profileUrl}/avatar/${uid}`}
+          src={'/default.png'}
           height={128}
           width={128}
           alt={"profile image"} />
@@ -134,6 +140,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
         </ul>
         <hr></hr>
       <ExpandableButtons
+        gameHistories={gameProfile.gameHistories}
         win_count={gameProfile.win_count}
         lose_count={gameProfile.lose_count}
         point={gameProfile.point}

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from '../../styles/profile.module.css';
-import { UserAchievement } from './profile';
+import { UserAchievement } from './profile/profile';
 
 /*
  * 1. 임의의 자료구조를 만든다. API가 구현 안되어있으면 더미 데이터를 만들고 6번으로 간다.
@@ -37,26 +37,35 @@ type MatchHistory = {
 
 
 
-const ExpandableButtons = ({win_count,
+const ExpandableButtons = ({gameHistories, win_count,
   lose_count,
   point,
-  achievement}: {win_count: number,
+  achievement}: {gameHistories: any,
+    win_count: number,
     lose_count: number,
     point: number,
     achievement: UserAchievement}) => {
-      const buttonData = [
-        { text: '최근 경기 기록', content: '최근 경기 기록 내용' },
-        { text: '게임 전적', content: `승: ${win_count}
-        패: ${lose_count}
-        포인트: ${point}` },
-        { text: '순위', content: '순위 내용' },
-        { text: '업적', content: `achievement: ${achievement}` },
-      ];
-  const initialState = buttonData.map(obj => obj.text);
-  const [activeButtons, setActiveButtons] = useState(initialState);
+      const [buttonData, setButtonData] = useState<any>(null);
+      // console.log("gameHistories:", gameHistories);
+      useEffect(() => {
+        if (!gameHistories)
+          return ;
+        setButtonData([
+          { text: '최근 경기 기록', content: `${gameHistories[0].winner_id} ${gameHistories[0].score1} : ${gameHistories[0].loser_id} ${gameHistories[0].score2} ${gameHistories[1].winner_id} ${gameHistories[1].score1} : ${gameHistories[1].loser_id} ${gameHistories[1].score2} ${gameHistories[2].winner_id} ${gameHistories[2].score1} : ${gameHistories[2].loser_id} ${gameHistories[2].score2}` },
+          { text: '게임 전적', content: `승: ${win_count}
+          패: ${lose_count}
+          포인트: ${point}` },
+          { text: '순위', content: '순위 내용' },
+          { text: '업적', content: `achievement: ${achievement}` },
+        ]);
+      }
+      ,[gameHistories]);
+      
+  const initialState = buttonData?.map((obj: { text: any; }) => obj.text);
+  const [activeButtons, setActiveButtons] = useState<string[]>([]);
 
   const toggleButton = (index: number) => {
-    setActiveButtons((prevActiveButtons) => {
+    setActiveButtons((prevActiveButtons: string[]) => {
       const newActiveButtons = [...prevActiveButtons];
       newActiveButtons[index] = prevActiveButtons[index] === '' ? buttonData[index].text : '';
       return newActiveButtons;
@@ -65,7 +74,7 @@ const ExpandableButtons = ({win_count,
 
   return (
     <div>
-      {buttonData.map((button, index) => (
+      {buttonData?.map((button: { text: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | React.PromiseLikeOfReactNode | null | undefined; content: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.PromiseLikeOfReactNode | null | undefined; }, index: number) => (
         <div key={index} className={styles.buttonWrapper}>
           <button
             className={`centerItemBlock ${styles.infoBox}`}
