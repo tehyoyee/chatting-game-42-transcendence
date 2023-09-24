@@ -36,7 +36,7 @@ export function PlayerContextProvider({ children }: { children: React.ReactNode 
 	const [data, setData] = useState<any>(null);
 	const [prevState, setPrevState] = useState<EPlayerState>(state);
 	const { chatSocket, gameSocket } = useSocketContext();
-	const { updateLoginState} = useAuthContext();
+	const { updateLoginState } = useAuthContext();
 
 	useEffect(() => {
 		console.log(`playerState [${prevState} -> ${state}], playerData=${JSON.stringify(data)}`);

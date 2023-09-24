@@ -3,6 +3,9 @@ import { Socket } from 'socket.io-client';
 import { IChatMate, IChatUser } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 
+const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
+const relationUrl = `${serverUrl}/relation`;
+
 const UserModal = ({ 
 	targetUser,
 	onClose,

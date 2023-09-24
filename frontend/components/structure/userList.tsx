@@ -43,7 +43,7 @@ const UserList = ({users}: { users: IChatMate[] }) => {
 						<UserModal 
 							setUser={setUser}
 							setShowProfile={setShowProfile}
-							user={targetUser} 
+							targetUser={targetUser} 
 							onClose={() => {setShowModal(false)}}></UserModal>
 					</Modal>
 			}
