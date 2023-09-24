@@ -40,18 +40,12 @@ export class UserController {
         await this.userService.updateNickName(id, nickName);
     }
     
-    // @Patch('/updateAvatar/:id/:avatar')
-    // async updateAvatar(@Param('id', ParseIntPipe) id: number,
-    //                     @Param('avatar') avatar: string): Promise<void> {
-	// 			if (g_debug)
-	// 				console.log('/updateAvatar/:id/:avatar');
-    //     await this.userService.updateAvatar(id, avatar);
-    // }
+
     @Post('/updateAvatar/:id')
     @UseInterceptors(FileInterceptor('file'))
     @Bind(UploadedFile())
     updateAvatar(@UploadedFile() file: Express.Multer.File, @Param('id', ParseIntPipe)id: number, @Res() res: Response) {
-        this.userService.updateAvatar(id, file);
+        // this.userService.updateAvatar(id, file);
         console.log(file);
     }
 

@@ -84,14 +84,30 @@ export class UserService {
         return found;
     }
 
-    async updateAvatar(id: number, avatar: any): Promise<User> {
+    async updateAvatar(id: number, file: any) {
         const found = await this.userRepository.getProfileByUserId(id);
         if (!found)
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            //유저별 폴더 생성
+        const uploadFilePath = 'uploads';
+        try {
+            if (!fs.existsSync(uploadFilePath)) {
+                fs.mkdirSync(uploadFilePath);
+            }
+        
+            //파일 이름
+            const fileName = found.user_id;
+            //파일 업로드 경로
+            const uploadPath: string = __dirname + `/../../${uploadFilePath + '/' + fileName}`;
 
-
-        return found;
+            //파일 생성
+            fs.writeFileSync(uploadPath, file);
+            this.userRepository.updateAvatar(found, uploadPath);
+        } catch(err) {
+            throw new HttpException('파일 업로드 중 에러', 404);
+        }
     }
+
 
     // async uploadFileMemory(user_id: number, file: File): any {
     //     //유저별 폴더 생성
