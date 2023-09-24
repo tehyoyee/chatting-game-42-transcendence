@@ -20,7 +20,7 @@ export class DmChannelDto {
     receiverId: number;
 }
 
-export class JoinChannelDto {
+export class JoinGroupChannelDto {
     @IsNumber()
     @IsPositive()
     channelId: number;

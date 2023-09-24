@@ -24,9 +24,6 @@ const controlTypeData: {event:string, field:string}[] = [
 	{event: "set-admin", field: "setAdminInput"},
 ];
 
-// TODO: 
-// 1. user list on input text
-// 2. get user list and print
 export default function ChatControl({
 	userList,
 }: {
@@ -163,21 +160,11 @@ function setPwd(user: IChatUser, socket: Socket) {
 	});
 }
 /*
-				<TextInputForm 
-					onSubmit={() => {requestNameUpdate(uid)}}
-					label="새 닉네임:"
-					pattern="[a-zA-Z0-9]{4,16}"
-					tailMassage="영어 소문자, 대문자, 숫자 4~16자리로 이뤄져야 합니다."
-					>
-				</TextInputForm>
-				*/
-
-/*
- * ban
- * kick
- * mute
- * setadmin for owner
- * set password
- * change password
+ * ban (banned)
+ * kick (kicked)
+ * mute (muted)
+ * setadmin for owner (setadmin-ed)
+ * set password (message)
+ * change password (message)
  * remove password
  */

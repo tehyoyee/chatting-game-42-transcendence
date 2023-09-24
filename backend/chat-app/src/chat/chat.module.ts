@@ -30,7 +30,7 @@ import { RelationService } from 'src/relation/relation.service';
     RelationModule
   ],
   controllers: [ChatController],
-  providers: [ChatGateway, UserService, AuthService, MailService, ChatService,  RelationService, ChannelRepository, MessageRepository, UcbRepository],
+  providers: [ChatGateway, UserService, AuthService, MailService, ChatService, RelationService, ChannelRepository, MessageRepository, UcbRepository],
   exports: [ChatService, ChannelRepository, MessageRepository, UcbRepository]
 })
 export class ChatModule {}

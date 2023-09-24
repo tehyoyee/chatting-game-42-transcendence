@@ -20,4 +20,3 @@ intra:
   # client_id: 'u-s4t2ud-994bc058927a239da2cfef14d20a9ac758a337a4e706408c3406f2fc3f656477'
   # client_secret: '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'
   # redirect_uri: 'http://10.18.229.228:3001/auth'
-
