@@ -38,6 +38,10 @@ export function PlayerContextProvider({ children }: { children: React.ReactNode 
 	const { chatSocket, gameSocket } = useSocketContext();
 	const { updateLoginState} = useAuthContext();
 
+	function exitChannel() {
+		chatSocket?.emit('close-channel-window', data.channel_id);
+	};
+
 	useEffect(() => {
 		console.log(`playerState [${prevState} -> ${state}], playerData=${JSON.stringify(data)}`);
 

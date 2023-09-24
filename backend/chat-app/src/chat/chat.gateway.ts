@@ -203,7 +203,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     // receiverSocket.emit('enter-dm-success', {channel_id: channel.channel_id, user_type: receiverBridge.user_type});
 
     this.server.to(channel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
-    this.server.to(channel.channel_name).emit("join", {user_id: receiver.user_id, user_nickname: receiver.nickname});
+    // this.server.to(channel.channel_name).emit("join", {user_id: receiver.user_id, user_nickname: receiver.nickname});
     
     // this.server.to(channel.channel_name).emit("join", {
     //   user_id: user.user_id, user_nickname: user.nickname,
