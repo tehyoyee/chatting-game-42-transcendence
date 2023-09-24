@@ -226,6 +226,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					score2: point2,
 					winner: user2.nickname
 				});
+				player2.leave(roomName);
 				this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 				return;
 			} else if (!this.gameRoomMap.has(user2.user_id)) {
@@ -238,6 +239,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					score2: point2,
 					winner: user1.nickname
 				});
+				player1.leave(roomName);
 				this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
 				return;
 			}
