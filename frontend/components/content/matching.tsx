@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import defaultImage from '../../public/default.png';
-import React, { useEffect, useContext, useState, useRef } from 'react';
+import React, { useEffect, useContext, useState, useRef, useCallback } from 'react';
 import { useRouter, notFound, useSearchParams } from 'next/navigation';
 import styles from '@/styles/matching.module.css';
 import DotLoader from './dotLoader';
@@ -45,10 +45,10 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
     const SocketContext = useSocketContext();
     const searchParams = useSearchParams();
 		const { setPlayerState } = usePlayerContext();
+		let interval: any;
 
     SocketContext.gameSocket?.on('gameStart', () => { setReady(true); });
 
-    
     const exitQueueHandler = () => {
       console.log("exitQueue handler worked!");
       SocketContext.gameSocket?.emit('exitQueue');
@@ -57,34 +57,35 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 		useEffect(() => {
 			setPlayerState(EPlayerState.GAME_MATCHING);
 		}, []);
-    
-    useEffect(() => {
 
+    useEffect(() => {
       if (!queue)
       {
-          const JoinQueue = () => {
-            searchParams.get('normal') ?
-              SocketContext.gameSocket?.emit('joinQueue', 'NORMAL') :
-              SocketContext.gameSocket?.emit('joinQueue', 'ADVANCED');
-            }
-          if (ref.current)
-            return;
-          ref.current = true;
-          JoinQueue();
-          setQueue(queue + 1);
+				const JoinQueue = () => {
+					searchParams.get('normal') ?
+					SocketContext.gameSocket?.emit('joinQueue', 'NORMAL') :
+					SocketContext.gameSocket?.emit('joinQueue', 'ADVANCED');
+				}
+				if (ref.current)
+					return;
+				ref.current = true;
+				JoinQueue();
+				setQueue(queue + 1);
       }
-
-        if (ready) {
-      const countdownInterval = setInterval(() => {
-        if (countdown <= 1) {
-          clearInterval(countdownInterval);
-					router.push('/game/play');
-        } else {
-          setCountdown(countdown - 1);
-        }
-      }, 1000);
+			if (ready) {
+				setPlayerState(EPlayerState.GAME_PLAYING);
+				interval = setInterval(() => {
+					setCountdown(countdown => countdown - 1);
+	      }, 1000);
     }
-  }, [ready, countdown, router]);
+  }, [ready, router]);
+
+	useEffect(() => {
+		if (countdown <= 0) {
+			clearInterval(interval);
+			router.push('/game/play');
+		}
+	}, [countdown]);
 
   return (
     <div>

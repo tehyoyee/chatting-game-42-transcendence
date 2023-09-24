@@ -29,7 +29,7 @@ export class UserController {
         return await this.userService.getMyProfile(id);
     }
 
-    // @UseGuards(AuthGuard())
+//    @UseGuards(AuthGuard())
     @Get('/profile/:id')
     async getProfileByUserId(@Param('id', ParseIntPipe) id: number): Promise<User> {
 				if (g_debug)
@@ -37,7 +37,7 @@ export class UserController {
         return await this.userService.getProfileByUserId(id);
     }
 
-    // @UseGuards(AuthGuard())
+//    @UseGuards(AuthGuard())
     @Patch('/updateName/:id/:nickName')
     async updateNickName(@Param('id', ParseIntPipe) id: number,
                         @Param('nickName') nickName: string): Promise<void> {
@@ -61,7 +61,7 @@ export class UserController {
     }
 
     @Patch('/updateTFA/:id/:twoFactor')
-    // @UseGuards(AuthGuard())
+//    @UseGuards(AuthGuard())
     async updateTwoFactor(@Param('id', ParseIntPipe) id: number,
                        @Param('twoFactor', ParseBoolPipe) twoFactor: boolean): Promise<void> {
 				if (g_debug)
