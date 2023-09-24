@@ -166,6 +166,7 @@ export class UserService {
     }
 
     async winGame(id: number): Promise<User> {
+        await this.userRepository.winGame(id);
 
         const user = await this.getProfileByUserId(id);
         if (!user) {
@@ -173,7 +174,6 @@ export class UserService {
             this.logger.debug('UnexistUser');
             throw new HttpException('Unexist User', HttpStatus.UNAUTHORIZED);
         }
-        await this.userRepository.winGame(id);
 
         const changed = await this.checkAchievementLevelChanged(user);
         if (changed) {
