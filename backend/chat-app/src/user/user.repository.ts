@@ -136,7 +136,6 @@ export class UserRepository extends Repository<User> {
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
 
         found.win_count++;
-        found.point += 100;
         return await this.save(found);
     }
 
@@ -146,7 +145,6 @@ export class UserRepository extends Repository<User> {
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
 
         found.lose_count++;
-        found.point -= 100;
         return await this.save(found);
     }
 

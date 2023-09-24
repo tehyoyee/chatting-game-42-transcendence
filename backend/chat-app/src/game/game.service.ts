@@ -22,17 +22,17 @@ export class GameService {
 		const loseUser = await this.userService.getProfileByUserId(loseId);
 
 		// 승패 변경
-		this.userService.winGame(winUser.user_id);
-		this.userService.loseGame(loseUser.user_id);
+		await this.userService.winGame(winUser.user_id);
+		await this.userService.loseGame(loseUser.user_id);
 
 		// 점수 변경
 		const surplus = logisticFunction(winUser.point, loseUser.point);
 		if (winUser.point > loseUser.point) {
-			this.userService.updateGamePoint(winUser.user_id, (25 - surplus));
-			this.userService.updateGamePoint(loseUser.user_id, -(25 + surplus));
+			await this.userService.updateGamePoint(winUser.user_id, (25 - surplus));
+			await this.userService.updateGamePoint(loseUser.user_id, -(25 + surplus));
 		} else {
-			this.userService.updateGamePoint(winUser.user_id, 25 + surplus);
-			this.userService.updateGamePoint(loseUser.user_id, -(25 + surplus));
+			await this.userService.updateGamePoint(winUser.user_id, 25 + surplus);
+			await this.userService.updateGamePoint(loseUser.user_id, -(25 + surplus));
 		}
 
 		// 게임기록 변경
