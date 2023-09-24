@@ -175,6 +175,10 @@ export class ChatService {
         }
     }
 
+    async deleteDmChannel(channelId: number) {
+        return await this.channelRepository.deleteChannelByChannelId(channelId);
+    }
+
     async updateUserTypeOfUCBridge(targetUserId: number, channelId: number, newType: UserType) {
        await this.ucbRepository.updateUserTypeOfUCBridge(targetUserId, channelId, newType);
     }
@@ -269,5 +273,21 @@ export class ChatService {
         }
 
         return inners;
+    }
+
+    getReceiverIdByDmChannelName(senderId: number, channelName: string): number {
+        const regex = /user(\d+):user(\d+)/;
+        const matches = channelName.match(regex);
+
+        if (matches) {
+            const [, id1, id2] = matches;
+            const firstUserId = parseInt(id1, 10);
+            const secondUserId = parseInt(id2, 10);
+
+            return firstUserId === senderId ? secondUserId : firstUserId;
+        }
+        else {
+            return null;
+        }
     }
 }
