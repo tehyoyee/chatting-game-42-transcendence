@@ -14,6 +14,12 @@ type SocketContextType = {
 	gameSocket: Socket | null,
 };
 
+type TGameInvite = {
+	user_id: string,
+	user_nickname: string,
+	gameMode: string,
+};
+
 export const SocketContext = createContext<SocketContextType | null>(null);
 
 export default function useSocketContext() {
@@ -56,6 +62,15 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 		socket.on('disconnect', () => {
 			console.log("gamesocket disconnected");
 			router.push('/');
+		});
+		socket.on('got-invited', (data: TGameInvite) => {
+			if (!confirm(`${data.user_nickname} 님이 ${data.gameMode}에 초대하셨습니다. 수락하시겠습니까?`)) {
+				socket.emit('decline-game', data.user_id);
+			}
+			socket.emit('accept-game', {
+				hostUserId: data.user_id,
+				gameMode: data.gameMode,
+			});
 		});
 	}
 

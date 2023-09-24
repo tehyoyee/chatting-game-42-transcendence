@@ -719,7 +719,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('usermod-fail', 'Target User Already Banned Error in onBanUser');
       return ;
     }
-
     const targetUserSocket = this.userIdToSocket(targetUser.user_id);
     if (!targetUserSocket) {
       client.emit('usermod-fail', 'Unidentified Target User Socket Error in onBanUser');
