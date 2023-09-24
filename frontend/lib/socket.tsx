@@ -37,6 +37,9 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 		socket.on('connect', () => {
 			console.log("chatsocket connected");
 		});
+		socket.on('disconnect', () => {
+			console.log("chatsocket disconnected");
+		});
 	}
 
 	function initGameSocket(socket: Socket) {
@@ -49,6 +52,9 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 			document.cookie = '';
 			await updateLoginState();
 			router.push('/');
+		});
+		socket.on('disconnect', () => {
+			console.log("gamesocket disconnected");
 		});
 	}
 

@@ -101,7 +101,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		// 게임 종료 조건
 		if (point1 == this.MAXPOINT) {
 			console.log(`[Game] ${user1.nickname} winned !`);
-			await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
+			this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 			this.server.to(roomName).emit('endGame', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
@@ -120,7 +120,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			return;
 		} else if (point2 == this.MAXPOINT) {
 			console.log(`[Game] ${user1.username} winned !`);
-			await this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
+			this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
 			this.server.to(roomName).emit('endGame', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
@@ -164,7 +164,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 		var winFlag = 0;
 
-		const render = async () => {
+		const render = () => {
 			// Update Paddle Position
 			const user1paddleDir = this.userKeyMap.get(user1.user_id);
 			const user2paddleDir = this.userKeyMap.get(user2.user_id);
@@ -227,7 +227,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					winner: user2.nickname
 				});
 				player2.leave(roomName);
-				await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
+				this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 				return;
 			} else if (!this.gameRoomMap.has(user2.user_id)) {
 				this.server.to(roomName).emit('endGame', {
@@ -326,7 +326,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			return ;
 		}
 		const winnerId = parseInt(this.getKeyByValue(this.gameRoomMap, explodedRoomName));
-		this.server.to(explodedRoomName).emit('endGame');
+//		this.server.to(explodedRoomName).emit('endGame');
 		this.gameRoomMap.delete(loser.user_id);
 		console.log(`[Game] ${loser.username} has left the game. he/she's loser.`);
 	}
