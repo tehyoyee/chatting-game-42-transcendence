@@ -20,6 +20,8 @@ export class GameRepository extends Repository<GameHistory> {
 			player: user,
 			winner_id: winner_id,
 			loser_id: loser_id,
+			winner_nickname: winUser.nickname,
+			loser_nickname: loseUser.nickname,
 			score1: score1,
 			score2: score2
 		}

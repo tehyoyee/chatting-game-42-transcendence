@@ -8,6 +8,10 @@ export class GameHistoryDto {
 
 	loser_id: number;
 
+	winner_nickname: string;
+	
+	loser_nickname: string;
+	
 	score1: number;
 
 	score2: number;

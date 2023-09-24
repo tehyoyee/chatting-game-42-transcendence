@@ -18,6 +18,12 @@ export class GameHistory extends BaseEntity {
 	loser_id: number;
 
 	@Column()
+	winner_nickname: string;
+
+	@Column()
+	loser_nickname: string;
+
+	@Column()
 	score1: number;
 
 	@Column()
