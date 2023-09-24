@@ -88,11 +88,15 @@ export class UserService {
         return found;
     }
 
+    async getAvatarByUserId(id: number) {
+        await this.userRepository.getAvatarByUserId(id);
+    }
+    
     async updateAvatar(id: number, filePath) {
         const found = await this.userRepository.getProfileByUserId(id);
         if (!found)
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
-        this.userRepository.updateAvatar(found, filePath);
+        await this.userRepository.updateAvatar(found, filePath);
     }
     // async updateAvatar(id: number, file, res) {
     //     const found = await this.userRepository.getProfileByUserId(id);
