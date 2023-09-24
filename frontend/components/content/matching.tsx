@@ -48,7 +48,7 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 
     SocketContext.gameSocket?.on('gameStart', () => { setReady(true); });
 
-    
+
     const exitQueueHandler = () => {
       console.log("exitQueue handler worked!");
       SocketContext.gameSocket?.emit('exitQueue');
@@ -57,34 +57,33 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 		useEffect(() => {
 			setPlayerState(EPlayerState.GAME_MATCHING);
 		}, []);
-    
-    useEffect(() => {
 
+    useEffect(() => {
       if (!queue)
       {
-          const JoinQueue = () => {
-            searchParams.get('normal') ?
-              SocketContext.gameSocket?.emit('joinQueue', 'NORMAL') :
-              SocketContext.gameSocket?.emit('joinQueue', 'ADVANCED');
-            }
-          if (ref.current)
-            return;
-          ref.current = true;
-          JoinQueue();
-          setQueue(queue + 1);
+				const JoinQueue = () => {
+					searchParams.get('normal') ?
+					SocketContext.gameSocket?.emit('joinQueue', 'NORMAL') :
+					SocketContext.gameSocket?.emit('joinQueue', 'ADVANCED');
+				}
+				if (ref.current)
+					return;
+				ref.current = true;
+				JoinQueue();
+				setQueue(queue + 1);
       }
-
-        if (ready) {
-      const countdownInterval = setInterval(() => {
-        if (countdown <= 1) {
-          clearInterval(countdownInterval);
+			if (ready) {
+				setPlayerState(EPlayerState.GAME_PLAYING);
+				const countdownInterval = setInterval(() => {
+				if (countdown <= 1) {
+					clearInterval(countdownInterval);
 					router.push('/game/play');
-        } else {
-          setCountdown(countdown - 1);
-        }
+				} else {
+					setCountdown(countdown - 1);
+				}
       }, 1000);
     }
-  }, [ready, countdown, router]);
+  }, [ready, router]);
 
   return (
     <div>

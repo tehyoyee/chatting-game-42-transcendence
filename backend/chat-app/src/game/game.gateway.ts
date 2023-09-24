@@ -147,11 +147,11 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		};
 		const paddle1 = {
 			x: this.paddleGap,
-			y: (this.MAP_Y + this.PADDLE_SIZE) / 2
+			y: (this.MAP_Y - this.PADDLE_SIZE) / 2
 		};
 		const paddle2 = {
-			x: this.MAP_X - this.paddleGap,
-			y: (this.MAP_Y + this.PADDLE_SIZE) / 2
+			x: this.MAP_X - 2 * this.paddleGap,
+			y: (this.MAP_Y - this.PADDLE_SIZE) / 2
 		};
 
 		if (gameMode === 'ADVANCED') {
