@@ -10,9 +10,13 @@ import { GameHistory } from 'src/game/game.history.entity';
 import * as fs from 'fs';
 // import { map } from 'rxjs';
 import { memoryStorage } from 'multer';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class UserService {
-    constructor(private userRepository: UserRepository) {}
+    constructor(
+        private userRepository: UserRepository,
+        // private configService: ConfigService
+        ) {}
 
     private logger = new Logger('UserService');
 
@@ -84,29 +88,34 @@ export class UserService {
         return found;
     }
 
-    async updateAvatar(id: number, file: any) {
+    async updateAvatar(id: number, filePath) {
         const found = await this.userRepository.getProfileByUserId(id);
         if (!found)
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
-            //유저별 폴더 생성
-        const uploadFilePath = 'uploads';
-        try {
-            if (!fs.existsSync(uploadFilePath)) {
-                fs.mkdirSync(uploadFilePath);
-            }
-        
-            //파일 이름
-            const fileName = found.user_id;
-            //파일 업로드 경로
-            const uploadPath: string = __dirname + `/../../${uploadFilePath + '/' + fileName}`;
-
-            //파일 생성
-            fs.writeFileSync(uploadPath, file);
-            this.userRepository.updateAvatar(found, uploadPath);
-        } catch(err) {
-            throw new HttpException('파일 업로드 중 에러', 404);
-        }
+        this.userRepository.updateAvatar(found, filePath);
     }
+    // async updateAvatar(id: number, file, res) {
+    //     const found = await this.userRepository.getProfileByUserId(id);
+    //     if (!found)
+    //         throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+    //         //유저별 폴더 생성
+    //     const uploadFilePath = 'uploads';
+    //     try {
+    //         if (!fs.existsSync(uploadFilePath)) {
+    //             fs.mkdirSync(uploadFilePath);
+    //         }
+        
+    //         //파일 이름
+    //         const fileName = found.user_id;
+    //         //파일 업로드 경로
+    //         const uploadPath: string = __dirname + `/../../${uploadFilePath + '/' + fileName}`;
+
+    //         //파일 생성
+    //         fs.writeFileSync(uploadPath, file);
+    //         // this.userRepository.updateAvatar(found, uploadPath);
+    //     } catch(err) {
+    //         throw new HttpException('파일 업로드 중 에러', 404);
+    //     }
 
 
     // async uploadFileMemory(user_id: number, file: File): any {

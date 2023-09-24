@@ -11,7 +11,7 @@ db:
   database: 'chat-app'
 
 jwt:
-  expiresIn: 3600
+  expiresIn: '60m'
 
 intra:
   grant_type: 'authorization_code'

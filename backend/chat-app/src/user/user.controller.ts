@@ -6,7 +6,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { GameHistory } from 'src/game/game.history.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { AuthGuard } from '@nestjs/passport';
+// import { AuthGuard } from '@nestjs/passport';
+import * as config from 'config';
 
 const g_debug = true;
 
@@ -14,13 +15,13 @@ const g_debug = true;
 export class UserController {
     constructor(private userService: UserService) {}
 
-//    @UseGuards(AuthGuard())
+    // @UseGuards(AuthGuard())
     @Get('/profile/game/:id')
     async getGameHistoryByUserId(@Param('id', ParseIntPipe) id: number): Promise<GameHistory[]> {
         return await this.userService.getGameHistoryByUserId(id);
     }
 
-//    @UseGuards(AuthGuard())
+    // @UseGuards(AuthGuard())
     @Get('/profile')
     //가드 처리
     async getMyProfile(@Body('user_id') id: number, @Req() req: Request): Promise<User> {
@@ -48,10 +49,15 @@ export class UserController {
 
     @Post('/updateAvatar/:id')
     @UseInterceptors(FileInterceptor('file'))
-    @Bind(UploadedFile())
-    updateAvatar(@UploadedFile() file: Express.Multer.File, @Param('id', ParseIntPipe)id: number, @Res() res: Response) {
-        // this.userService.updateAvatar(id, file);
-        console.log(file);
+    async updateAvatar(@UploadedFile() file: Express.Multer.File, @Param('id', ParseIntPipe)id: number, @Res() res: Response) {
+        const path = file.path.replace(__dirname + `/../../uploads`, '');
+        await this.userService.updateAvatar(id, path + file.originalname);
+
+        return {
+            fileName: file.originalname,
+            savedPath: path.replace(/\\/gi, '/'),
+            size: file.size,
+        };
     }
 
     @Patch('/updateTFA/:id/:twoFactor')
