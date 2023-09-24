@@ -18,6 +18,8 @@ export interface IChatMate {
 	userNickName: string,
 	userType: string,
 	isMuted: boolean,
+	isFriend: boolean,
+	isBlocked: boolean,
 }
 
 export type TChatContext = {
