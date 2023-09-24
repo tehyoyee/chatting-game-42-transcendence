@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState, useCallback, ReactNode, createContext } from 'react';
 
 const stateUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/state`;
@@ -33,6 +34,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
 		username: '',
 		id: 0,
 	});
+	const router = useRouter();
 
   const updateLoginState = useCallback(async () => {
     await fetch(stateUrl, {

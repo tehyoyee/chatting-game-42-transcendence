@@ -1,17 +1,49 @@
 import React, { useState } from 'react';
-import { IChatMate } from '../content/chat/context';
+import { Socket } from 'socket.io-client';
+import { IChatMate, IChatUser } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 
 const UserModal = ({ 
-	user,
+	targetUser,
 	onClose,
+	setUser,
 	setShowProfile,
 }: {
-	user: IChatMate,
+	targetUser: IChatMate,
 	onClose: Function,
+	setUser: React.Dispatch<React.SetStateAction<IChatUser>>,
 	setShowProfile: React.Dispatch<React.SetStateAction<boolean>>,
 }) => {
-	const { chatSocket } = useSocketContext();
+	const { chatSocket, gameSocket } = useSocketContext();
+
+	function offEvent(sockEvents: string[]) {
+		for (const sockEvent of sockEvents) {
+			chatSocket?.off(sockEvent);
+		}
+		onClose();
+	}
+
+	function handleEvent(content: any, evt: string, success: string, fail: string, handleSuccess: Function, handleFail: Function) {
+		chatSocket?.on(success, (data: IChatUser) => {
+			console.log(`dm success: ${data}`);
+			offEvent([success, fail]);
+			handleSuccess(data);
+		});
+		chatSocket?.on(fail, (msg) => {
+			console.log(`${evt}: ${msg}`);
+			handleFail(msg);
+			offEvent([success, fail]);
+		});
+		chatSocket?.emit(evt, content);
+	}
+
+	function handleFriend(isFriend: boolean) {
+		onClose();
+	}
+
+	function handleBlock(isFriend: boolean) {
+		onClose();
+	}
 
 	function handleProfile() {
 		onClose();
@@ -19,48 +51,66 @@ const UserModal = ({
 	}
 
 	function handleDm() {
-		chatSocket?.emit('', () => {
-		});
+		handleEvent(targetUser.userId, 'enter-dm-channel', 'enter-dm-success', 'enter-dm-fail', 
+			(data: IChatUser) => {setUser(data)},
+			(msg: any) => {console.log(`enter-dm fail: ${msg}`); alert('오류: DM을 보낼 수 없습니다.');},
+		)
 	}
 
 	function handleGameNormal() {
-		chatSocket?.emit('', () => {
-		});
+		handleEvent('', 'invite-game', 'invite-game-success', 'invite-game-fail',
+			(data: any) => {console.log(`${data.user_nickname}에게 초대를 보냈습니다.`)},
+			(msg: any) => {console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},
+		);
 	}
 
 	function handleGameFast() {
-		chatSocket?.emit('', () => {
-		});
+		handleEvent('', 'invite-game', 'invite-game-success', 'invite-game-fail',
+			(data: any) => {console.log(`${data.user_nickname}에게 초대를 보냈습니다.`)},
+			(msg: any) => {console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},
+		);
 	}
 
   return (
 		<ul>
 			<li>
-				<p>{user.userNickName}</p>
+				<p>{targetUser.userNickName}</p>
 			</li>
 			<li>
-			<button 
-				className='normalButton'
-				onClick={handleProfile}
-				>{'see profile'}</button>
+				<button 
+					className='normalButton'
+					onClick={() => {handleFriend(targetUser.isFriend)}}
+					>{targetUser.isFriend ? 'unfollow' : 'follow'}</button>
 			</li>
 			<li>
-			<button 
-				className='normalButton'
-				onClick={handleDm}
-				>{'dm'}</button>
+				<button 
+					className='normalButton'
+					onClick={() => {handleBlock(targetUser.isBlocked)}}
+					>{targetUser.isBlocked ? 'unblock' : 'block'}</button>
 			</li>
 			<li>
-			<button 
-				className='normalButton'
-				onClick={handleGameNormal}
-				>{'game normal'}</button>
+				<button 
+					className='normalButton'
+					onClick={handleProfile}
+					>{'see profile'}</button>
 			</li>
 			<li>
-			<button 
-				className='normalButton'
-				onClick={handleGameFast}
-				>{'game fast'}</button>
+				<button 
+					className='normalButton'
+					onClick={handleDm}
+					>{'dm'}</button>
+			</li>
+			<li>
+				<button 
+					className='normalButton'
+					onClick={handleGameNormal}
+					>{'game normal'}</button>
+			</li>
+			<li>
+				<button 
+					className='normalButton'
+					onClick={handleGameFast}
+					>{'game fast'}</button>
 			</li>
 		</ul>
 

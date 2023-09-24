@@ -55,6 +55,7 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 		});
 		socket.on('disconnect', () => {
 			console.log("gamesocket disconnected");
+			router.push('/');
 		});
 	}
 

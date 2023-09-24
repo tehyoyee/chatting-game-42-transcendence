@@ -2,6 +2,7 @@
 
 import useSocketContext from "@/lib/socket";
 import React, { useEffect, useContext, createContext, useState } from "react";
+import useAuthContext from "../user/auth";
 
 export enum EPlayerState {
 	CHAT = 0,
@@ -35,10 +36,12 @@ export function PlayerContextProvider({ children }: { children: React.ReactNode 
 	const [data, setData] = useState<any>(null);
 	const [prevState, setPrevState] = useState<EPlayerState>(state);
 	const { chatSocket, gameSocket } = useSocketContext();
+	const { updateLoginState} = useAuthContext();
 
 	useEffect(() => {
 		console.log(`playerState [${prevState} -> ${state}], playerData=${JSON.stringify(data)}`);
 
+		updateLoginState();
 		switch (prevState) {
 			case EPlayerState.GAME_PLAYING:
 				gameSocket?.emit('exitGame',);
