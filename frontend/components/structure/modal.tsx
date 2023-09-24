@@ -53,9 +53,10 @@ export default function Modal({
 		<div className={`${styles.modalOverlay}`}>
 			<div 
 				ref={wrapperRef}
-				className={`${styles.modalWrapper}`}
-				style={style}>
-				<div className={`${styles.modal}`}>
+				className={`${styles.modalWrapper}`}>
+				<div 
+					style={style}
+					className={`${styles.modal}`}>
 					<div className={`${styles.modalHeader}`}>
 						<a href="#" onClick={(e) => {e.preventDefault(); onClose()}}>
 							x

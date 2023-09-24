@@ -47,7 +47,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
 	const { setPlayerState } = usePlayerContext();
 
 	useEffect(() => {
-		setPlayerState(EPlayerState.PROFILE);
+		isMyProfile && setPlayerState(EPlayerState.PROFILE);
 	}, []);
 
   useEffect(() => {
@@ -57,12 +57,14 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
         credentials: 'include',
       })
       .then(res => res.json())
-      .then(data => {setProfile(data)})
+      .then(data => {setProfile(data);})
       .catch(err => {
         console.log(`${profileUrl}: fetch failed: ${err}`);
       });
     })()
+    console.log("profile.avartar:", profile.avartar);
   }, [update]);
+  useEffect(() => { console.log(profile);}, [profile]);
 	//////////////////////////////
   const userProps = [
     {
@@ -103,14 +105,15 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
   }, []);
 
   return (
-    <>
-    {isMyProfile &&
-				// NOTE: it doesn't re-render when setProfile is called.
-      <ProfileUpdator
-        uid={uid}
-        name={profile.nickname}
-        update={{setUpdate}} 
-      ></ProfileUpdator>}
+    <div className={styles.profile}>
+    	{
+				isMyProfile &&
+				<ProfileUpdator
+					uid={uid}
+					name={profile.nickname}
+					update={{setUpdate}}
+				></ProfileUpdator>
+			}
       <div className={`${"centerItemBlock gridRow1_2 gridCol1_2"} ${styles.profileImage}`}>
         <Image
           src={profile.avartar}
@@ -137,7 +140,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
         achievement={gameProfile.achievement}
       ></ExpandableButtons>
       <BackToTop></BackToTop>
-    </>
+    </div>
   );
 }
 
