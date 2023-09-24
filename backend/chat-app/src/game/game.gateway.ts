@@ -15,9 +15,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	
 	private readonly MAP_X = 1800;
 	private readonly MAP_Y = 1300;
-	private readonly SPEED = 25;
+	private readonly SPEED = 16;
 	private readonly paddleSpeed = 20;
-	private readonly PADDLE_SIZE = 100;
+	private readonly PADDLE_SIZE = 150;
 	private readonly paddleGap = 20;
 	private readonly DELAY = 20;
 	private readonly MAXPOINT = 5;
@@ -179,11 +179,11 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				}
 			}
 			if (user2paddleDir === KeyStatus.UP) {
-				if (paddle1.y - this.paddleSpeed >= 0) {
+				if (paddle2.y - this.paddleSpeed >= 0) {
 					paddle2.y -= this.paddleSpeed;
 				}
 			} else if (user2paddleDir === KeyStatus.DOWN) {
-				if (paddle1.y + this.paddleSpeed <= this.MAP_Y - this.PADDLE_SIZE) {
+				if (paddle2.y + this.paddleSpeed <= this.MAP_Y - this.PADDLE_SIZE) {
 					paddle2.y += this.paddleSpeed;
 				}
 			}

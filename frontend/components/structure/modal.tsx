@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import styles from '@/styles/modal.module.css';
 import { CSSRuleObject } from 'tailwindcss/types/config';
@@ -31,10 +31,28 @@ export default function Modal({
 	title?: string | null, 
 	style?: CSSRuleObject 
 }) {
+	const wrapperRef = useRef<HTMLDivElement | null>(null);
+
+	const backDropHandler = (e: MouseEvent) => {
+		if (e.target instanceof Node && !wrapperRef.current?.contains(e.target)) {
+			onClose();
+		}
+	};
+
+	useEffect(() => {
+		setTimeout(() => {
+			window.addEventListener('click', backDropHandler);
+		});
+		return () => {
+			window.removeEventListener('click', backDropHandler);
+		};
+	}, []);
+
 	const modalRoot = document.querySelector(`#${id}`);
 	const modalContent = (
 		<div className={`${styles.modalOverlay}`}>
 			<div 
+				ref={wrapperRef}
 				className={`${styles.modalWrapper}`}
 				style={style}>
 				<div className={`${styles.modal}`}>

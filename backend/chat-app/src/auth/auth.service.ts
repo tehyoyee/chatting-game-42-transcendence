@@ -90,7 +90,7 @@ export class AuthService {
 			})
 			return;
 		} catch (err) {
-			throw new HttpException('SignUp Error', HttpStatus.UNAUTHORIZED);
+			throw new HttpException(`SignUp Error: ${err}`, HttpStatus.UNAUTHORIZED);
 		}
 	}
 

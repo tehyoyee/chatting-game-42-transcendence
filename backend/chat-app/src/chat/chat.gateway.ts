@@ -97,7 +97,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     if (!token) {
       // throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
       this.logger.debug('Null Token');
-      client.emit('disconnect');
       client.disconnect();
       return;
     }
@@ -109,7 +108,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
     catch (err) {
         this.logger.debug(err);
-        client.emit('disconnect');
         client.disconnect();
         return;
     }

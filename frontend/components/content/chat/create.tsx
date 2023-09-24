@@ -5,13 +5,13 @@ import useChatContext from './context';
 
 enum Type {
 	Public = 0,
-	Private,
+//	Private,
 	Protected,
 };
 
 const TypeToString: string[] = [
 	"public",
-	"private",
+//	"private",
 	"protected",
 ];
 
@@ -42,9 +42,11 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 			case Type.Public:
 				setChatType(Type.Public);
 				break;
+			/*
 			case Type.Private:
 				setChatType(Type.Private);
 				break;
+				*/
 			case Type.Protected:
 				setChatType(Type.Protected);
 				break;
@@ -70,12 +72,14 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 					channelType: TypeToString[chatType],
 				});
 				break;
+			/*
 			case Type.Private:
 				chatSocket.emit(evt_create_dm, {
 					channelName: name,
 					channelType: TypeToString[chatType],
 				});
 				break;
+				*/
 			case Type.Protected:
 				chatSocket.emit(evt_create_normal, {
 					channelName: name,
@@ -112,10 +116,12 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 						<label htmlFor='public'>Public</label>
 					</div>
 
+					{/*
 					<div>
 						<input type='radio' id='private' name='type' value={Type.Private}/>
 						<label htmlFor='private'>Private</label>
 					</div>
+					*/}
 
 					<div>
 						<input type='radio' id='password' name='type' value={Type.Protected}/>

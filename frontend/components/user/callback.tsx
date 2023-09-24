@@ -39,7 +39,7 @@ export default function Callback() {
     
       if (searchParams.get('code') == null) return;
 
-      const res = await fetch(`${tokenUrl}${window.location.search}`, {
+      await fetch(`${tokenUrl}${window.location.search}`, {
         method: 'GET',
         credentials: 'include',
       })
@@ -47,19 +47,21 @@ export default function Callback() {
 				if (!res.ok) throw new Error(`response is not ok: ${res.status}`);
 				return res.json()
 			})
+			.then(res => {
+				if (res.two_factor === true) {
+					setLoginData(res);
+					setTfa(true);
+					sessionStorage.setItem('tfa', 'true');
+					return;
+				} else if (res.firstLogin === true) {
+					router.push('/login/setprofile');
+					return;
+				}
+			})
       .catch(reason => {
-        console.log(`${tokenUrl}: fetch failed: ${reason}`);
-				router.push('/');
+        console.log(`${tokenUrl}: fetch failed: ${JSON.stringify(reason)}`);
+//				router.push('/');
       });
-			if (res.two_factor === true) {
-				setLoginData(res);
-				setTfa(true);
-				sessionStorage.setItem('tfa', 'true');
-				return;
-			} else if (res.firstLogin === true) {
-				router.push('/login/setprofile');
-				return;
-			}
 //      await updateLoginState();
       router.push('/');
     })()
