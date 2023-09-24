@@ -67,7 +67,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				});
 				this.gameNormalQueue = this.gameNormalQueue.slice(2);
 				console.log("[Game] Normal Match Created !!!");
-				setTimeout(() => this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0), 3000);
+				setTimeout(async () => await this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0), 3000);
 			}
 		} else if (gameMode === 'ADVANCED') {
 			this.gameAdvancedQueue.push(user.user_id);
@@ -90,7 +90,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				});
 				this.gameAdvancedQueue = this.gameAdvancedQueue.slice(2);
 				console.log("[Game] Advanced Match Created !!!");
-				setTimeout(() => this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0), 3000);
+				setTimeout(async () => await this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0), 3000);
 			}
 		}
 	}
@@ -101,7 +101,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		// 게임 종료 조건
 		if (point1 == this.MAXPOINT) {
 			console.log(`[Game] ${user1.nickname} winned !`);
-			this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
+			await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 			this.server.to(roomName).emit('endGame', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
@@ -120,7 +120,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			return;
 		} else if (point2 == this.MAXPOINT) {
 			console.log(`[Game] ${user1.username} winned !`);
-			this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
+			await this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
 			this.server.to(roomName).emit('endGame', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
@@ -164,7 +164,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 		var winFlag = 0;
 
-		const render = () => {
+		const render = async () => {
 			// Update Paddle Position
 			const user1paddleDir = this.userKeyMap.get(user1.user_id);
 			const user2paddleDir = this.userKeyMap.get(user2.user_id);
@@ -227,7 +227,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					winner: user2.nickname
 				});
 				player2.leave(roomName);
-				this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
+				await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 				return;
 			} else if (!this.gameRoomMap.has(user2.user_id)) {
 				this.server.to(roomName).emit('endGame', {
@@ -240,7 +240,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					winner: user1.nickname
 				});
 				player1.leave(roomName);
-				this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
+				await this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
 				return;
 			}
 
@@ -271,14 +271,14 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			if (winFlag != 0) {
 				clearInterval(id);
 				if (winFlag == 1) {
-					this.runGame(gameMode, roomName, player1, player2, point1+1, point2);
+					await this.runGame(gameMode, roomName, player1, player2, point1+1, point2);
 				} else {
-					this.runGame(gameMode, roomName, player1, player2, point1, point2+1);
+					await this.runGame(gameMode, roomName, player1, player2, point1, point2+1);
 				}
 			}
 		};
 		const id = setInterval(render, this.DELAY);
-		render();
+		await render();
 	}
 
 	@SubscribeMessage('launchGame')
@@ -298,7 +298,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			roomName: newRoomName
 		});
 		console.log(`[Game] ${invitation.gameMode} match created.`);
-		setTimeout(() => this.runGame(invitation.gameMode, newRoomName, invitation.hostUserSocket, invitation.clientUserSocket, 0, 0), 3000);
+		setTimeout(async () => await this.runGame(invitation.gameMode, newRoomName, invitation.hostUserSocket, invitation.clientUserSocket, 0, 0), 3000);
 	}
 
 	@SubscribeMessage('exitQueue')
@@ -325,8 +325,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		if (!explodedRoomName) {
 			return ;
 		}
-		const winnerId = parseInt(this.getKeyByValue(this.gameRoomMap, explodedRoomName));
-//		this.server.to(explodedRoomName).emit('endGame');
 		this.gameRoomMap.delete(loser.user_id);
 		console.log(`[Game] ${loser.username} has left the game. he/she's loser.`);
 	}
