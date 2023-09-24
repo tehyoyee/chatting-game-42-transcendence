@@ -352,7 +352,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
-		console.log(user.gameHistories);
+		// console.log(user.gameHistories);
 		this.userSocketMap.set(user.user_id, client);
 		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 	}
