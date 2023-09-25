@@ -5,6 +5,7 @@ import { GameRepository } from './game.repository';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
+import { DataSource } from 'typeorm';
 
 // Logistic function
 const logisticFunction = (p1: number, p2: number): number => {
@@ -48,8 +49,9 @@ export class GameService {
 
 	async getRanking() {
 		const ranking = await this.userRepository
-			.createQueryBuilder('user_ranking')
-			.select('RANK () OVER (PARTITION BY POINT), NICKNAME, POINT')
+			.createQueryBuilder('user')
+			.select('RANK () OVER (ORDER BY point DESC) as "rank", user.nickname, user.point')
+			.getRawMany();
 		return ranking;
 	}
 }

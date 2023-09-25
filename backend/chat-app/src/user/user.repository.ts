@@ -132,7 +132,7 @@ export class UserRepository extends Repository<User> {
         if (!found)
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
         found.gameHistories.push(gameHistory);
-        await this.save(found);
+        this.save(found);
     }
 
     async updateGamePoint(id: number, value: number): Promise<void> {
