@@ -21,6 +21,7 @@ export class GameService {
 		const winUser = await this.userService.getProfileByUserId(winId);
 		const loseUser = await this.userService.getProfileByUserId(loseId);
 
+		console.log(`updateGameHistory winId: ${winId} loseId: ${loseId}, point1:${point1} point2: ${point2}`);
 		// 승패 변경
 		await this.userService.winGame(winUser.user_id);
 		await this.userService.loseGame(loseUser.user_id);
@@ -28,17 +29,17 @@ export class GameService {
 		// 점수 변경
 		const surplus = logisticFunction(winUser.point, loseUser.point);
 		if (winUser.point > loseUser.point) {
-			await this.userService.updateGamePoint(winUser.user_id, (25 - surplus));
-			await this.userService.updateGamePoint(loseUser.user_id, -(25 + surplus));
+			await this.userService.updateGamePoint(winUser.user_id, 25 - surplus);
+			await this.userService.updateGamePoint(loseUser.user_id, -25 + surplus);
 		} else {
 			await this.userService.updateGamePoint(winUser.user_id, 25 + surplus);
 			await this.userService.updateGamePoint(loseUser.user_id, -(25 + surplus));
 		}
 
 		// 게임기록 변경
-		let newGameHistory = await this.gameRepository.createGameHistory(winUser, winUser.user_id, loseUser.user_id, winUser.nickname, loseUser.nickname, point1, point2);
-		await this.userService.updateGameHistory(winUser.user_id, newGameHistory);
-		newGameHistory = await this.gameRepository.createGameHistory(loseUser, winUser.user_id, loseUser.user_id, winUser.nickname, loseUser.nickname, point2, point1);
-		await this.userService.updateGameHistory(winUser.user_id, newGameHistory);
+		const newGameHistory1 = await this.gameRepository.createGameHistory(winUser, winUser.user_id, loseUser.user_id, winUser.nickname, loseUser.nickname, point1, point2);
+		await this.userService.updateGameHistory(winUser.user_id, newGameHistory1);
+		const newGameHistory2 = await this.gameRepository.createGameHistory(loseUser, winUser.user_id, loseUser.user_id, winUser.nickname, loseUser.nickname, point2, point1);
+		await this.userService.updateGameHistory(loseUser.user_id, newGameHistory2);
 	}
 }

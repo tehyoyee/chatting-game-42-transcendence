@@ -42,6 +42,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		this.server.on('connection', (socket) => {
 			console.log(`[Game] GameSocket_id: ${socket.id} connected.`);
 		});
+		
 	}
 
 	@SubscribeMessage('joinQueue')
@@ -98,7 +99,16 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	async runGame(gameMode: string, roomName: string, player1: Socket, player2: Socket, point1: number, point2: number) {
 		const user1 = await this.socketToUser(player1);
+		if (!user1) {
+			this.server.to(player1.id).emit("forceLogout");
+		}
 		const user2 = await this.socketToUser(player2);
+		if (!user2) {
+			this.server.to(player2.id).emit("forceLogout");
+		}
+		if (!user1 && !user2) {
+			return ;
+		}
 		// 게임 종료 조건
 		if (point1 == this.MAXPOINT) {
 			console.log(`[Game] ${user1.nickname} winned !`);
@@ -218,6 +228,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			 * Gaming Info to Front-end
 			 */
 			if (!this.gameRoomMap.has(user1.user_id)) {
+				console.log(`[Game] ${user1.username} 없는거 확인.`)
 				this.server.to(roomName).emit('endGame', {
 					canvasX: this.MAP_X,
 					canvasY: this.MAP_Y,
@@ -231,6 +242,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 				return;
 			} else if (!this.gameRoomMap.has(user2.user_id)) {
+				console.log(`[Game] ${user2.username} 없는거 확인.`)
 				this.server.to(roomName).emit('endGame', {
 					canvasX: this.MAP_X,
 					canvasY: this.MAP_Y,
@@ -280,6 +292,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		};
 		const id = setInterval(render, this.DELAY);
 		await render();
+		if (!this.gameRoomMap.has(user1.user_id) || !this.gameRoomMap.has(user2.user_id)) {
+			return ;
+		}
 	}
 
 	@SubscribeMessage('launchGame')
@@ -305,7 +320,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	@SubscribeMessage('exitQueue')
 	async exitQueue(@ConnectedSocket() client: any) {
 		const user = await this.socketToUser(client);
-
+		if (!user) {
+			this.server.to(client).emit("[Game] to front Event: 'forceLogout'");
+		}
 		for (let i = 0; i < this.gameNormalQueue.length; i++) {
 			if (this.gameNormalQueue[i] === user.user_id) {
 				this.gameNormalQueue.splice(i, 1);
@@ -352,7 +369,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
-		// console.log(user.gameHistories);
+		// if (!user) {
+		// 	this.server.to(client).emit("forceLogout");
+		// }
 		this.userSocketMap.set(user.user_id, client);
 		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 	}

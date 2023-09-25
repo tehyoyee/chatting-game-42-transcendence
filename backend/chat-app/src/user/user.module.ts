@@ -22,7 +22,6 @@ import { format } from 'light-date';
           storage: diskStorage({
               destination: function (req, file, cb) {
                   // 파일저장위치 + 년월 에다 업로드 파일을 저장한다.
-                  // 요 부분을 원하는 데로 바꾸면 된다.
                   const dest = __dirname + `/../../uploads/${format(new Date(), '{yyyy}{MM}')}/`;
 
                   if (!fs.existsSync(dest)) {
