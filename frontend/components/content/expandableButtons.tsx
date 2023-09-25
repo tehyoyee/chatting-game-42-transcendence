@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import styles from '../../styles/profile.module.css';
-import { UserAchievement } from './profile/profile';
+import React, { useState } from "react";
+import styles from "../../styles/profile.module.css";
+import { UserAchievement } from "./profile/profile";
 
 /*
  * 1. 임의의 자료구조를 만든다. API가 구현 안되어있으면 더미 데이터를 만들고 6번으로 간다.
@@ -28,53 +28,65 @@ import { UserAchievement } from './profile/profile';
 	const [curRoomId, setCurRoomId] = useState(chatRooms?.curRoomId);
 */
 
-type RecentMatch = {
+type RecentMatch = {};
 
-};
+type MatchHistory = {};
 
-type MatchHistory = {
-};
-
-
-
-const ExpandableButtons = ({gameHistories, win_count,
+const ExpandableButtons = ({
+  gameHistories,
+  win_count,
   lose_count,
   point,
-  achievement}: {gameHistories: any,
-    win_count: number,
-    lose_count: number,
-    point: number,
-    achievement: UserAchievement}) => {
-      const [buttonData, setButtonData] = useState<any>(null);
-      // console.log("gameHistories:", gameHistories);
-      useEffect(() => {
-        if (!gameHistories)
-          return ;
-        setButtonData([
-          { text: '최근 경기 기록', content: `${gameHistories[0].winner_id} ${gameHistories[0].score1} : ${gameHistories[0].loser_id} ${gameHistories[0].score2} ${gameHistories[1].winner_id} ${gameHistories[1].score1} : ${gameHistories[1].loser_id} ${gameHistories[1].score2} ${gameHistories[2].winner_id} ${gameHistories[2].score1} : ${gameHistories[2].loser_id} ${gameHistories[2].score2}` },
-          { text: '게임 전적', content: `승: ${win_count}
-          패: ${lose_count}
-          포인트: ${point}` },
-          { text: '순위', content: '순위 내용' },
-          { text: '업적', content: `achievement: ${achievement}` },
-        ]);
-      }
-      ,[gameHistories]);
-      
-  const initialState = buttonData?.map((obj: { text: any; }) => obj.text);
-  const [activeButtons, setActiveButtons] = useState<string[]>([]);
+  achievement,
+}: {
+  gameHistories: any;
+  win_count: number;
+  lose_count: number;
+  point: number;
+  achievement: UserAchievement;
+}) => {
+  const getRecentMatchContent = (gameHistories: any) => {
+    if (gameHistories && gameHistories.length >= 1) {
+      console.log(gameHistories.length);
+      const recentMatches = gameHistories.length > 4?
+        gameHistories.slice(gameHistories.length - 5, gameHistories.length) :
+        gameHistories.slice(0, gameHistories.length);
+      return recentMatches
+        .reverse().map(
+          (match: any) =>
+            `${match.winner_nickname} ${match.score1} : ${match.loser_nickname} ${match.score2}`
+        )
+        .join("\n");
+    }
+    return "No recent matches";
+  };
+
+  const buttonData = [
+    { text: "최근 경기 기록", content: getRecentMatchContent(gameHistories)},
+    {
+      text: "게임 전적",
+      content: `승: ${win_count}
+        패: ${lose_count}
+        포인트: ${point}`,
+    },
+    { text: "순위", content: "순위 내용" },
+    { text: "업적", content: `achievement: ${achievement}` },
+  ];
+  const initialState = buttonData.map((obj) => obj.text);
+  const [activeButtons, setActiveButtons] = useState(initialState);
 
   const toggleButton = (index: number) => {
-    setActiveButtons((prevActiveButtons: string[]) => {
+    setActiveButtons((prevActiveButtons) => {
       const newActiveButtons = [...prevActiveButtons];
-      newActiveButtons[index] = prevActiveButtons[index] === '' ? buttonData[index].text : '';
+      newActiveButtons[index] =
+        prevActiveButtons[index] === "" ? buttonData[index].text : "";
       return newActiveButtons;
     });
   };
 
   return (
     <div>
-      {buttonData?.map((button: { text: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | React.PromiseLikeOfReactNode | null | undefined; content: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.PromiseLikeOfReactNode | null | undefined; }, index: number) => (
+      {buttonData.map((button, index) => (
         <div key={index} className={styles.buttonWrapper}>
           <button
             className={`centerItemBlock ${styles.infoBox}`}
@@ -83,10 +95,18 @@ const ExpandableButtons = ({gameHistories, win_count,
             {button.text}
           </button>
           {activeButtons[index] === button.text && (
-            <div className={styles.buttonContent}>{button.content}</div>
+            <div className={styles.buttonContent}>
+            {button.content.split("\n").map((line: string, lineIndex: number) => (
+              <p key={lineIndex}>{line}</p>
+            ))}
+          </div>
           )}
-          {activeButtons[index] === '' && (
-            <div className={styles.buttonContentFadeOut}>{button.content}</div>
+          {activeButtons[index] === "." && (
+            <div className={styles.buttonContent}>
+            {button.content.split("\n").map((line: string, lineIndex: number) => (
+              <p key={lineIndex}>{line}</p>
+            ))}
+          </div>
           )}
         </div>
       ))}
@@ -95,4 +115,3 @@ const ExpandableButtons = ({gameHistories, win_count,
 };
 
 export default ExpandableButtons;
-
