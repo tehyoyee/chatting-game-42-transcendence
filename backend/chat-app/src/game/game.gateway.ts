@@ -228,6 +228,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			 * Gaming Info to Front-end
 			 */
 			if (!this.gameRoomMap.has(user1.user_id)) {
+				clearInterval(id);
 				console.log(`[Game] ${user1.username} 없는거 확인.`)
 				this.server.to(roomName).emit('endGame', {
 					canvasX: this.MAP_X,
@@ -239,9 +240,11 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					winner: user2.nickname
 				});
 				player2.leave(roomName);
+				this.gameRoomMap.delete(user2.user_id);
 				await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 				return;
 			} else if (!this.gameRoomMap.has(user2.user_id)) {
+				clearInterval(id);
 				console.log(`[Game] ${user2.username} 없는거 확인.`)
 				this.server.to(roomName).emit('endGame', {
 					canvasX: this.MAP_X,
@@ -253,10 +256,10 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					winner: user1.nickname
 				});
 				player1.leave(roomName);
+				this.gameRoomMap.delete(user1.user_id);
 				await this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
 				return;
 			}
-
 			this.server.to(roomName).emit('gamingInfo', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
