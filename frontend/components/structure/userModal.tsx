@@ -16,6 +16,11 @@ interface IFriendRel {
 	receiver_id: number,
 };
 
+interface IRelationDto {
+	sender_id: number,
+	receiver_id: number,
+};
+
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 const relationUrl = `${serverUrl}/relation`;
 
@@ -54,7 +59,11 @@ const UserModal = ({
 	}
 
 	function handleFriend(isFriend: boolean) {
-		useFetch(`${relationUrl}/add/friend`, async () => {
+		useFetch(`${relationUrl}/add/friend`, (path: string) => {
+			fetch(path, {
+				method: "POST",
+				credentials: "include",
+			})
 		});
 		onClose();
 	}
