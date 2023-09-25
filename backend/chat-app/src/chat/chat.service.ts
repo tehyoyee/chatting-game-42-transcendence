@@ -164,7 +164,6 @@ export class ChatService {
     }
 
     //  방에 밴된유저만 남아있을경우 빈채널로 보고 삭제
-    //메세지 두개씩 올라오는 이유
     async deleteChannelIfEmpty(channelId: number) {
         const channels = await this.ucbRepository
         .createQueryBuilder('b')
@@ -189,9 +188,7 @@ export class ChatService {
         for (let bId of bannedUsersId) {
             this.deleteUCBridge(bId, channelId);
         }
-        if (channels.length === 0) {
-            this.channelRepository.deleteChannelByChannelId(channelId);
-        }
+        this.channelRepository.deleteChannelByChannelId(channelId);
     }
 
     async deleteDmChannel(channelId: number) {
