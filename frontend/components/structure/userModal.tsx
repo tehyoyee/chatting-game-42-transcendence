@@ -76,10 +76,13 @@ const UserModal = ({
 			body: JSON.stringify(relContent),
 		})
 		.then(res => {
-				if (!res.ok) throw new Error(`invalid respone: ${res.status}`);
+				if (res.status === 401)
+					return res.json();
+				if (!res.ok) throw new Error(`invalid respone: ${res.status}: ${res.body}`);
 				return res.json();
 		})
 		.then(data => {
+			console.log(data);
 			onClose();
 		})
 		.catch(err => {
@@ -100,7 +103,7 @@ const UserModal = ({
 			body: JSON.stringify(relContent),
 		})
 		.then(res => {
-				if (!res.ok) throw new Error(`invalid respone: ${res.status}`);
+				if (!res.ok) throw new Error(`invalid respone: ${res.status}: ${res.body}`);
 				return res.json();
 		})
 		.then(data => {

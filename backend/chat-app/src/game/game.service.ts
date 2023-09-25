@@ -3,6 +3,8 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { UserRepository } from 'src/user/user.repository';
 import { GameRepository } from './game.repository';
 import { UserService } from 'src/user/user.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/user/entity/user.entity';
 
 // Logistic function
 const logisticFunction = (p1: number, p2: number): number => {
@@ -12,7 +14,8 @@ const logisticFunction = (p1: number, p2: number): number => {
 @Injectable()
 export class GameService {
 	constructor(
-		private userRepository: UserRepository,
+		@InjectRepository(User)
+		private readonly userRepository: UserRepository,
 		private userService: UserService,
 		private gameRepository: GameRepository,
 	) {}
@@ -41,5 +44,12 @@ export class GameService {
 		await this.userService.updateGameHistory(winUser.user_id, newGameHistory1);
 		const newGameHistory2 = await this.gameRepository.createGameHistory(loseUser, winUser.user_id, loseUser.user_id, winUser.nickname, loseUser.nickname, point2, point1);
 		await this.userService.updateGameHistory(loseUser.user_id, newGameHistory2);
+	}
+
+	async getRanking() {
+		const ranking = await this.userRepository
+			.createQueryBuilder('user_ranking')
+			.select('RANK () OVER (PARTITION BY POINT), NICKNAME, POINT')
+		return ranking;
 	}
 }
