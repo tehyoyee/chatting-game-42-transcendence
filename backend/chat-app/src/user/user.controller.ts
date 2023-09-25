@@ -1,4 +1,4 @@
-import { Bind, Body, Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Patch, Post, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Bind, Body, Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Patch, Post, Req, Res, UploadedFile, UseGuards, UseInterceptors, Header } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entity/user.entity';
 // import { getUser } from './decorator/get-user.decorator';
@@ -41,17 +41,19 @@ export class UserController {
     }
 
     @Get('/profile/avatar/:id')
+		@Header('Content-Type', 'image/png')
     async getFile(@Res({ passthrough: true }) res: Response, @Param('id') id ): Promise<StreamableFile> {
         const found = await this.getProfileByUserId(id);
         if (!found)
             throw new HttpException('User not Found', 400);
-        const filePath = await this.userService.getAvatarByUserId(id);
-        const file = createReadStream(join(process.cwd(), ));
-        
-        res.headers.set('Content-Type', 'application/json');
-        res.headers.set('Content-Disposition', `attachment; filename=` + __dirname + `/../../uploads/${filePath}`);
-    
-        return new StreamableFile(file);
+				try {
+						const filePath = await this.userService.getAvatarByUserId(id);
+						const file = createReadStream(filePath);
+						
+						return new StreamableFile(file);
+				} catch {
+						throw new HttpException('File not Found', 404);
+				}
     }
  
 
@@ -67,10 +69,10 @@ export class UserController {
 
     @Post('/updateAvatar/:id')
     @UseInterceptors(FileInterceptor('file'))
-    async updateAvatar(@UploadedFile() file: Express.Multer.File, @Param('id', ParseIntPipe)id: number, @Res() res: Response) {
+    async updateAvatar(@UploadedFile() file: Express.Multer.File, @Param('id', ParseIntPipe)id: number) {
         const path = file.path.replace(__dirname + `/../../uploads`, '');
-        await this.userService.updateAvatar(id, path + file.originalname);
-        
+        await this.userService.updateAvatar(id, path);
+				console.log(`/updateAvatar/:id path=${path}`);
         return {
             fileName: file.originalname,
             savedPath: path.replace(/\\/gi, '/'),

@@ -6,7 +6,6 @@ import styles from '@/styles/chat.module.css';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 
-import UserCard from '@/components/structure/usercard';
 import Modal from '@/components/structure/modal';
 import SideBar from '@/components/structure/sidebar';
 import useChatContext, { IChatUser, IChatMate, EChatUserType, TChatContext } from './context';

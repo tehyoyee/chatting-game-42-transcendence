@@ -88,11 +88,11 @@ export class UserService {
         return found;
     }
 
-    async getAvatarByUserId(id: number) {
-        await this.userRepository.getAvatarByUserId(id);
+    async getAvatarByUserId(id: number): Promise<string> {
+        return await this.userRepository.getAvatarByUserId(id);
     }
     
-    async updateAvatar(id: number, filePath) {
+    async updateAvatar(id: number, filePath: string) {
         const found = await this.userRepository.getProfileByUserId(id);
         if (!found)
             throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);

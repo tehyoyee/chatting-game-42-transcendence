@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '/styles/logout.module.css';
 import useAuthContext from '@/components/user/auth';
@@ -14,6 +14,7 @@ const logoutUrl = `${serverUrl}/auth/signout`;
 export default function Logout() {
   const { loggedIn, updateLoginState } = useAuthContext();
   const router = useRouter();
+	const ref = useRef(false);
 
   console.log("logout rerender");
 	const handleLogout = useCallback(async() => {
@@ -22,6 +23,8 @@ export default function Logout() {
       return;
     }
     if (!confirm("confirm sign out")) return;
+		if (ref.current) return;
+		ref.current = true;
     await fetch(logoutUrl, {
       method: 'GET',
       credentials: 'include',

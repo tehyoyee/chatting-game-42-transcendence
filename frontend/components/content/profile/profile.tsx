@@ -13,7 +13,7 @@ export interface IProfileType {
 	user_id: number,
 	username: string,
 	nickname: string,
-	avartar: string, // path to profile image stored in frontend server local directory
+//	avartar: string, // path to profile image stored in frontend server local directory
 	email: string,
 };
 
@@ -39,7 +39,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
 		user_id: 0,
 		username: '',
 		nickname: '',
-		avartar: '/default.png',
+//		avartar: '/default.png',
 		email: '',
 	});
 
@@ -62,7 +62,6 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
         console.log(`${profileUrl}: fetch failed: ${err}`);
       });
     })()
-    console.log("profile.avartar:", profile.avartar);
   }, [update]);
   useEffect(() => { console.log(profile);}, [profile]);
 	//////////////////////////////
@@ -116,7 +115,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
 			}
       <div className={`${"centerItemBlock gridRow1_2 gridCol1_2"} ${styles.profileImage}`}>
         <Image
-          src={profile.avartar}
+          src={`${profileUrl}/avatar/${profile.user_id}`}
           height={128}
           width={128}
           alt={"profile image"} />

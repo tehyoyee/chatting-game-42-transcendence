@@ -3,6 +3,9 @@ import { Socket } from 'socket.io-client';
 import { IChatMate, IChatUser } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 
+const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
+const relationUrl = `${serverUrl}/relation`;
+
 const UserModal = ({ 
 	targetUser,
 	onClose,
@@ -23,7 +26,7 @@ const UserModal = ({
 		onClose();
 	}
 
-	function handleEvent(content: any, evt: string, success: string, fail: string, handleSuccess: Function, handleFail: Function) {
+	function handleEvent(evt: string, success: string, fail: string, content: any, handleSuccess: Function, handleFail: Function) {
 		chatSocket?.on(success, (data: IChatUser) => {
 			console.log(`dm success: ${data}`);
 			offEvent([success, fail]);
@@ -51,21 +54,24 @@ const UserModal = ({
 	}
 
 	function handleDm() {
-		handleEvent(targetUser.userId, 'enter-dm-channel', 'enter-dm-success', 'enter-dm-fail', 
+		handleEvent('enter-dm-channel', 'enter-dm-success', 'enter-dm-fail', 
+			targetUser.userId, 
 			(data: IChatUser) => {setUser(data)},
 			(msg: any) => {console.log(`enter-dm fail: ${msg}`); alert('오류: DM을 보낼 수 없습니다.');},
 		)
 	}
 
 	function handleGameNormal() {
-		handleEvent('', 'invite-game', 'invite-game-success', 'invite-game-fail',
+		handleEvent('invite-game', 'invite-game-success', 'invite-game-fail',
+			{targetUserId: targetUser.userId , gameMode: "NORMAL" ,},
 			(data: any) => {console.log(`${data.user_nickname}에게 초대를 보냈습니다.`)},
 			(msg: any) => {console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},
 		);
 	}
 
 	function handleGameFast() {
-		handleEvent('', 'invite-game', 'invite-game-success', 'invite-game-fail',
+		handleEvent('invite-game', 'invite-game-success', 'invite-game-fail',
+			{targetUserId: targetUser.userId , gameMode: "ADVANCED" ,},
 			(data: any) => {console.log(`${data.user_nickname}에게 초대를 보냈습니다.`)},
 			(msg: any) => {console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},
 		);

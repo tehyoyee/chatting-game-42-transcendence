@@ -201,7 +201,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     // receiverSocket.emit('enter-dm-success', {channel_id: channel.channel_id, user_type: receiverBridge.user_type});
 
     this.server.to(channel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
-    this.server.to(channel.channel_name).emit("join", {user_id: receiver.user_id, user_nickname: receiver.nickname});
+    // this.server.to(channel.channel_name).emit("join", {user_id: receiver.user_id, user_nickname: receiver.nickname});
     
     // this.server.to(channel.channel_name).emit("join", {
     //   user_id: user.user_id, user_nickname: user.nickname,
@@ -719,7 +719,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('usermod-fail', 'Target User Already Banned Error in onBanUser');
       return ;
     }
-
     const targetUserSocket = this.userIdToSocket(targetUser.user_id);
     if (!targetUserSocket) {
       client.emit('usermod-fail', 'Unidentified Target User Socket Error in onBanUser');
