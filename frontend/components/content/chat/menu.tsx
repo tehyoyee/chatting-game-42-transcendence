@@ -43,6 +43,9 @@ export default function ChatMenu() {
 		socketInit(chatSocket, chatContext, playerContext, updateUserList);
 	}, [chatSocket]);
 
+	useEffect(() => {
+	}, []);
+
 	return (
 		<SideBar
 			className={"full-background-color overflow-y-scroll overflow-x-hidden"}>
@@ -97,13 +100,7 @@ export default function ChatMenu() {
 				</li>
 				{
 					<div>
-					<UserList users={userList}></UserList>
-						{/*
-					<UserList users={userList} onUserClick={handleUserClick}></UserList>
-					{isModalOpen && (
-						<UserModal user={selectedUser} onClose={handleCloseModal} />
-					  )}
-						*/}
+						<UserList userList={userList} updateUserList={updateUserList}></UserList>
 					</div>
 				}
 			</ul>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IChatMate, EChatUserType } from '../content/chat/context';
 import UserModal from '@/components/structure/userModal';
 import Modal from './modal';
@@ -6,7 +6,13 @@ import styles from '@/styles/chat.module.css';
 import Profile from '@/components/content/profile/profile';
 import useChatContext from '../content/chat/context';
 
-const UserList = ({users}: { users: IChatMate[] }) => {
+const UserList = ({
+	userList,
+	updateUserList,
+}: { 
+		userList: IChatMate[],
+		updateUserList: Function,
+}) => {
 	const { user, setUser, joined, setJoined } = useChatContext();
 	const [showModal, setShowModal] = useState<boolean>(false);
 	const [targetUser, setTargetUser] = useState<IChatMate>({
@@ -18,6 +24,10 @@ const UserList = ({users}: { users: IChatMate[] }) => {
 		isBlocked: false,
 	});
 	const [showProfile, setShowProfile] = useState<boolean>(false);
+
+	useEffect(() => {
+		updateUserList();
+	}, [showModal]);
   return (
     <div>
 			{
@@ -48,7 +58,7 @@ const UserList = ({users}: { users: IChatMate[] }) => {
 					</Modal>
 			}
       <ul>
-        {users.map((user, index) => (
+        {userList.map((user, index) => (
           <li key={index}>
 						<button
 							style={{
