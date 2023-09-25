@@ -1,4 +1,4 @@
-import { OnModuleInit, UseFilters, UseGuards } from '@nestjs/common';
+import { OnModuleInit, Req, Res, UseFilters, UseGuards } from '@nestjs/common';
 import { WebSocketServer, MessageBody, SubscribeMessage, WebSocketGateway, BaseWsExceptionFilter, WsException } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io';
 import { AuthService } from "src/auth/auth.service";
@@ -417,9 +417,14 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
-		// if (!user) {
-		// 	this.server.to(client).emit("forceLogout");
-		// }
+		if (!user) {
+			this.server.to(client.id).emit("forceLogout");
+		}
+		const token: any = client.handshake.query.token;
+		if (this.userSocketMap.has(user.user_id)) {
+			console.log('forcelogout');
+			this.server.to(client.id).emit('forceLogout');
+		}
 		this.userSocketMap.set(user.user_id, client);
 		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 	}
@@ -427,11 +432,15 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async handleDisconnect(client: any) {
 		console.log(`[Game] ${client.id} has left.`);
 		const user = await this.socketToUser(client);
-//		if (!user) return;
+		const NotDuplicateLogout = this.getKeyByValue(this.userSocketMap, client);
+		if (!NotDuplicateLogout) {
+			return;
+		}
 		this.userSocketMap.delete(user.user_id);
 		this.gameRoomMap.delete(user.user_id);
 		this.userKeyMap.delete(user.user_id);
-
+		this.userService.updateStatus(user.user_id,UserStatus.OFFLINE);
+		this.server.emit('refresh');
 		for (let i = 0; i < this.gameNormalQueue.length; i++) {
 			if (this.gameNormalQueue[i] === user.user_id) {
 				this.gameNormalQueue.splice(i, 1);

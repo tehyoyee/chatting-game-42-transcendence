@@ -55,7 +55,8 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 		socket.on('forceLogout', async () => {
 			console.log('gameSocket disconnected');
 			sessionStorage.removeItem('tfa');
-			document.cookie = '';
+			// document.cookie = '';
+			document.cookie = 'token' + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 			await updateLoginState();
 			router.push('/');
 		});
