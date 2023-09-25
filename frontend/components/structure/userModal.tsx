@@ -120,7 +120,7 @@ const UserModal = ({
 
 	function handleDm() {
 		handleEvent('enter-dm-channel', 'enter-dm-success', 'enter-dm-fail', 
-			targetUser.userId, 
+			{receiverId: targetUser.userId}, 
 			(data: IChatUser) => {setUser(data)},
 			(msg: any) => {console.log(`enter-dm fail: ${msg}`); alert('오류: DM을 보낼 수 없습니다.');},
 		)
