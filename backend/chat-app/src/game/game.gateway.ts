@@ -110,6 +110,12 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			return ;
 		}
 		// 게임 종료 조건
+		if (!this.gameRoomMap.has(user1.user_id)) {
+			return;
+		}
+		if (!this.gameRoomMap.has(user2.user_id)) {
+			return;
+		}
 		if (point1 == this.MAXPOINT) {
 			console.log(`[Game] ${user1.nickname} winned !`);
 			await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
@@ -242,9 +248,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				});
 				player2.leave(roomName);
 				this.gameRoomMap.delete(user2.user_id);
-				this.gameRoomMap.delete(user2.user_id);
-				clearInterval(id);
-
 				return;
 			} else if (!this.gameRoomMap.has(user2.user_id)) {
 				clearInterval(id);
@@ -261,7 +264,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				});
 				player1.leave(roomName);
 				this.gameRoomMap.delete(user1.user_id);
-				clearInterval(id);
 				return;
 			}
 			this.server.to(roomName).emit('gamingInfo', {
