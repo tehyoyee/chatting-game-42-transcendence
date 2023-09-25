@@ -41,6 +41,16 @@ export default function ChatList() {
 	}, []);
 
 	useEffect(() => {
+		const intervalId = setInterval(() => {
+			updateProt();
+			updatePub();
+		}, 2000);
+		return () => {
+			clearInterval(intervalId);
+		}
+	}, []);
+
+	useEffect(() => {
 		updateProt();
 		updatePub();
 	}, [menuModal]);

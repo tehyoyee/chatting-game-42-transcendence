@@ -53,8 +53,6 @@ function ChatBox() {
 		});
 		chatSocket.off('message');
 		chatSocket.on('message', (data: TRecvMsg) => {
-			console.log('message data');
-			console.log(data);
 			addMsg(`${data.user_nickname}: ${data.message}`)
 		})
 	}, [chatSocket]);
@@ -68,11 +66,11 @@ function ChatBox() {
 
 		if (!inputField?.value || !chatLog || !chatSocket) return;
 
-		const sendMsg: TSendMsg = {
+		const sendmsg: TSendMsg = {
 			channel_id: user.channel_id,
 			content: inputField.value,
 		}
-		chatSocket.emit('post-group-message', sendMsg);
+		chatSocket.emit('post-group-message', sendmsg);
 		inputField.focus();
 		inputField.value = '';
 	};
