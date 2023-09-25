@@ -243,7 +243,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const newBridge = await this.chatService.checkUserInThisChannel(user.user_id, channel.channel_id);
 
     let inners: BridgeDto[] = [];
-    inners = await this.chatService.getAllUsersInChannelByChannelId(user, channel.channel_id);
+    inners = await this.chatService.getAllUsersInChannelByChannelId(user.user_id, channel.channel_id);
 
     let previousMessages: PreviousMessageDto[] = [];
     previousMessages = await this.chatService.getAllMessagesExceptBlockByChannelId(user.user_id, channel.channel_id);
@@ -251,7 +251,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     client.join(channel.channel_name);
 
     client.emit('join-success', {channel_id: channel.channel_id, user_type: newBridge.user_type});
-    client.emit('get-users-channel', inners);
+    //client.emit('get-users-channel', inners);
 
     this.server.to(channel.channel_name).emit("messages", previousMessages);
     this.server.to(channel.channel_name).emit("join", {userId: user.user_id, userNickname: user.nickname});

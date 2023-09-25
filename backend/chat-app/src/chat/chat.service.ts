@@ -252,7 +252,7 @@ export class ChatService {
         return await this.channelRepository.getChannelById(id);
     }
 
-    async getAllUsersInChannelByChannelId(newUser: User, channelId: number):Promise<BridgeDto[]>{
+    async getAllUsersInChannelByChannelId(newUserId: number, channelId: number):Promise<BridgeDto[]>{
         let inners: BridgeDto[] = [];
         const isBanned = false;
 
@@ -265,6 +265,8 @@ export class ChatService {
 
         for (let b of bridges) {
             const oldUser = await this.userService.getProfileByUserId(b.user_id);
+            const newUser = await this.userService.getProfileByUserId(newUserId);
+            
             const is_friend = await this.relationService.checkFriended(newUser.user_id, oldUser.user_id);
             const is_blocked = await this.relationService.checkBlocked(newUser.user_id, oldUser.user_id);
 
