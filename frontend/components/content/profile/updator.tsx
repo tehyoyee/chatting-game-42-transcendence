@@ -231,7 +231,7 @@ function ImgUpdator({
   const handleFileChange = (targetFile: File) => {
 		console.log(`input=${JSON.stringify(targetFile)}`);
     if (targetFile) {
-			if ((targetFile.type != 'image/png' && targetFile.type != 'image/jpg') || targetFile.size > (40 * 1024)) {
+			if ((targetFile.type != 'image/png' && targetFile.type != 'image/jpg') || targetFile.size > (1024 * 1024)) {
 				alert('파일의 확장자명은 .png, 크기는 40kB 이하여야 합니다.');
 				return;
 			}

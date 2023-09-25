@@ -21,6 +21,7 @@ export class GameService {
 		const winUser = await this.userService.getProfileByUserId(winId);
 		const loseUser = await this.userService.getProfileByUserId(loseId);
 
+		console.log(`updateGameHistory winId: ${winId} loseId: ${loseId}, point1:${point1} point2: ${point2}`);
 		// 승패 변경
 		await this.userService.winGame(winUser.user_id);
 		await this.userService.loseGame(loseUser.user_id);
