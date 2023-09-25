@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Socket } from 'socket.io-client';
-import { IChatMate, IChatUser } from '../content/chat/context';
+import { IChatMate, IChatUser, ISocial } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 import useAuthContext from '../user/auth';
@@ -31,7 +31,7 @@ const UserModal = ({
 	setUser,
 	setShowProfile,
 }: {
-	targetUser: IChatMate,
+	targetUser: ISocial,
 	onClose: Function,
 	setUser: React.Dispatch<React.SetStateAction<IChatUser>>,
 	setShowProfile: React.Dispatch<React.SetStateAction<boolean>>,

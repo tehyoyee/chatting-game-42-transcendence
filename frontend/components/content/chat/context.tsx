@@ -3,6 +3,12 @@
 import { useState, useEffect, useContext, createContext } from 'react';
 import { IProfileType } from '@/components/content/profile/profile';
 
+export enum EUserStatus {
+	ONLINE = "online",
+	OFFLINE = "offline",
+	PLAYING = "playing",
+}
+
 export enum EChatUserType {
 	OWNER = "owner",
 	ADMIN = "admin",
@@ -14,7 +20,14 @@ export interface IChatUser {
 	channel_id: number,
 };
 
-// inners
+export interface ISocial {
+	userId: number,
+	userNickName: string,
+	isFriend: boolean,
+	isBlocked: boolean,
+	userStatus: EUserStatus,
+}
+
 export interface IChatMate {
 	userId: number,
 	userNickName: string,
@@ -22,6 +35,7 @@ export interface IChatMate {
 	isMuted: boolean,
 	isFriend: boolean,
 	isBlocked: boolean,
+	userStatus: EUserStatus,
 }
 
 export type TChatContext = {
