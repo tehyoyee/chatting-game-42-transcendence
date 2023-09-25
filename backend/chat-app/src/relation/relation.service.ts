@@ -113,8 +113,13 @@ export class RelationService {
         .getMany();
 
         for (let r of relations) {
-            let friend = {user: await this.userService.getProfileByUserId(r.receiver_id)};
-            friends.push(friend);
+						const user = await this.userService.getProfileByUserId(r.receiver_id);
+            friends.push({
+								userId: user.user_id, 
+								userNickName: user.nickname,
+								isFriend: true,
+								isBlocked: false,
+						});
         }
 
         return friends;
@@ -132,8 +137,13 @@ export class RelationService {
         .getMany();
 
         for (let r of relations) {
-            let friend = {user: await this.userService.getProfileByUserId(r.receiver_id)};
-            blocks.push(friend);
+            const user = await this.userService.getProfileByUserId(r.receiver_id);
+            blocks.push({
+								userId: user.user_id, 
+								userNickName: user.nickname,
+								isFriend: false,
+								isBlocked: true,
+						});
         }
 
         return blocks;
