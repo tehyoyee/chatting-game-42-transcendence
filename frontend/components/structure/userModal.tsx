@@ -3,6 +3,7 @@ import { Socket } from 'socket.io-client';
 import { IChatMate, IChatUser } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
+import useAuthContext from '../user/auth';
 
 enum ERelationType {
 	FRIEND = "friend",
@@ -14,6 +15,11 @@ interface IFriendRel {
 	relation_type: ERelationType,
 	sender_id: number,
 	receiver_id: number,
+};
+
+interface IRelationDto {
+	senderId: number,
+	receiverId: number,
 };
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
@@ -31,7 +37,12 @@ const UserModal = ({
 	setShowProfile: React.Dispatch<React.SetStateAction<boolean>>,
 }) => {
 	const { chatSocket, gameSocket } = useSocketContext();
+	const { user } = useAuthContext();
 
+	const relContent: IRelationDto = {
+		senderId: user.id,
+		receiverId: targetUser.userId,
+	};
 	function offEvent(sockEvents: string[]) {
 		for (const sockEvent of sockEvents) {
 			chatSocket?.off(sockEvent);
@@ -53,14 +64,53 @@ const UserModal = ({
 		chatSocket?.emit(evt, content);
 	}
 
-	function handleFriend(isFriend: boolean) {
-		useFetch(`${relationUrl}/add/friend`, async () => {
+	function handleFriend() {
+		const url = `${relationUrl}/${targetUser.isFriend ? 'remove' : 'add'}/friend`;
+		console.log(JSON.stringify(relContent));
+		fetch(url, {
+			method: targetUser.isFriend ? "DELETE" : "POST",
+			credentials: "include",
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(relContent),
+		})
+		.then(res => {
+				if (!res.ok) throw new Error(`invalid respone: ${res.status}`);
+				return res.json();
+		})
+		.then(data => {
+			onClose();
+		})
+		.catch(err => {
+			console.log(`${url}: handleFriend error: ${err}`);
+			alert('요청에 실패했습니다.');
+			onClose();
 		});
-		onClose();
 	}
 
-	function handleBlock(isBlocked: boolean) {
-		onClose();
+	function handleBlock() {
+		const url = `${relationUrl}/${targetUser.isBlocked ? 'remove' : 'add'}/block`;
+		fetch(url, {
+			method: targetUser.isFriend ? "DELETE" : "POST",
+			credentials: "include",
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(relContent),
+		})
+		.then(res => {
+				if (!res.ok) throw new Error(`invalid respone: ${res.status}`);
+				return res.json();
+		})
+		.then(data => {
+			onClose();
+		})
+		.catch(err => {
+			console.log(`${url}: handleFriend error: ${err}`);
+			alert('요청에 실패했습니다.');
+			onClose();
+		});
 	}
 
 	function handleProfile() {
@@ -101,13 +151,13 @@ const UserModal = ({
 			<li>
 				<button 
 					className='normalButton'
-					onClick={() => {handleFriend(targetUser.isFriend)}}
+					onClick={handleFriend}
 					>{targetUser.isFriend ? 'unfollow' : 'follow'}</button>
 			</li>
 			<li>
 				<button 
 					className='normalButton'
-					onClick={() => {handleBlock(targetUser.isBlocked)}}
+					onClick={handleBlock}
 					>{targetUser.isBlocked ? 'unblock' : 'block'}</button>
 			</li>
 			<li>

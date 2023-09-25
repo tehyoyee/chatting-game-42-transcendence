@@ -16,6 +16,11 @@ export class RelationService {
     private logger = new Logger('RelationService');
 
     async addFriend(sender: User, receiverId: number): Promise<Relation> {
+        if (sender.user_id === receiverId) {
+            this.logger.debug('Cannot Set To Yourself');
+            throw new HttpException('Cannot Set To Yourself', HttpStatus.UNAUTHORIZED);
+        }
+        
         //이미 sender가 receiver를 친구로 등록했는지 검사
         if (await this.checkFriended(sender.user_id, receiverId)) {
             //exception handler
@@ -32,6 +37,11 @@ export class RelationService {
     }
 
     async addBlock(sender: User, receiverId: number): Promise<Relation> {
+        if (sender.user_id === receiverId) {
+            this.logger.debug('Cannot Set To Yourself');
+            throw new HttpException('Cannot Set To Yourself', HttpStatus.UNAUTHORIZED);
+        }
+
         //이미 sender가 receiver를 block했는지 검사
         if (await this.checkBlocked(sender.user_id, receiverId)) {
             //exception handler

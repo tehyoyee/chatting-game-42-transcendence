@@ -63,7 +63,7 @@ export class UcbRepository extends Repository<UserChannelBridge> {
     }
 
     async updateMuteStatus(bridge: UserChannelBridge, newMuteStatus: boolean): Promise<UserChannelBridge> {
-        bridge.is_banned = newMuteStatus;
+        bridge.is_muted = newMuteStatus;
         await bridge.save();
 
         return bridge;
