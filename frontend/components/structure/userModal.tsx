@@ -3,6 +3,7 @@ import { Socket } from 'socket.io-client';
 import { IChatMate, IChatUser } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
+import useAuthContext from '../user/auth';
 
 enum ERelationType {
 	FRIEND = "friend",
@@ -36,7 +37,12 @@ const UserModal = ({
 	setShowProfile: React.Dispatch<React.SetStateAction<boolean>>,
 }) => {
 	const { chatSocket, gameSocket } = useSocketContext();
+	const { user } = useAuthContext();
 
+	const relContent = {
+				sender_id: user.id,
+				receiver_id: targetUser.userId,
+	};
 	function offEvent(sockEvents: string[]) {
 		for (const sockEvent of sockEvents) {
 			chatSocket?.off(sockEvent);
@@ -58,18 +64,44 @@ const UserModal = ({
 		chatSocket?.emit(evt, content);
 	}
 
-	function handleFriend(isFriend: boolean) {
-		useFetch(`${relationUrl}/add/friend`, (path: string) => {
-			fetch(path, {
-				method: "POST",
-				credentials: "include",
-			})
+	function handleFriend() {
+		fetch(`${relationUrl}/${targetUser.isFriend ? 'remove' : 'add'}/friend`, {
+			method: "POST",
+			credentials: "include",
+			body: JSON.stringify(relContent),
+		})
+		.then(res => {
+				if (!res.ok) throw new Error(`invalid respone: ${res.status}`);
+				return res.json();
+		})
+		.then(data => {
+			onClose();
+		})
+		.catch(err => {
+			console.log(`handleFriend error: ${err}`);
+			alert('요청에 실패했습니다.');
+			onClose();
 		});
-		onClose();
 	}
 
-	function handleBlock(isBlocked: boolean) {
-		onClose();
+	function handleBlock() {
+		fetch(`${relationUrl}/${targetUser.isBlocked ? 'remove' : 'add'}/block`, {
+			method: "POST",
+			credentials: "include",
+			body: JSON.stringify(relContent),
+		})
+		.then(res => {
+				if (!res.ok) throw new Error(`invalid respone: ${res.status}`);
+				return res.json();
+		})
+		.then(data => {
+			onClose();
+		})
+		.catch(err => {
+			console.log(`handleFriend error: ${err}`);
+			alert('요청에 실패했습니다.');
+			onClose();
+		});
 	}
 
 	function handleProfile() {
@@ -110,13 +142,13 @@ const UserModal = ({
 			<li>
 				<button 
 					className='normalButton'
-					onClick={() => {handleFriend(targetUser.isFriend)}}
+					onClick={handleFriend}
 					>{targetUser.isFriend ? 'unfollow' : 'follow'}</button>
 			</li>
 			<li>
 				<button 
 					className='normalButton'
-					onClick={() => {handleBlock(targetUser.isBlocked)}}
+					onClick={handleBlock}
 					>{targetUser.isBlocked ? 'unblock' : 'block'}</button>
 			</li>
 			<li>
