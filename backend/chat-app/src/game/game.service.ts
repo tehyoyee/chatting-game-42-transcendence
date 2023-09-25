@@ -46,12 +46,4 @@ export class GameService {
 		const newGameHistory2 = await this.gameRepository.createGameHistory(loseUser, winUser.user_id, loseUser.user_id, winUser.nickname, loseUser.nickname, point2, point1);
 		await this.userService.updateGameHistory(loseUser.user_id, newGameHistory2);
 	}
-
-	async getRanking() {
-		const ranking = await this.userRepository
-			.createQueryBuilder('user')
-			.select('RANK () OVER (ORDER BY point DESC) as "rank", user.nickname, user.point')
-			.getRawMany();
-		return ranking;
-	}
 }
