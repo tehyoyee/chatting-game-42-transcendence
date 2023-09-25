@@ -9,3 +9,15 @@ export class RelationDto {
     @IsPositive()
     receiverId: number;
 }
+
+export class BlockDto {
+    @IsInt()
+    @IsPositive()
+    userId: number;
+}
+
+export class FriendDto {
+    @IsInt()
+    @IsPositive()
+    userId: number;
+}

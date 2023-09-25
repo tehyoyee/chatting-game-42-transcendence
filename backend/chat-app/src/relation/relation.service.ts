@@ -5,7 +5,7 @@ import { Relation } from './entity/relation.entity';
 import { RelationType } from './enum/relation-type.enum';
 import { SocialDto } from './dto/social-dto';
 import { UserService } from 'src/user/user.service';
-import { BlockDto } from './dto/block-dto';
+import { BlockDto, FriendDto } from './dto/relation-dto';
 
 @Injectable()
 export class RelationService {
@@ -113,8 +113,15 @@ export class RelationService {
         .getMany();
 
         for (let r of relations) {
-            let friend = {user: await this.userService.getProfileByUserId(r.receiver_id)};
-            friends.push(friend);
+			const user = await this.userService.getProfileByUserId(r.receiver_id);
+            const currentStatus = await this.userService.getCurrentUserStatusByUserId(r.receiver_id);
+            friends.push({
+								userId: user.user_id, 
+								userNickName: user.nickname,
+								isFriend: true,
+								isBlocked: false,
+                                userStatus: currentStatus,
+                            });
         }
 
         return friends;
@@ -132,8 +139,15 @@ export class RelationService {
         .getMany();
 
         for (let r of relations) {
-            let friend = {user: await this.userService.getProfileByUserId(r.receiver_id)};
-            blocks.push(friend);
+            const user = await this.userService.getProfileByUserId(r.receiver_id);
+            const currentStatus = await this.userService.getCurrentUserStatusByUserId(r.receiver_id);
+            blocks.push({
+								userId: user.user_id, 
+								userNickName: user.nickname,
+								isFriend: false,
+								isBlocked: true,
+                                userStatus: currentStatus,
+						});
         }
 
         return blocks;
@@ -156,6 +170,25 @@ export class RelationService {
         }
 
         return whoBlockedMe;
+    }
+
+    async getEveryoneWhoFriendedMe(myId: number): Promise<FriendDto[]> {
+        let whoFriendedMe: FriendDto[] = [];
+        const relationType = RelationType.FRIEND;
+
+        const relations = await this.relationRepository
+        .createQueryBuilder('r')
+        .where('r.receiver_id = :myId', {myId})
+        .andWhere('r.relation_type = :relationType', {relationType})
+        .select(['r.sender_id'])
+        .getMany();
+
+        for (let r of relations) {
+            let f_id = { userId: r.sender_id };
+            whoFriendedMe.push(f_id);
+        }
+
+        return whoFriendedMe;
     }
 
 }

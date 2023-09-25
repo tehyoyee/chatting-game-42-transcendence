@@ -285,13 +285,15 @@ export class ChatService {
             
             const is_friend = await this.relationService.checkFriended(newUser.user_id, oldUser.user_id);
             const is_blocked = await this.relationService.checkBlocked(newUser.user_id, oldUser.user_id);
+            const oldUserStatus = await this.userService.getCurrentUserStatusByUserId(b.user_id);
 
             let inner = { userId: b.user_id,
                         userNickName: oldUser.nickname,
                         userType: b.user_type,
                         isMuted: b.is_muted,
                         isFriend: is_friend,
-                        isBlocked: is_blocked };
+                        isBlocked: is_blocked,
+                        userStatus: oldUserStatus };
 
             inners.push(inner);
         }
