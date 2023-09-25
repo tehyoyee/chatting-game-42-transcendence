@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { IChatMate, IChatUser } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
+import { useFetch } from '@/lib/hook';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 const relationUrl = `${serverUrl}/relation`;
@@ -41,10 +42,12 @@ const UserModal = ({
 	}
 
 	function handleFriend(isFriend: boolean) {
+		useFetch(`${relationUrl}/add/friend`, async () => {
+		});
 		onClose();
 	}
 
-	function handleBlock(isFriend: boolean) {
+	function handleBlock(isBlocked: boolean) {
 		onClose();
 	}
 
@@ -61,6 +64,7 @@ const UserModal = ({
 		)
 	}
 
+	// TODO waiting page?
 	function handleGameNormal() {
 		handleEvent('invite-game', 'invite-game-success', 'invite-game-fail',
 			{targetUserId: targetUser.userId , gameMode: "NORMAL" ,},

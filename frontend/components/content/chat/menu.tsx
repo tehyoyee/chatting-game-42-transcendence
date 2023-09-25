@@ -12,9 +12,10 @@ import useChatContext, { IChatUser, IChatMate, EChatUserType, TChatContext } fro
 import ChatControl from './control';
 import usePlayerContext, { EPlayerState, TPlayerContext } from '@/components/content/player_state';
 import UserList from '@/components/structure/userList';
+import useAuthContext from '@/components/user/auth';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`
-const chatInfoReqUrl = `${serverUrl}/chat/users-in-channel/`;
+const chatInfoReqUrl = `${serverUrl}/chat/users-in-channel`;
 
 const fetcher = async (path: string): Promise<IChatMate[]> => {
 	const res = await fetch(path, {
@@ -29,10 +30,11 @@ const fetcher = async (path: string): Promise<IChatMate[]> => {
 };
 
 export default function ChatMenu() {
-	const {chatSocket} = useSocketContext();
+	const { user: userInfo } = useAuthContext();
+	const { chatSocket } = useSocketContext();
 	const chatContext = useChatContext();
 	const { user, setUser, joined, setJoined } = chatContext;
-	const [userList, updateUserList] = useFetch<IChatMate[]>(`${chatInfoReqUrl}${user.channel_id}`, [], fetcher);
+	const [userList, updateUserList] = useFetch<IChatMate[]>(`${chatInfoReqUrl}/${userInfo.id}/${user.channel_id}`, [], fetcher);
 	const [controlModal, setControlModal] = useState<boolean>(false);
 	const playerContext = usePlayerContext();
 

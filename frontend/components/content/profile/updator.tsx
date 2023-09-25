@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import styles from "@/styles/profile.module.css";
 import Modal from "@/components/structure/modal";
 import TextInputForm from "@/components/structure/textinput";
-import { application } from "express";
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 
@@ -232,7 +231,7 @@ function ImgUpdator({
   const handleFileChange = (targetFile: File) => {
 		console.log(`input=${JSON.stringify(targetFile)}`);
     if (targetFile) {
-			if (targetFile.type != 'image/png' || targetFile.size > (40 * 1024)) {
+			if ((targetFile.type != 'image/png' && targetFile.type != 'image/jpg') || targetFile.size > (40 * 1024)) {
 				alert('파일의 확장자명은 .png, 크기는 40kB 이하여야 합니다.');
 				return;
 			}
@@ -296,7 +295,7 @@ function ImgUpdator({
 									type="file" 
 									id="file" 
 									name="file" 
-									accept="image/png" 
+									accept="image/png, image/jpg" 
 									onChange={(e) => {e?.target?.files?.[0] && handleFileChange(e.target.files[0]);}}/>
 							</div>
 							<div>

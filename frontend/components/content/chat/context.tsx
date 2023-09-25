@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect, useContext, createContext } from 'react';
 import { IProfileType } from '@/components/content/profile/profile';
 

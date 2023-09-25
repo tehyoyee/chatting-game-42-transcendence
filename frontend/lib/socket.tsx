@@ -71,6 +71,7 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 				hostUserId: data.user_id,
 				gameMode: data.gameMode,
 			});
+			socket.emit('decline-game', data.user_id);
 		});
 	}
 

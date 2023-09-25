@@ -63,7 +63,7 @@ export default function Profile({ uid, isMyProfile }: { uid: number, isMyProfile
       });
     })()
   }, [update]);
-  useEffect(() => { console.log(profile);}, [profile]);
+//   useEffect(() => { console.log(profile);}, [profile]);
 	//////////////////////////////
   const userProps = [
     {

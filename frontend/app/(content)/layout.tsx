@@ -3,6 +3,7 @@ import NavBar from '@/components/structure/navbar';
 import Logout from '@/components/user/logout';
 import { SocketContextProvider } from '@/lib/socket';
 import { PlayerContextProvider } from '@/components/content/player_state';
+import { ChatContextProvider } from '@/components/content/chat/context';
 
 export default function Layout({
   children,
@@ -14,11 +15,13 @@ export default function Layout({
 			<ComponentProtector>
 				<SocketContextProvider>
 					<PlayerContextProvider>
-						<NavBar></NavBar>
-						<Logout></Logout>
-						<div className="contentBox">
-							{children}
-						</div>
+						<ChatContextProvider>
+							<NavBar></NavBar>
+							<Logout></Logout>
+							<div className="contentBox">
+								{children}
+							</div>
+						</ChatContextProvider>
 					</PlayerContextProvider>
 				</SocketContextProvider>
 			</ComponentProtector>

@@ -15,6 +15,9 @@ all:
 	$(MAKE) front FILTER="> /dev/null" #&
 	$(MAKE) back FILTER="> /dev/null" #&
 
+config:
+	bash config.sh
+
 env:
 	echo $(IPADDR)
 
