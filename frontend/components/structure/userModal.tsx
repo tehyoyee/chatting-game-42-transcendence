@@ -18,8 +18,8 @@ interface IFriendRel {
 };
 
 interface IRelationDto {
-	sender_id: number,
-	receiver_id: number,
+	senderId: number,
+	receiverId: number,
 };
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
@@ -39,9 +39,9 @@ const UserModal = ({
 	const { chatSocket, gameSocket } = useSocketContext();
 	const { user } = useAuthContext();
 
-	const relContent = {
-				sender_id: user.id,
-				receiver_id: targetUser.userId,
+	const relContent: IRelationDto = {
+		senderId: user.id,
+		receiverId: targetUser.userId,
 	};
 	function offEvent(sockEvents: string[]) {
 		for (const sockEvent of sockEvents) {
@@ -65,7 +65,8 @@ const UserModal = ({
 	}
 
 	function handleFriend() {
-		fetch(`${relationUrl}/${targetUser.isFriend ? 'remove' : 'add'}/friend`, {
+		const url = `${relationUrl}/${targetUser.isFriend ? 'remove' : 'add'}/friend`;
+		fetch(url, {
 			method: "POST",
 			credentials: "include",
 			body: JSON.stringify(relContent),
@@ -78,14 +79,15 @@ const UserModal = ({
 			onClose();
 		})
 		.catch(err => {
-			console.log(`handleFriend error: ${err}`);
+			console.log(`${url}: handleFriend error: ${err}`);
 			alert('요청에 실패했습니다.');
 			onClose();
 		});
 	}
 
 	function handleBlock() {
-		fetch(`${relationUrl}/${targetUser.isBlocked ? 'remove' : 'add'}/block`, {
+		const url = `${relationUrl}/${targetUser.isBlocked ? 'remove' : 'add'}/block`;
+		fetch(url, {
 			method: "POST",
 			credentials: "include",
 			body: JSON.stringify(relContent),
@@ -98,7 +100,7 @@ const UserModal = ({
 			onClose();
 		})
 		.catch(err => {
-			console.log(`handleFriend error: ${err}`);
+			console.log(`${url}: handleFriend error: ${err}`);
 			alert('요청에 실패했습니다.');
 			onClose();
 		});
