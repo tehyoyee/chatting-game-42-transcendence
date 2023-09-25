@@ -898,10 +898,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
         client.emit('accept-game-fail', 'Unidentified Host User Socket Error in onAcceptGame');
       }
 
-      client.emit('accept-game-success', 'accepted');
-      hostUserSocket.emit('accept-game-success', 'accepted');
-
-      this.server.of('/game').emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode})
+      //chat소켓 -> 클라이언트 -> game소켓 -> 게임 시작
+      // client.emit('accept-game-success', 'accepted');
+      // hostUserSocket.emit('accept-game-success', 'accepted');
+      // client.emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode});
+      hostUserSocket.emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode});
+    
+      // this.server.of('/game').emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode})
   }
 
   //==========================================================================================
@@ -927,10 +930,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   //==========================================================================================
   
   @SubscribeMessage('gameStatusUpdate')
-  async onGameStatusUpdate(@MessageBody() playerId: any) {
-    console.log('gamestatus: ', playerId);
+  async onGameStatusUpdate(@MessageBody() playerId: number) {
     this.emitUserStatus(playerId);
   }
+  
+  //==========================================================================================
 
   private async emitUserStatus(userId: number) {
     let listOfWhoFriendedMe: FriendDto[] = [];
