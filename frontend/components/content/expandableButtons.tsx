@@ -38,12 +38,14 @@ const ExpandableButtons = ({
   lose_count,
   point,
   achievement,
+  ranking,
 }: {
-  gameHistories: any;
-  win_count: number;
-  lose_count: number;
-  point: number;
-  achievement: UserAchievement;
+  gameHistories: any,
+  win_count: number,
+  lose_count: number,
+  point: number,
+  achievement: UserAchievement,
+  ranking: any
 }) => {
   const getRecentMatchContent = (gameHistories: any) => {
     if (gameHistories && gameHistories.length >= 1) {
@@ -69,7 +71,7 @@ const ExpandableButtons = ({
         패: ${lose_count}
         포인트: ${point}`,
     },
-    { text: "순위", content: "순위 내용" },
+    { text: "순위", content: `${ranking}`},
     { text: "업적", content: `achievement: ${achievement}` },
   ];
   const initialState = buttonData.map((obj) => obj.text);

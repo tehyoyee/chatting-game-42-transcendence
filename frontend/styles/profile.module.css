@@ -46,7 +46,7 @@
 .userProps {
 	justify-content: center;
 	text-align: center;
-	font-size: 23px;
+	font-size: 26px;
 	font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	font-weight: bold;
 }
@@ -155,7 +155,7 @@
 	max-height: 0;
 	overflow: hidden;
 	transition: max-height 0.3s ease;
-	padding: 300px 60px;
+	padding: 200px 60px;
 	border: 2px solid #ddd;
 	border-radius: 20px;
 	transition: all 3s ease;

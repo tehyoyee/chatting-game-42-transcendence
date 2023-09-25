@@ -100,7 +100,6 @@ export default function Profile({
     point: 0,
     achievement: UserAchievement.A0,
   });
-  // const [ updateGame, setGameUpdate ] = useState<Object | null>(null);
   useEffect(() => {
     (async () => {
       await fetch(`${profileUrl}/${uid}`, {
@@ -130,6 +129,26 @@ export default function Profile({
         .then((res) => res.json())
         .then((data) => {
           setGameHistories(data);
+        })
+        .catch((err) => {
+          console.log(`${profileUrl}: fetch failed: ${err}`);
+        });
+    })();
+  }, []);
+
+
+  const [ranking, setRanking] = useState();
+
+  useEffect(() => {
+    (async () => {
+      await fetch(`${profileUrl}/game/ranking`, {
+        method: "GET",
+        credentials: "include",
+      })
+        .then((res) => { console.log("res:", res); return res.json();})
+        .then((data) => {
+          setRanking(data);
+          console.log("data[0].nickname:", data[0].nickname);
         })
         .catch((err) => {
           console.log(`${profileUrl}: fetch failed: ${err}`);
@@ -176,6 +195,7 @@ export default function Profile({
         lose_count={gameProfile.lose_count}
         point={gameProfile.point}
         achievement={gameProfile.achievement}
+        ranking={ranking}
       ></ExpandableButtons>
       <BackToTop></BackToTop>
     </div>
