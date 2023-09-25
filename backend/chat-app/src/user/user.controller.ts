@@ -20,6 +20,12 @@ export class UserController {
     constructor(private userService: UserService) {}
 
     // @UseGuards(AuthGuard())
+
+	@Get('/profile/ranking')
+	async getRanking() {
+		return await this.userService.getRanking();
+	}
+
     @Get('/profile/game/:id')
     async getGameHistoryByUserId(@Param('id', ParseIntPipe) id: number): Promise<GameHistory[]> {
         return await this.userService.getGameHistoryByUserId(id);
