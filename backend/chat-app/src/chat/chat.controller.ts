@@ -75,7 +75,7 @@ export class ChatController {
             return await this.userServics.getProfileByUserId(id);
         }
 
-        @Get('users-in-channel/:id/:id')
+        @Get('users-in-channel/:uid/:cid')
         async getAllUsersInfoInChannel(
             @Param('uid', ParseIntPipe) uid: number,
             @Param('cid', ParseIntPipe) cid: number): Promise<BridgeDto[]> {

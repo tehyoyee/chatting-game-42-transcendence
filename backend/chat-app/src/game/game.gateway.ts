@@ -42,6 +42,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		this.server.on('connection', (socket) => {
 			console.log(`[Game] GameSocket_id: ${socket.id} connected.`);
 		});
+		
 	}
 
 	@SubscribeMessage('joinQueue')
@@ -121,8 +122,23 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	async runGame(gameMode: string, roomName: string, player1: Socket, player2: Socket, point1: number, point2: number) {
 		const user1 = await this.socketToUser(player1);
+		if (!user1) {
+			this.server.to(player1.id).emit("forceLogout");
+		}
 		const user2 = await this.socketToUser(player2);
+		if (!user2) {
+			this.server.to(player2.id).emit("forceLogout");
+		}
+		if (!user1 && !user2) {
+			return ;
+		}
 		// 게임 종료 조건
+		if (!this.gameRoomMap.has(user1.user_id)) {
+			return;
+		}
+		if (!this.gameRoomMap.has(user2.user_id)) {
+			return;
+		}
 		if (point1 == this.MAXPOINT) {
 			console.log(`[Game] ${user1.nickname} winned !`);
 			await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
@@ -241,6 +257,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			 * Gaming Info to Front-end
 			 */
 			if (!this.gameRoomMap.has(user1.user_id)) {
+				clearInterval(id);
+				console.log(`[Game] ${user1.username} 없는거 확인.`)
+				await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 				this.server.to(roomName).emit('endGame', {
 					canvasX: this.MAP_X,
 					canvasY: this.MAP_Y,
@@ -251,9 +270,12 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					winner: user2.nickname
 				});
 				player2.leave(roomName);
-				await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
+				this.gameRoomMap.delete(user2.user_id);
 				return;
 			} else if (!this.gameRoomMap.has(user2.user_id)) {
+				clearInterval(id);
+				console.log(`[Game] ${user2.username} 없는거 확인.`)
+				await this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
 				this.server.to(roomName).emit('endGame', {
 					canvasX: this.MAP_X,
 					canvasY: this.MAP_Y,
@@ -264,10 +286,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 					winner: user1.nickname
 				});
 				player1.leave(roomName);
-				await this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
+				this.gameRoomMap.delete(user1.user_id);
 				return;
 			}
-
 			this.server.to(roomName).emit('gamingInfo', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
@@ -302,6 +323,10 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			}
 		};
 		const id = setInterval(render, this.DELAY);
+		if (!this.gameRoomMap.has(user1.user_id) || !this.gameRoomMap.has(user2.user_id)) {
+			clearInterval(id);
+			return ;
+		}
 		await render();
 	}
 
@@ -332,7 +357,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	@SubscribeMessage('exitQueue')
 	async exitQueue(@ConnectedSocket() client: any) {
 		const user = await this.socketToUser(client);
-
+		if (!user) {
+			this.server.to(client).emit("[Game] to front Event: 'forceLogout'");
+		}
 		for (let i = 0; i < this.gameNormalQueue.length; i++) {
 			if (this.gameNormalQueue[i] === user.user_id) {
 				this.gameNormalQueue.splice(i, 1);
@@ -379,7 +406,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
-		// console.log(user.gameHistories);
+		// if (!user) {
+		// 	this.server.to(client).emit("forceLogout");
+		// }
 		this.userSocketMap.set(user.user_id, client);
 		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 	}

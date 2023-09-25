@@ -41,19 +41,19 @@ export class UserController {
     }
 
     @Get('/profile/avatar/:id')
-		@Header('Content-Type', 'image/png')
+    @Header('Content-Type', 'image/png')
     async getFile(@Res({ passthrough: true }) res: Response, @Param('id') id ): Promise<StreamableFile> {
         const found = await this.getProfileByUserId(id);
         if (!found)
             throw new HttpException('User not Found', 400);
-				try {
-						const filePath = await this.userService.getAvatarByUserId(id);
-						const file = createReadStream(filePath);
-						
-						return new StreamableFile(file);
-				} catch {
-						throw new HttpException('File not Found', 404);
-				}
+        try {
+            const filePath = await this.userService.getAvatarByUserId(id);
+            const file = createReadStream(filePath);
+            
+            return new StreamableFile(file);
+        } catch {
+                throw new HttpException('File not Found', 404);
+        }
     }
  
 

@@ -163,16 +163,32 @@ export class ChatService {
         return await this.ucbRepository.deleteUCBridge(userId, channelId, );
     }
 
+    //  방에 밴된유저만 남아있을경우 빈채널로 보고 삭제
     async deleteChannelIfEmpty(channelId: number) {
         const channels = await this.ucbRepository
         .createQueryBuilder('b')
         .where('b.channel_id = :channelId', {channelId})
-        .select(['b.channel_id'])
+        .select(['b.channel_id', 'b.user_id', 'b.is_banned'])
         .getMany();
 
         if (channels.length === 0) {
             await this.channelRepository.deleteChannelByChannelId(channelId);
+            return ;
         }
+        for (let c of channels) {
+            if (!c.is_banned) {
+                return ;
+            }
+        }
+
+        let bannedUsersId: number[] = [];
+        for (let c of channels) {
+            bannedUsersId.push(c.user_id);
+        }
+        for (let bId of bannedUsersId) {
+            this.deleteUCBridge(bId, channelId);
+        }
+        this.channelRepository.deleteChannelByChannelId(channelId);
     }
 
     async deleteDmChannel(channelId: number) {
