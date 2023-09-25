@@ -8,6 +8,7 @@ import * as config from 'config';
 import { AxiosRequestConfig } from 'axios';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { MailService } from './mail.service';
+import { UserStatus } from 'src/user/enum/user-status.enum';
 
 const dbconfig = config.get('intra');
 const grant_type = dbconfig.get('grant_type');
@@ -121,8 +122,12 @@ export class AuthService {
 		return;
 	}
 
-	signOut(res: Response) {
-		res.clearCookie('token').json({ message: "Signned Out" });
+	async signOut(req: Request, res: Response) {
+		const token = req.cookies['token'];
+		const payload = await this.verifyToken(token);
+		const user = await this.userService.getProfileByUserId(payload.user_id);
+		this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
+		res.clearCookie('token').json({ status: 200, message: "Signned Out" });
 	}
 
 	async verifyToken(token: string) {
