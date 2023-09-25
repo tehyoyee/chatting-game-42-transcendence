@@ -14,4 +14,8 @@ export class BridgeDto {
     userType: UserType;
 
     isMuted: boolean;
+
+    isFriend: boolean;
+
+    isBlocked: boolean;
 }
