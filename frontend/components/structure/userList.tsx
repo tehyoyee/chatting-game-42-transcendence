@@ -75,10 +75,10 @@ function getColor(user: IChatMate) {
 
 	switch (user.userType) {
 		case EChatUserType.OWNER:
-			color = "lightpink";
+			color = "lightcoral";
 			break;
 		case EChatUserType.ADMIN:
-			color = "lightcoral";
+			color = "lightpink";
 			break;
 		default:
 			color = "lightgray";

@@ -175,47 +175,6 @@ function NameUpdator({
       )}
     </>
   );
-  /*
-  return (
-    <>
-      <UploadBtn title={'Update Name'}>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            requestNameUpdate();
-          }}>
-          <p>{`현재 닉네임: ${updated ? newName : name}`}</p>
-          <label htmlFor="nameUpdateField">새 닉네임:</label>
-          <input
-            style={{
-              margin: '0.5rem',
-              border: 'solid 1px',
-              width: '14rem',
-            }}
-            type="text"
-            id="nameUpdateField"
-            pattern="[a-zA-Z0-9]{4,16}"
-						onInvalid={() => {console.log("invalid")}}
-            required
-          />
-          <button
-            style={{
-              padding: '1px',
-              border: 'solid 1px black',
-              borderRadius: '0.3rem',
-              backgroundColor: 'lightgray',
-            }}
-            type="submit">
-            확인
-          </button>
-					<p>
-						{"영어 소문자, 대문자, 숫자 4~16자리로 이뤄져야 합니다."}
-					</p>
-        </form>
-      </UploadBtn>
-    </>
-  );
-		*/
 }
 
 function ImgUpdator({
@@ -229,10 +188,11 @@ function ImgUpdator({
 	const [imageFile, setImageFile] = useState<File | null>(null);
 
   const handleFileChange = (targetFile: File) => {
+		const kbytes = 200;
 		console.log(`input=${JSON.stringify(targetFile)}`);
     if (targetFile) {
-			if ((targetFile.type != 'image/png' && targetFile.type != 'image/jpg') || targetFile.size > (40 * 1024)) {
-				alert('파일의 확장자명은 .png, 크기는 40kB 이하여야 합니다.');
+			if ((targetFile.type != 'image/png' && targetFile.type != 'image/jpg') || targetFile.size > (kbytes * 1024)) {
+				alert(`파일의 확장자명은 .png, 크기는 ${kbytes}kB 이하여야 합니다.`);
 				return;
 			}
 			console.log(`avatar image type=${targetFile.type}, size=${targetFile.size}`);

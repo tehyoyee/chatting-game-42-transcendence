@@ -4,6 +4,18 @@ import { IChatMate, IChatUser } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 
+enum ERelationType {
+	FRIEND = "friend",
+	BLOCK = "block",
+};
+
+interface IFriendRel {
+	relation_id: number,
+	relation_type: ERelationType,
+	sender_id: number,
+	receiver_id: number,
+};
+
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 const relationUrl = `${serverUrl}/relation`;
 
