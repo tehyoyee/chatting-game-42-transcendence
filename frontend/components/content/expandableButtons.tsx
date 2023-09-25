@@ -38,48 +38,61 @@ const ExpandableButtons = ({
   lose_count,
   point,
   achievement,
+  ranking,
 }: {
-  gameHistories: any;
-  win_count: number;
-  lose_count: number;
-  point: number;
-  achievement: UserAchievement;
+  gameHistories: any,
+  win_count: number,
+  lose_count: number,
+  point: number,
+  achievement: UserAchievement,
+  ranking: any
 }) => {
   const getRecentMatchContent = (gameHistories: any) => {
     if (gameHistories && gameHistories.length >= 1) {
-      console.log(gameHistories.length);
       const recentMatches = gameHistories.length > 4?
         gameHistories.slice(gameHistories.length - 5, gameHistories.length) :
         gameHistories.slice(0, gameHistories.length);
       return recentMatches
         .reverse().map(
           (match: any) =>
-            `${match.winner_nickname} ${match.score1} : ${match.loser_nickname} ${match.score2}`
+            `${match.winner_nickname} ${match.score1} : ${match.score2} ${match.loser_nickname}`
         )
         .join("\n");
     }
     return "No recent matches";
   };
-
+  
+  const getRanking = (rankingObj: any) => {
+    if (rankingObj && rankingObj[0]) {
+      // const rankForMap = rankingObj.length > 19?
+      //   rankingObj.slice(rankingObj.length - 20, rankingObj.length) :
+      //   rankingObj.slice(0, rankingObj.length);
+      console.log("rankingObj:", rankingObj);
+      console.log("rankingObj[0]:", rankingObj[0]);
+      return rankingObj.map((obj: any) => `${obj.rank}위: ${obj.nickname} 포인트: ${obj.point}`).join("\n");
+    }
+    return "No ranking";
+  };
+  
   const buttonData = [
     { text: "최근 경기 기록", content: getRecentMatchContent(gameHistories)},
     {
       text: "게임 전적",
       content: `승: ${win_count}
-        패: ${lose_count}
-        포인트: ${point}`,
+      패: ${lose_count}
+      포인트: ${point}`,
     },
-    { text: "순위", content: "순위 내용" },
+    { text: "순위", content: getRanking(ranking)},
     { text: "업적", content: `achievement: ${achievement}` },
   ];
   const initialState = buttonData.map((obj) => obj.text);
   const [activeButtons, setActiveButtons] = useState(initialState);
-
+  
   const toggleButton = (index: number) => {
     setActiveButtons((prevActiveButtons) => {
       const newActiveButtons = [...prevActiveButtons];
       newActiveButtons[index] =
-        prevActiveButtons[index] === "" ? buttonData[index].text : "";
+      prevActiveButtons[index] === "" ? buttonData[index].text : "";
       return newActiveButtons;
     });
   };
