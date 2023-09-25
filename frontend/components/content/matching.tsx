@@ -1,103 +1,173 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import defaultImage from '../../public/default.png';
-import React, { useEffect, useContext, useState, useRef, useCallback } from 'react';
-import { useRouter, notFound, useSearchParams } from 'next/navigation';
-import styles from '@/styles/matching.module.css';
-import DotLoader from './dotLoader';
+import Image from "next/image";
+import Link from "next/link";
+import defaultImage from "../../public/default.png";
+import React, {
+  useEffect,
+  useContext,
+  useState,
+  useRef,
+  useCallback,
+} from "react";
+import { useRouter, notFound, useSearchParams } from "next/navigation";
+import styles from "@/styles/matching.module.css";
+import DotLoader from "./dotLoader";
 // import queryRouter from 'next/router';
 
-
-
 // import { GameKeyContext } from './GameKeyProvider';
-import { io, Socket } from 'socket.io-client';
+import { io, Socket } from "socket.io-client";
 // import GameCustomizationNegotiation from './GameCustomizationNegotiation';
 // import "./Pong.css";
-import WebSocketContex, { SocketContext, SocketContextProvider } from '@/lib/socket'
-import useSocketContext from '@/lib/socket';
-import usePlayerContext, { EPlayerState } from './player_state';
+import WebSocketContex, {
+  SocketContext,
+  SocketContextProvider,
+} from "@/lib/socket";
+import useSocketContext from "@/lib/socket";
+import usePlayerContext, { EPlayerState } from "./player_state";
+import useAuthContext from "../user/auth";
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
-	const chatUrl = `${serverUrl}/chat`;
-	const gameUrl = `${serverUrl}/game`;
+const profileUrl = `${serverUrl}/profile`;
+const chatUrl = `${serverUrl}/chat`;
+const gameUrl = `${serverUrl}/game`;
 
+type SocketContextType = {
+  chatSocket: Socket | null;
+  gameSocket: Socket | null;
+};
 
-	type SocketContextType = {
-    chatSocket: Socket | null,
-		gameSocket: Socket | null,
-	};
-  
-  
-  
-  
-  
+export interface IProfileType {
+  user_id: number;
+  username: string;
+  nickname: string;
+  //	avartar: string, // path to profile image stored in frontend server local directory
+  email: string;
+}
 
-  
-  export default function Matching() {
-    const ref = useRef(false);
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [ready, setReady] = useState(false);
-    const [queue, setQueue] = useState(0);
-    const [countdown, setCountdown] = useState(3);
-    const SocketContext = useSocketContext();
-    const searchParams = useSearchParams();
-		const { setPlayerState } = usePlayerContext();
-		let interval: any;
+export default function Matching() {
+  const ref = useRef(false);
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [queue, setQueue] = useState(0);
+  const [countdown, setCountdown] = useState(3);
+  const SocketContext = useSocketContext();
+  const searchParams = useSearchParams();
+  const { setPlayerState } = usePlayerContext();
+  const { user } = useAuthContext();
+  const [userObj, setUserObj] = useState({
+    leftUserName: "",
+    rightUserName: "",
+    leftUserId: 0,
+    rightUserId: 0,
+  });
 
-    SocketContext.gameSocket?.on('gameStart', () => { setReady(true); });
+  let interval: any;
 
-    const exitQueueHandler = () => {
-      console.log("exitQueue handler worked!");
-      SocketContext.gameSocket?.emit('exitQueue');
-    };
+  const [profile, setProfile] = useState<IProfileType>({
+    user_id: 0,
+    username: "",
+    nickname: "",
+    //		avartar: '/default.png',
+    email: "",
+  });
 
-		useEffect(() => {
-			setPlayerState(EPlayerState.GAME_MATCHING);
-		}, []);
+  useEffect(() => {
+    (async () => {
+      await fetch(`${profileUrl}/${user.id}`, {
+        method: "GET",
+        credentials: "include",
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setProfile(data);
+        })
+        .catch((err) => {
+          console.log(`${profileUrl}: fetch failed: ${err}`);
+        });
+    })();
+  }, []);
+  SocketContext.gameSocket?.on("gameStart", (obj) => {
+    setUserObj(obj);
+    setReady(true);
+  });
 
-    useEffect(() => {
-      if (!queue)
-      {
-				const JoinQueue = () => {
-					searchParams.get('normal') ?
-					SocketContext.gameSocket?.emit('joinQueue', 'NORMAL') :
-					SocketContext.gameSocket?.emit('joinQueue', 'ADVANCED');
-				}
-				if (ref.current)
-					return;
-				ref.current = true;
-				JoinQueue();
-				setQueue(queue + 1);
-      }
-			if (ready) {
-				setPlayerState(EPlayerState.GAME_PLAYING);
-				interval = setInterval(() => {
-					setCountdown(countdown => countdown - 1);
-	      }, 1000);
+  const exitQueueHandler = () => {
+    console.log("exitQueue handler worked!");
+    SocketContext.gameSocket?.emit("exitQueue");
+  };
+
+  useEffect(() => {
+    setPlayerState(EPlayerState.GAME_MATCHING);
+  }, []);
+
+  useEffect(() => {
+    if (!queue) {
+      const JoinQueue = () => {
+        searchParams.get("normal")
+          ? SocketContext.gameSocket?.emit("joinQueue", "NORMAL")
+          : SocketContext.gameSocket?.emit("joinQueue", "ADVANCED");
+      };
+      if (ref.current) return;
+      ref.current = true;
+      JoinQueue();
+      setQueue(queue + 1);
+    }
+    if (ready) {
+      setPlayerState(EPlayerState.GAME_PLAYING);
+      interval = setInterval(() => {
+        setCountdown((countdown) => countdown - 1);
+      }, 1000);
     }
   }, [ready, router]);
 
-	useEffect(() => {
-		if (countdown <= 0) {
-			clearInterval(interval);
-			router.push('/game/play');
-		}
-	}, [countdown]);
+  useEffect(() => {
+    if (countdown <= 0) {
+      clearInterval(interval);
+      router.push("/game/play");
+    }
+  }, [countdown]);
 
   return (
     <div>
       <div className={styles.userProfileContainer}>
-        <div className={styles.userProfile}>
-          <Image src={defaultImage} alt='profile image' className={styles.userImage} />
-          <div className={styles.userText}></div>
-        </div>
-        { ready && <div className={styles.userProfile}>
-          <Image src={defaultImage} alt='profile image' className={styles.userImage} />
-          <div className={styles.userText}></div>
-        </div> }
+        {!ready && (
+          <div className={styles.userProfile}>
+            <Image
+              src={`${profileUrl}/avatar/${user.id}`}
+              height={128}
+              width={128}
+              alt="profile image"
+              className={styles.userImage}
+            />
+            <div className={styles.userText}>{profile.nickname}</div>
+          </div>
+        )}
+        {ready && (
+          <div className={styles.userProfile}>
+            <Image
+              src={`${profileUrl}/avatar/${userObj.leftUserId}`}
+              height={128}
+              width={128}
+              alt="profile image"
+              className={styles.userImage}
+            />
+            <div className={styles.userText}>{userObj.leftUserName}</div>
+          </div>
+        )}
+        {ready && (
+          <div className={styles.userProfile}>
+            <Image
+              src={`${profileUrl}/avatar/${userObj.rightUserId}`}
+              height={128}
+              width={128}
+              alt="profile image"
+              className={styles.userImage}
+            />
+            <div className={styles.userText}>{userObj.rightUserName}</div>
+          </div>
+        )}
       </div>
       {loading && <p>Loading...</p>}
       {!ready && <DotLoader></DotLoader>}
@@ -112,21 +182,22 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
           <p className={styles.countdown}>{countdown}</p>
         </div>
       )}
-        { !ready && <div>
-          <Link href='/game' onClick={exitQueueHandler} className={styles.bottomRight}>Exit</Link>
-        </div> 
-        }
+      {!ready && (
+        <div>
+          <Link
+            href="/game"
+            onClick={exitQueueHandler}
+            className={styles.bottomRight}
+          >
+            Exit
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
 
-
-
-
 // "use client";
-
-
-
 
 // interface PongGamePlayerUpdate {
 // 	oponent_pong_position: number,
@@ -188,7 +259,6 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 // 	useEffect(() => {
 // 		if (gameKey) {
 
-
 // 			const scoreDisplay = (data: PongGamePlayerUpdate) => {
 // 				if (data?.score1 || data?.score2) {
 // 					setDisplayScore(`${data.score1}-${data.score2}`);
@@ -203,8 +273,7 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 // 					endGame();
 // 				}
 // 			}
-			
-			
+
 // 			Socket.on('pongGamePlayerUpdate', (data: PongGamePlayerUpdate) => {
 // 				scoreDisplay(data);
 // 				manageGameLifecycle(data);
@@ -232,15 +301,9 @@ const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 
 // const PongGame: React.FC = () => {
 
-	
-
-	
-
 // 	// if (!gameKey || !Socket) {
 // 	// 	notFound();
 // 	// }
-
-	
 
 // 	const LifeCycleHandle = (data: PongGamePlayerUpdate) => {
 // 		if (data.end_game) {
