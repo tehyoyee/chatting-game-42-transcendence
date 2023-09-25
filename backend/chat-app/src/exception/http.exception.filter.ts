@@ -13,9 +13,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
 		console.log(status, err);
 		if (status === HttpStatus.UNAUTHORIZED) {
-			response.clearCookie('token').status(status).json({ loggedIn: false, errCode: status, errMsg: err });
+			response.clearCookie('token').status(status).json({ loggedIn: false, status: status, message: err });
 		} else {
-			response.status(status).json({ msg: err});
+			response.status(status).json({ status: status, msg: err});
 		}
 	}
 }
