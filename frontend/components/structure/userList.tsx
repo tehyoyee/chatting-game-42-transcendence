@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { IChatMate, EChatUserType } from '../content/chat/context';
+import { IChatMate, EChatUserType, ISocial, EUserStatus } from '../content/chat/context';
 import UserModal from '@/components/structure/userModal';
 import Modal from './modal';
 import styles from '@/styles/chat.module.css';
@@ -10,18 +10,17 @@ const UserList = ({
 	userList,
 	updateUserList,
 }: { 
-		userList: IChatMate[],
+		userList: ISocial[],
 		updateUserList: Function,
 }) => {
 	const { user, setUser, joined, setJoined } = useChatContext();
 	const [showModal, setShowModal] = useState<boolean>(false);
-	const [targetUser, setTargetUser] = useState<IChatMate>({
+	const [targetUser, setTargetUser] = useState<ISocial>({
 		userId: -1,
 		userNickName: '',
-		userType: 'member',
-		isMuted: false,
 		isFriend: false,
 		isBlocked: false,
+		userStatus: EUserStatus.OFFLINE,
 	});
 	const [showProfile, setShowProfile] = useState<boolean>(false);
 
@@ -72,6 +71,8 @@ const UserList = ({
 							}}
 							className={styles.button}>
 							{user.userNickName}
+							{' '}
+							{user.userStatus}
 						</button>
           </li>
         ))}
@@ -80,9 +81,12 @@ const UserList = ({
   );
 };
 
-function getColor(user: IChatMate) {
+function getColor(user: any) {
 	let color;
 
+	if (!(typeof user.userType)) {
+		return "lightgray";
+	}
 	switch (user.userType) {
 		case EChatUserType.OWNER:
 			color = "lightcoral";
