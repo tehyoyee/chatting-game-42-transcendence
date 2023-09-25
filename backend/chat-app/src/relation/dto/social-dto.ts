@@ -3,6 +3,10 @@ import { RelationType } from "../enum/relation-type.enum";
 import { User } from "src/user/entity/user.entity";
 import { UserStatus } from "src/user/enum/user-status.enum";
 
+// NOTE
 export class SocialDto {
-    user: User;
+	userId: number;
+	userNickName: string;
+	isFriend: boolean;
+	isBlocked: boolean;
 }
