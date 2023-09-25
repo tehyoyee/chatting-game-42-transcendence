@@ -5,7 +5,7 @@ import { Relation } from './entity/relation.entity';
 import { RelationType } from './enum/relation-type.enum';
 import { SocialDto } from './dto/social-dto';
 import { UserService } from 'src/user/user.service';
-import { BlockDto } from './dto/block-dto';
+import { BlockDto, FriendDto } from './dto/relation-dto';
 
 @Injectable()
 export class RelationService {
@@ -156,6 +156,25 @@ export class RelationService {
         }
 
         return whoBlockedMe;
+    }
+
+    async getEveryoneWhoFriendedMe(myId: number): Promise<FriendDto[]> {
+        let whoFriendedMe: FriendDto[] = [];
+        const relationType = RelationType.FRIEND;
+
+        const relations = await this.relationRepository
+        .createQueryBuilder('r')
+        .where('r.receiver_id = :myId', {myId})
+        .andWhere('r.relation_type = :relationType', {relationType})
+        .select(['r.sender_id'])
+        .getMany();
+
+        for (let r of relations) {
+            let f_id = { userId: r.sender_id };
+            whoFriendedMe.push(f_id);
+        }
+
+        return whoFriendedMe;
     }
 
 }

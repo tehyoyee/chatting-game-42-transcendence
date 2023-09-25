@@ -91,6 +91,10 @@ export class UserService {
     async getAvatarByUserId(id: number): Promise<string> {
         return await this.userRepository.getAvatarByUserId(id);
     }
+
+    async getCurrentUserStatusByUserId(userId: number) {
+        return await this.userRepository.getCurrentUserStatusByUserId(userId);
+    }
     
     async updateAvatar(id: number, filePath: string) {
         const found = await this.userRepository.getProfileByUserId(id);

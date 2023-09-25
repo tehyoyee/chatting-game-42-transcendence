@@ -5,7 +5,7 @@ import { User } from 'src/user/entity/user.entity';
 import { ChatService } from './chat.service';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from 'src/auth/auth.service';
-import { NotFoundError, map } from 'rxjs';
+import { NotFoundError, async, map } from 'rxjs';
 import { ConflictException, ForbiddenException, HttpException, HttpStatus, Logger, NotFoundException, ParseIntPipe, UnauthorizedException } from '@nestjs/common';
 import { UserType } from './enum/user_type.enum';
 import { DmChannelDto, JoinGroupChannelDto, GroupChannelDto } from './dto/channel-dto';
@@ -16,7 +16,7 @@ import { UserStatus } from 'src/user/enum/user-status.enum';
 import { UserChannelBridge } from './entity/user-channel-bridge.entity';
 import { Channel } from './entity/channel.entity';
 import { RelationService } from 'src/relation/relation.service';
-import { BlockDto } from 'src/relation/dto/block-dto';
+import { BlockDto, FriendDto } from 'src/relation/dto/relation-dto';
 import * as serverConfig from 'config';
 import { AcceptGameDto, InviteGameDto } from './dto/game-dto';
 import { BridgeDto } from './dto/bridge-dto';
@@ -74,8 +74,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     for (let c of joinedDmChannels) {
       client.join(c.channel_name);
     }
-    //socket.except()를 쓰기 위해 blocked와 banned도 있어야 할듯
-    this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
+
+    await this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
+    await this.emitUserStatus(user.user_id);
   }
   
   //==========================================================================================
@@ -84,8 +85,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (user) {
       this.userSocketMap.delete(user.user_id);
-      this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
-      this.userSocketMap.delete(user.user_id);
+      await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
+      await this.emitUserStatus(user.user_id);
     }
     client.disconnect();
   }
@@ -903,7 +904,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   }
 
   //==========================================================================================
-
+  
   @SubscribeMessage('decline-game')
   async onDeclineGame(
     @ConnectedSocket() client: Socket,
@@ -921,6 +922,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
       hostUserSocket.emit('decline-game-success', 'declined');
       client.emit('decline-game-success', 'declined');
+  }
+  //==========================================================================================
+  
+  @SubscribeMessage('gameStatusUpdate')
+  async onGameStatusUpdate(@MessageBody() playerId: any) {
+    this.emitUserStatus(playerId);
+  }
+
+  private async emitUserStatus(userId: number) {
+    let listOfWhoFriendedMe: FriendDto[] = [];
+    listOfWhoFriendedMe = await this.relationServie.getEveryoneWhoFriendedMe(userId);
+
+    const currentStatus = await this.userService.getCurrentUserStatusByUserId(userId);
+
+    for (const who of listOfWhoFriendedMe) {
+      const whoFriendedMeSocket = this.userIdToSocket(who.userId);
+      if (whoFriendedMeSocket) {
+        whoFriendedMeSocket.emit('refreshStatus');
+      }
+    }
   }
 
 }

@@ -121,6 +121,12 @@ export class UserRepository extends Repository<User> {
         return found.gameHistories;
     }
 
+    async getCurrentUserStatusByUserId(userId: number) {
+        const found = await this.getProfileByUserId(userId);
+
+        return found.status;
+    }
+
     async updateGameHistory(id: number, gameHistory: GameHistory) {
         const found = await this.getProfileByUserId(id);
         if (!found)
