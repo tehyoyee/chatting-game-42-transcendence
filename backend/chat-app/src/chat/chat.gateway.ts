@@ -883,50 +883,50 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
   //==========================================================================================
 
-  @SubscribeMessage('accept-game')
-  async onAcceptGame(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() acceptGameDto: AcceptGameDto) {
-      const invitedUser = await this.socketToUser(client);
-      if (!invitedUser) {
-        client.emit('accept-game-fail', 'Unidentified Invited User Error in onAcceptGame');
-        return ;
-      }
+  // @SubscribeMessage('accept-game')
+  // async onAcceptGame(
+  //   @ConnectedSocket() client: Socket,
+  //   @MessageBody() acceptGameDto: AcceptGameDto) {
+  //     const invitedUser = await this.socketToUser(client);
+  //     if (!invitedUser) {
+  //       client.emit('accept-game-fail', 'Unidentified Invited User Error in onAcceptGame');
+  //       return ;
+  //     }
 
-      const hostUserSocket = this.userIdToSocket(acceptGameDto.hostUserId);
-      if (!hostUserSocket) {
-        client.emit('accept-game-fail', 'Unidentified Host User Socket Error in onAcceptGame');
-      }
+  //     const hostUserSocket = this.userIdToSocket(acceptGameDto.hostUserId);
+  //     if (!hostUserSocket) {
+  //       client.emit('accept-game-fail', 'Unidentified Host User Socket Error in onAcceptGame');
+  //     }
 
-      //chat소켓 -> 클라이언트 -> game소켓 -> 게임 시작
-      // client.emit('accept-game-success', 'accepted');
-      // hostUserSocket.emit('accept-game-success', 'accepted');
-      // client.emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode});
-      hostUserSocket.emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode});
+  //     //chat소켓 -> 클라이언트 -> game소켓 -> 게임 시작
+  //     // client.emit('accept-game-success', 'accepted');
+  //     // hostUserSocket.emit('accept-game-success', 'accepted');
+  //     // client.emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode});
+  //     hostUserSocket.emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode});
     
-      // this.server.of('/game').emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode})
-  }
+  //     // this.server.of('/game').emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode})
+  // }
 
   //==========================================================================================
   
-  @SubscribeMessage('decline-game')
-  async onDeclineGame(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() hostId: number) {
-      const invitedUser = await this.socketToUser(client);
-      if (!invitedUser) {
-        client.emit('decline-game-fail', 'Unidentified Invited User Error in onDeclineGame');
-        return ;
-      }
+  // @SubscribeMessage('decline-game')
+  // async onDeclineGame(
+  //   @ConnectedSocket() client: Socket,
+  //   @MessageBody() hostId: number) {
+  //     const invitedUser = await this.socketToUser(client);
+  //     if (!invitedUser) {
+  //       client.emit('decline-game-fail', 'Unidentified Invited User Error in onDeclineGame');
+  //       return ;
+  //     }
 
-      const hostUserSocket = this.userIdToSocket(hostId);
-      if (!hostUserSocket) {
-        client.emit('decline-game-fail', 'Unidentified Host User Socket Error in onDeclineGame');
-      }
+  //     const hostUserSocket = this.userIdToSocket(hostId);
+  //     if (!hostUserSocket) {
+  //       client.emit('decline-game-fail', 'Unidentified Host User Socket Error in onDeclineGame');
+  //     }
 
-      hostUserSocket.emit('decline-game-success', 'declined');
-      client.emit('decline-game-success', 'declined');
-  }
+  //     hostUserSocket.emit('decline-game-success', 'declined');
+  //     client.emit('decline-game-success', 'declined');
+  // }
   //==========================================================================================
   
   @SubscribeMessage('gameStatusUpdate')
