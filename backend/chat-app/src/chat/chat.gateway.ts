@@ -249,6 +249,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     let previousMessages: PreviousMessageDto[] = [];
     previousMessages = await this.chatService.getAllMessagesExceptBlockByChannelId(user.user_id, channel.channel_id);
+    //console.log('preMsgs: ', previousMessages);
 
     client.join(channel.channel_name);
 
@@ -927,6 +928,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   
   @SubscribeMessage('gameStatusUpdate')
   async onGameStatusUpdate(@MessageBody() playerId: any) {
+    console.log('gamestatus: ', playerId);
     this.emitUserStatus(playerId);
   }
 
