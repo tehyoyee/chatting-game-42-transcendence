@@ -66,9 +66,13 @@ const UserModal = ({
 
 	function handleFriend() {
 		const url = `${relationUrl}/${targetUser.isFriend ? 'remove' : 'add'}/friend`;
+		console.log(JSON.stringify(relContent));
 		fetch(url, {
-			method: "POST",
+			method: targetUser.isFriend ? "DELETE" : "POST",
 			credentials: "include",
+			headers: {
+				'Content-Type': 'application/json',
+			},
 			body: JSON.stringify(relContent),
 		})
 		.then(res => {
@@ -88,8 +92,11 @@ const UserModal = ({
 	function handleBlock() {
 		const url = `${relationUrl}/${targetUser.isBlocked ? 'remove' : 'add'}/block`;
 		fetch(url, {
-			method: "POST",
+			method: targetUser.isFriend ? "DELETE" : "POST",
 			credentials: "include",
+			headers: {
+				'Content-Type': 'application/json',
+			},
 			body: JSON.stringify(relContent),
 		})
 		.then(res => {
