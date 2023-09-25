@@ -20,6 +20,7 @@ import { BlockDto } from 'src/relation/dto/block-dto';
 import * as serverConfig from 'config';
 import { AcceptGameDto, InviteGameDto } from './dto/game-dto';
 import { BridgeDto } from './dto/bridge-dto';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 @WebSocketGateway({
 	// path: "/api/socket.io",
@@ -295,10 +296,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //현재 user를 block한 사람들에게는 메세지가 가지 않도록
     this.server.to(channel.channel_name).fetchSockets()
       .then((sockets) => { 
-        sockets.forEach((socket) => { 
-          let user = socket.data.user;
-          if (!listOfWhoBlockedMe.includes(user.user_id)) {
-            socket.emit("message", {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
+        sockets.forEach(async (socket) => { 
+          let innerToken:any = client.handshake.query.token;
+          let innerDecoded = await this.authService.verifyToken(innerToken);
+          let inner = await this.userService.getProfileByUserId(innerDecoded.id);
+  
+          if (!listOfWhoBlockedMe.includes({userId: inner.user_id})) {
+            socket.emit("message", {message: newMessage, user_id: inner.user_id, user_nickname: inner.nickname});
           }
         })
       });
@@ -306,7 +310,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //채널 전체에 메세지 발송
     //this.server.to(channel.channel_name).emit('message', {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
 		console.log("'post-group-message'");
-   	client.emit("message", {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
+   	//client.emit("message", {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
     //return newMessage;
   }
 
@@ -474,6 +478,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('usermod-fail', 'Unidentified User Error in onSetAdmin');
       return ;
     }
+    const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
+    if (!targetUser) {
+      client.emit('usermod-fail', 'Unidentified Target User Error in onSetAdmin');
+      return ;
+    }
+    if (user.user_id === targetUser.user_id) {
+      client.emit('usermod-fail', 'Cannot Set Yourself Error in onSetAdmin');
+      return ;
+    }
     
     const bridge = await this.chatService.checkUserInThisChannel(user.user_id, updateUserInfoDto.channelId);
     if (!bridge) {
@@ -481,7 +494,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
     if (bridge.user_type !== UserType.OWNER) {
-      client.emit('usermod-fail', 'Cannot Set Admin Error in onSetAdmin');
+      client.emit('usermod-fail', 'Cannot Set Owner As Admin Error in onSetAdmin');
       return ;
     }
     
@@ -493,7 +506,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     await this.chatService.updateUserTypeOfUCBridge(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId, UserType.ADMIN);
 
-    const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
     client.emit('usermod-success', channel.channel_id);
     this.server.to(channel.channel_name).emit("admin", {user_id: targetUser.user_id, user_nickname: targetUser.nickname});
   }
@@ -651,6 +663,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('usermod-fail', 'Cannot Kick Owner Error in onKickUser');
       return ;
     }
+    if (user.user_id === targetUser.user_id) {
+      client.emit('usermod-fail', 'Cannot Set Yourself Error in onKickUser');
+      return ;
+    }
 
     const targetUserSocket = this.userIdToSocket(targetUser.user_id);
     if (!targetUserSocket) {
@@ -703,6 +719,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const targetUser = await this.userService.getProfileByUserId(updateUserInfoDto.targetUserId);
     if (!targetUser) {
       client.emit('usermod-fail', 'Unexist Target User Error in onBanUser');
+      return ;
+    }
+    if (user.user_id === targetUser.user_id) {
+      client.emit('usermod-fail', 'Cannot Set Yourself Error in onBanUser');
       return ;
     }
 
@@ -772,6 +792,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('usermod-fail', 'Unexist Target User Error in onMuteUser');
       return ;
     }
+    if (user.user_id === targetUser.user_id) {
+      client.emit('usermod-fail', 'Cannot Set Yourself Error in onMuteUser');
+      return ;
+    }
     
     const targetBridge = await this.chatService.checkUserInThisChannel(updateUserInfoDto.targetUserId, updateUserInfoDto.channelId);
     if (!targetBridge) {
@@ -836,6 +860,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
     if (targetUser.status === UserStatus.OFFLINE) {
       client.emit('invite-game-fail', 'Target User OFFLINE Error in onInviteGame');
+      return ;
+    }
+    if (user.user_id === targetUser.user_id) {
+      client.emit('usermod-fail', 'Cannot invite Yourself Error in onInviteGame');
       return ;
     }
 
