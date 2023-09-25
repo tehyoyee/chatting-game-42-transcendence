@@ -136,8 +136,8 @@ export default function Matching() {
           <div className={styles.userProfile}>
             <Image
               src={`${profileUrl}/avatar/${user.id}`}
-              height={256}
-              width={256}
+              height={384}
+              width={384}
               alt="profile image"
               className={styles.userImage}
             />
@@ -148,8 +148,8 @@ export default function Matching() {
           <div className={styles.userProfile}>
             <Image
               src={`${profileUrl}/avatar/${userObj.leftUserId}`}
-              height={256}
-              width={256}
+              height={384}
+              width={384}
               alt="profile image"
               className={styles.userImage}
             />
@@ -160,8 +160,8 @@ export default function Matching() {
           <div className={styles.userProfile}>
             <Image
               src={`${profileUrl}/avatar/${userObj.rightUserId}`}
-              height={256}
-              width={256}
+              height={384}
+              width={384}
               alt="profile image"
               className={styles.userImage}
             />

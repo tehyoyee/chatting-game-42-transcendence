@@ -141,14 +141,13 @@ export default function Profile({
 
   useEffect(() => {
     (async () => {
-      await fetch(`${profileUrl}/game/ranking`, {
+      await fetch(`${profileUrl}/ranking`, {
         method: "GET",
         credentials: "include",
       })
-        .then((res) => { console.log("res:", res); return res.json();})
+        .then((res) => res.json())
         .then((data) => {
           setRanking(data);
-          console.log("data[0].nickname:", data[0].nickname);
         })
         .catch((err) => {
           console.log(`${profileUrl}: fetch failed: ${err}`);
