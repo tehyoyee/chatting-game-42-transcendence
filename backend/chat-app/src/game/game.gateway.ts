@@ -47,25 +47,18 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	@SubscribeMessage('joinQueue')
 	async joinQueue(@ConnectedSocket() client: any, @MessageBody() gameMode: string) {
-		let flag1 = true;
-		let flag2 = true;
-		let userLeft1;
-		let userRight1;
-		let userLeft2;
-		let userRight2;
 		const user = await this.socketToUser(client);
 		if (gameMode === 'NORMAL') {
 			this.gameNormalQueue.push(user.user_id);
-			if (flag1)
-				userLeft1 = user;
-			flag1 = false;
 			console.log(`[Game] added normalQueue user : ${user.username}`);
 			if (this.gameNormalQueue.length >= 2) {
-				userRight1 = user;
 				const playerIdLeft = this.gameNormalQueue[0];
 				const playerIdRight = this.gameNormalQueue[1];
+				this.gameNormalQueue = this.gameNormalQueue.slice(2);
 				const playerSocketLeft = this.userSocketMap.get(playerIdLeft);
 				const playerSocketRight = this.userSocketMap.get(playerIdRight);
+				const user1 = await this.socketToUser(playerSocketLeft);
+				const user2 = await this.socketToUser(playerSocketRight);
 				const newRoomName = playerSocketLeft.id + playerSocketRight.id;
 				console.log(`[Game] playerLeft: ${playerIdLeft}`);
 				console.log(`[Game] playerRight: ${playerIdRight}`);
@@ -75,28 +68,25 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				this.gameRoomMap.set(playerIdLeft, newRoomName);
 				this.gameRoomMap.set(playerIdRight, newRoomName);
 				this.server.to(newRoomName).emit('gameStart', {
-					leftUserName: userLeft1.nickname,
-					rightUserName: userRight1.nickname,
+					leftUserName: user1.nickname,
+					rightUserName: user2.nickname,
 					leftUserId: playerIdLeft,
 					rightUserId: playerIdRight,
 				});
-				this.gameNormalQueue = this.gameNormalQueue.slice(2);
 				console.log("[Game] Normal Match Created !!!");
 				setTimeout(async () => await this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0), 3000);
-				flag1 = true;
 			}
 		} else if (gameMode === 'ADVANCED') {
 			this.gameAdvancedQueue.push(user.user_id);
-			if (flag2)
-				userLeft2 = user;
-			flag2 = false;
 			console.log(`added advancedQueue user : ${user.username}`);
 			if (this.gameAdvancedQueue.length >= 2) {
-				userRight2 = user;
 				const playerIdLeft = this.gameAdvancedQueue[0];
 				const playerIdRight = this.gameAdvancedQueue[1];
+				this.gameAdvancedQueue = this.gameAdvancedQueue.slice(2);
 				const playerSocketLeft = this.userSocketMap.get(playerIdLeft);
 				const playerSocketRight = this.userSocketMap.get(playerIdRight);
+				const user1 = await this.socketToUser(playerSocketLeft);
+				const user2 = await this.socketToUser(playerSocketRight);
 				const newRoomName = playerSocketLeft.id + playerSocketRight.id;
 				console.log(`[Game] playerLeft: ${playerIdLeft}`);
 				console.log(`[Game] playerRight: ${playerIdRight}`);
@@ -106,16 +96,13 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				this.gameRoomMap.set(playerIdRight, newRoomName);
 				console.log(`[Game] Game Room ${newRoomName} created !!`);
 				this.server.to(newRoomName).emit('gameStart', {
-					leftUserName: userLeft2.nickname,
-					rightUserName: userRight2.nickname,
+					leftUserName: user1.nickname,
+					rightUserName: user2.nickname,
 					leftUserId: playerIdLeft,
 					rightUserId: playerIdRight,
 				});
-
-				this.gameAdvancedQueue = this.gameAdvancedQueue.slice(2);
 				console.log("[Game] Advanced Match Created !!!");
 				setTimeout(async () => await this.runGame(gameMode, newRoomName, playerSocketLeft, playerSocketRight, 0, 0), 3000);
-				flag2 = true;
 			}
 		}
 	}
@@ -342,11 +329,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		this.gameRoomMap.set(playerRight.user_id, newRoomName);
 		console.log(`[Game] Game room ${newRoomName} created.`);
 		this.server.to(newRoomName).emit('gameStart', {
-			roomName: newRoomName,
-			leftUserName: playerLeft.nickname,
-			rightUserName: playerRight.nickname,
-			leftAvatar: playerLeft.avatar,
-			rightAvatar: playerRight.avatar,
+			roomName: newRoomName
 		});
 		console.log(`[Game] ${invitation.gameMode} match created.`);
 		setTimeout(async () => await this.runGame(invitation.gameMode, newRoomName, invitation.hostUserSocket, invitation.clientUserSocket, 0, 0), 3000);
