@@ -113,13 +113,15 @@ export class RelationService {
         .getMany();
 
         for (let r of relations) {
-						const user = await this.userService.getProfileByUserId(r.receiver_id);
+			const user = await this.userService.getProfileByUserId(r.receiver_id);
+            const currentStatus = await this.userService.getCurrentUserStatusByUserId(r.receiver_id);
             friends.push({
 								userId: user.user_id, 
 								userNickName: user.nickname,
 								isFriend: true,
 								isBlocked: false,
-						});
+                                userStatus: currentStatus,
+                            });
         }
 
         return friends;
@@ -138,11 +140,13 @@ export class RelationService {
 
         for (let r of relations) {
             const user = await this.userService.getProfileByUserId(r.receiver_id);
+            const currentStatus = await this.userService.getCurrentUserStatusByUserId(r.receiver_id);
             blocks.push({
 								userId: user.user_id, 
 								userNickName: user.nickname,
 								isFriend: false,
 								isBlocked: true,
+                                userStatus: currentStatus,
 						});
         }
 
