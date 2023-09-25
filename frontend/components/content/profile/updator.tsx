@@ -191,13 +191,8 @@ function ImgUpdator({
 		const kbytes = 200;
 		console.log(`input=${JSON.stringify(targetFile)}`);
     if (targetFile) {
-<<<<<<< HEAD
-			if ((targetFile.type != 'image/png' && targetFile.type != 'image/jpg') || targetFile.size > (1024 * 1024)) {
-				alert('파일의 확장자명은 .png, 크기는 40kB 이하여야 합니다.');
-=======
 			if ((targetFile.type != 'image/png' && targetFile.type != 'image/jpg') || targetFile.size > (kbytes * 1024)) {
 				alert(`파일의 확장자명은 .png, 크기는 ${kbytes}kB 이하여야 합니다.`);
->>>>>>> c8640ba62dc6f9e5b473458d47528fd40ca33c57
 				return;
 			}
 			console.log(`avatar image type=${targetFile.type}, size=${targetFile.size}`);
