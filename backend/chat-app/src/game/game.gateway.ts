@@ -109,14 +109,49 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		if (!user1 && !user2) {
 			return ;
 		}
-		// 게임 종료 조건
-		if (!this.gameRoomMap.has(user1.user_id)) {
+		/**
+		 * Game Terminating Condition Checking
+		 */
+		if (!this.gameRoomMap.has(user1.user_id) && !this.gameRoomMap.has(user2.user_id)) {
+			return ;											// CASE `1`: Both of them left.
+		}
+		if (!this.gameRoomMap.has(user1.user_id)){					// CASE `2` : User1 left
+			console.log(`[Game] ${user2.nickname} winned !`);
+			await this.gameService.updateGameHistory(user2.user_id, user1.user_id, point1, point2);
+			this.server.to(roomName).emit('endGame', {
+				canvasX: this.MAP_X,
+				canvasY: this.MAP_Y,
+				player1: user1.nickname,
+				player2: user2.nickname,
+				score1: point1,
+				score2: point2,
+				winner: user1.nickname
+			});
+			player2.leave(roomName);
+			console.log(`[Game] ${user2.nickname} has left the game.`);
+			this.gameRoomMap.delete(user2.user_id);
+			console.log(`[Game] room ${roomName} removed.`);
 			return;
 		}
-		if (!this.gameRoomMap.has(user2.user_id)) {
+		else if (!this.gameRoomMap.has(user2.user_id)) {			// CASE `3` : User2 left
+			console.log(`[Game] ${user1.nickname} winned !`);
+			await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
+			this.server.to(roomName).emit('endGame', {
+				canvasX: this.MAP_X,
+				canvasY: this.MAP_Y,
+				player1: user1.nickname,
+				player2: user2.nickname,
+				score1: point1,
+				score2: point2,
+				winner: user1.nickname
+			});
+			player1.leave(roomName);
+			console.log(`[Game] ${user1.nickname} has left the game.`);
+			this.gameRoomMap.delete(user1.user_id);
+			console.log(`[Game] room ${roomName} removed.`);
 			return;
 		}
-		if (point1 == this.MAXPOINT) {
+		if (point1 == this.MAXPOINT) {								// CASE `4` : User1 Win
 			console.log(`[Game] ${user1.nickname} winned !`);
 			await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 			this.server.to(roomName).emit('endGame', {
@@ -130,12 +165,12 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			});
 			player1.leave(roomName);
 			player2.leave(roomName);
-			console.log(`[Game] ${user1.nickname} and ${user2.nickname} left the game.`);
+			console.log(`[Game] ${user1.nickname} and ${user2.nickname} has left the game.`);
 			this.gameRoomMap.delete(user1.user_id);
 			this.gameRoomMap.delete(user2.user_id);
 			console.log(`[Game] room ${roomName} removed.`);
 			return;
-		} else if (point2 == this.MAXPOINT) {
+		} else if (point2 == this.MAXPOINT) {							// CASE `5` : User 2 Win
 			console.log(`[Game] ${user1.username} winned !`);
 			await this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
 			this.server.to(roomName).emit('endGame', {
@@ -149,7 +184,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			});
 			player1.leave(roomName);
 			player2.leave(roomName);
-			console.log(`[Game] ${user1.nickname} and ${user2.nickname} left the game.`);
+			console.log(`[Game] ${user1.nickname} and ${user2.nickname} has left the game.`);
 			this.gameRoomMap.delete(user1.user_id);
 			this.gameRoomMap.delete(user2.user_id);
 			console.log(`[Game] room ${roomName} removed.`);
@@ -233,39 +268,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			/**
 			 * Gaming Info to Front-end
 			 */
-			if (!this.gameRoomMap.has(user1.user_id)) {
-				clearInterval(id);
-				console.log(`[Game] ${user1.username} 없는거 확인.`)
-				await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
-				this.server.to(roomName).emit('endGame', {
-					canvasX: this.MAP_X,
-					canvasY: this.MAP_Y,
-					player1: user1.nickname,
-					player2: user2.nickname,
-					score1: point1,
-					score2: point2,
-					winner: user2.nickname
-				});
-				player2.leave(roomName);
-				this.gameRoomMap.delete(user2.user_id);
-				return;
-			} else if (!this.gameRoomMap.has(user2.user_id)) {
-				clearInterval(id);
-				console.log(`[Game] ${user2.username} 없는거 확인.`)
-				await this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
-				this.server.to(roomName).emit('endGame', {
-					canvasX: this.MAP_X,
-					canvasY: this.MAP_Y,
-					player1: user1.nickname,
-					player2: user2.nickname,
-					score1: point1,
-					score2: point2,
-					winner: user1.nickname
-				});
-				player1.leave(roomName);
-				this.gameRoomMap.delete(user1.user_id);
-				return;
-			}
 			this.server.to(roomName).emit('gamingInfo', {
 				canvasX: this.MAP_X,
 				canvasY: this.MAP_Y,
@@ -290,9 +292,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			} else if (ball.x > this.MAP_X) {
 				winFlag = 1;
 			}
-			if (winFlag != 0) {
+			if (winFlag != 0 || !this.gameRoomMap.has(user1.user_id) || !this.gameRoomMap.has(user2.user_id)) {
 				clearInterval(id);
-				if (winFlag == 1) {
+				if (winFlag == 1) {		// New Set with updated point
 					await this.runGame(gameMode, roomName, player1, player2, point1+1, point2);
 				} else {
 					await this.runGame(gameMode, roomName, player1, player2, point1, point2+1);
@@ -300,10 +302,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			}
 		};
 		const id = setInterval(render, this.DELAY);
-		if (!this.gameRoomMap.has(user1.user_id) || !this.gameRoomMap.has(user2.user_id)) {
-			clearInterval(id);
-			return ;
-		}
 		await render();
 	}
 
