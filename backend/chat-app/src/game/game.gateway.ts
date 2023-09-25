@@ -230,6 +230,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			if (!this.gameRoomMap.has(user1.user_id)) {
 				clearInterval(id);
 				console.log(`[Game] ${user1.username} 없는거 확인.`)
+				await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
 				this.server.to(roomName).emit('endGame', {
 					canvasX: this.MAP_X,
 					canvasY: this.MAP_Y,
@@ -241,11 +242,14 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				});
 				player2.leave(roomName);
 				this.gameRoomMap.delete(user2.user_id);
-				await this.gameService.updateGameHistory(user1.user_id, user2.user_id, point1, point2);
+				this.gameRoomMap.delete(user2.user_id);
+				clearInterval(id);
+
 				return;
 			} else if (!this.gameRoomMap.has(user2.user_id)) {
 				clearInterval(id);
 				console.log(`[Game] ${user2.username} 없는거 확인.`)
+				await this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
 				this.server.to(roomName).emit('endGame', {
 					canvasX: this.MAP_X,
 					canvasY: this.MAP_Y,
@@ -257,7 +261,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				});
 				player1.leave(roomName);
 				this.gameRoomMap.delete(user1.user_id);
-				await this.gameService.updateGameHistory(user2.user_id, user1.user_id, point2, point1);
+				clearInterval(id);
 				return;
 			}
 			this.server.to(roomName).emit('gamingInfo', {
@@ -294,10 +298,11 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			}
 		};
 		const id = setInterval(render, this.DELAY);
-		await render();
 		if (!this.gameRoomMap.has(user1.user_id) || !this.gameRoomMap.has(user2.user_id)) {
+			clearInterval(id);
 			return ;
 		}
+		await render();
 	}
 
 	@SubscribeMessage('launchGame')
