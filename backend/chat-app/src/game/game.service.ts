@@ -29,8 +29,8 @@ export class GameService {
 		// 점수 변경
 		const surplus = logisticFunction(winUser.point, loseUser.point);
 		if (winUser.point > loseUser.point) {
-			await this.userService.updateGamePoint(winUser.user_id, (25 - surplus));
-			await this.userService.updateGamePoint(loseUser.user_id, -(25 + surplus));
+			await this.userService.updateGamePoint(winUser.user_id, 25 - surplus);
+			await this.userService.updateGamePoint(loseUser.user_id, -25 + surplus);
 		} else {
 			await this.userService.updateGamePoint(winUser.user_id, 25 + surplus);
 			await this.userService.updateGamePoint(loseUser.user_id, -(25 + surplus));
