@@ -76,7 +76,7 @@ export class ChatController {
         }
 
         @Get('users-in-channel/:id/:id')
-        async get(
+        async getAllUsersInfoInChannel(
             @Param('uid', ParseIntPipe) uid: number,
             @Param('cid', ParseIntPipe) cid: number): Promise<BridgeDto[]> {
             return await this.chatService.getAllUsersInChannelByChannelId(uid, cid);
