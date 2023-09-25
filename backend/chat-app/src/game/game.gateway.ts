@@ -43,7 +43,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		this.server.on('connection', (socket) => {
 			console.log(`[Game] GameSocket_id: ${socket.id} connected.`);
 		});
-		
 	}
 
 	@SubscribeMessage('joinQueue')

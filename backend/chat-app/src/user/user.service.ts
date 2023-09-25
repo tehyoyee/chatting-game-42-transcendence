@@ -60,6 +60,14 @@ export class UserService {
     //     }
     // }
 
+	async getRanking() {
+		const ranking = await this.userRepository
+			.createQueryBuilder('user')
+			.select('RANK () OVER (ORDER BY point DESC) as "rank", user.nickname, user.point')
+			.getRawMany();
+		return ranking;
+	}
+    
     async getTwoFactorByUserId(id: number): Promise<Boolean> {
         return await this.userRepository.getTwoFactorByUserId(id);
     }
