@@ -4,39 +4,63 @@ import { IChatMate, EChatUserType } from '../content/chat/context';
 import UserList from "@/components/structure/userList";
 import { useFetch } from "@/lib/hook";
 import useAuthContext from "@/components/user/auth";
+import useSocketContext from "@/lib/socket";
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 const relationUrl = `${serverUrl}/relation`;
 
+const friendFetcher = async (path: string) => {
+	return fetch(path, {
+		method: "GET",
+		credentials: "include",
+	})
+	.then(res => {
+			if (!res.ok) throw new Error(`invalid response: ${res.status}`);
+			return res.json();
+	});
+};
+
+const blockFetcher = (path: string) => {
+	return fetch(path, {
+		method: "GET",
+		credentials: "include",
+	})
+	.then(res => {
+			if (!res.ok) throw new Error(`invalid response: ${res.status}`);
+			return res.json();
+	});
+};
+
 export default function Social() {
 	const { setPlayerState } = usePlayerContext();
 	const { user } = useAuthContext();
+	const { chatSocket, gameSocket } = useSocketContext();
 
-	const [friendList, updateFriendList] = useFetch<IChatMate[]>(`${relationUrl}/social/friends/${user.id}`, [], async (path) => {
-		return fetch(path, {
-			method: "GET",
-			credentials: "include",
-		})
-		.then(res => {
-				if (!res.ok) throw new Error(`invalid response: ${res.status}`);
-				return res.json();
+	const [friendList, updateFriendList] = useFetch<IChatMate[]>(`${relationUrl}/social/friends/${user.id}`, [], friendFetcher);
+	const [blocksList, updateBlocksList] = useFetch<IChatMate[]>(`${relationUrl}/social/blocks/${user.id}`, [], blockFetcher);
+
+	function updateUserList() {
+		updateBlocksList();
+		updateFriendList();
+	}
+
+	useEffect(() => {
+		if (!chatSocket || !gameSocket) return;
+		chatSocket.on('refreshStatus', () => {
+			updateUserList();
 		});
-	});
-	const [blocksList, updateBlocksList] = useFetch<IChatMate[]>(`${relationUrl}/social/blocks/${user.id}`, [], (path) => {
-		return fetch(path, {
-			method: "GET",
-			credentials: "include",
-		})
-		.then(res => {
-				if (!res.ok) throw new Error(`invalid response: ${res.status}`);
-				return res.json();
+		gameSocket?.on('refreshGameStatus', () => {
+			updateUserList();
 		});
-	});
+		return () => {
+			chatSocket.off('refreshStatus');
+			gameSocket.off('refreshGameStatus');
+		}
+	}, []);
 
 	useEffect(() => {
 		setPlayerState(EPlayerState.SOCIAL);
-		updateBlocksList();
-		updateFriendList();
+		updateUserList();
 	}, []);
 
 	useEffect(() => {

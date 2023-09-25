@@ -4,6 +4,7 @@ import { IChatMate, IChatUser, ISocial } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 import useAuthContext from '../user/auth';
+import { useRouter } from 'next/router';
 
 enum ERelationType {
 	FRIEND = "friend",
@@ -38,6 +39,7 @@ const UserModal = ({
 }) => {
 	const { chatSocket, gameSocket } = useSocketContext();
 	const { user } = useAuthContext();
+	const router = useRouter();
 
 	const relContent: IRelationDto = {
 		senderId: user.id,
