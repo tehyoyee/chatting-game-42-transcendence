@@ -180,17 +180,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //   return ;
     // }
 
-    let channel, bridge, receiverBridge;
+    let channel: Channel, bridge, receiverBridge;
+
+
     const exist = await this.chatService.checkDmRoomExists(user.user_id, dmChannelDto.receiverId);
     if (exist) {
       channel = exist;
-      let previousMessages: PreviousMessageDto[] = [];
-      previousMessages = await this.chatService.getAllMessagesExceptBlockByChannelId(user.user_id, channel.channel_id);
-
-      this.server.to(channel.channel_name).emit("messages", previousMessages);
     }
     else {
       channel = await this.chatService.createDmChannelAndBridges(user, user.user_id, dmChannelDto.receiverId);
+			console.debug('dm channel message fail: create new dm channel');
     }
 
     bridge = await this.chatService.checkUserInThisChannel(user.user_id, channel.channel_id);
@@ -204,6 +203,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     this.server.to(channel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
     // this.server.to(channel.channel_name).emit("join", {user_id: receiver.user_id, user_nickname: receiver.nickname});
+		let previousMessages: PreviousMessageDto[] = [];
+		previousMessages = await this.chatService.getAllMessagesExceptBlockByChannelId(user.user_id, channel.channel_id);
+
+		this.server.to(client.id).emit("messages", previousMessages);
     
     // this.server.to(channel.channel_name).emit("join", {
     //   user_id: user.user_id, user_nickname: user.nickname,
@@ -249,14 +252,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     let previousMessages: PreviousMessageDto[] = [];
     previousMessages = await this.chatService.getAllMessagesExceptBlockByChannelId(user.user_id, channel.channel_id);
-    //console.log('preMsgs: ', previousMessages);
+    // console.log('preMsgs: ', previousMessages);
 
     client.join(channel.channel_name);
 
     client.emit('join-success', {channel_id: channel.channel_id, user_type: newBridge.user_type});
     //client.emit('get-users-channel', inners);
 
-    this.server.to(channel.channel_name).emit("messages", previousMessages);
+    this.server.to(client.id).emit("messages", previousMessages);
     this.server.to(channel.channel_name).emit("join", {userId: user.user_id, userNickname: user.nickname});
   }
 
@@ -883,54 +886,58 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
   //==========================================================================================
 
-  @SubscribeMessage('accept-game')
-  async onAcceptGame(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() acceptGameDto: AcceptGameDto) {
-      const invitedUser = await this.socketToUser(client);
-      if (!invitedUser) {
-        client.emit('accept-game-fail', 'Unidentified Invited User Error in onAcceptGame');
-        return ;
-      }
+  // @SubscribeMessage('accept-game')
+  // async onAcceptGame(
+  //   @ConnectedSocket() client: Socket,
+  //   @MessageBody() acceptGameDto: AcceptGameDto) {
+  //     const invitedUser = await this.socketToUser(client);
+  //     if (!invitedUser) {
+  //       client.emit('accept-game-fail', 'Unidentified Invited User Error in onAcceptGame');
+  //       return ;
+  //     }
 
-      const hostUserSocket = this.userIdToSocket(acceptGameDto.hostUserId);
-      if (!hostUserSocket) {
-        client.emit('accept-game-fail', 'Unidentified Host User Socket Error in onAcceptGame');
-      }
+  //     const hostUserSocket = this.userIdToSocket(acceptGameDto.hostUserId);
+  //     if (!hostUserSocket) {
+  //       client.emit('accept-game-fail', 'Unidentified Host User Socket Error in onAcceptGame');
+  //     }
 
-      client.emit('accept-game-success', 'accepted');
-      hostUserSocket.emit('accept-game-success', 'accepted');
-
-      this.server.of('/game').emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode})
-  }
+  //     //chat소켓 -> 클라이언트 -> game소켓 -> 게임 시작
+  //     // client.emit('accept-game-success', 'accepted');
+  //     // hostUserSocket.emit('accept-game-success', 'accepted');
+  //     // client.emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode});
+  //     hostUserSocket.emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode});
+    
+  //     // this.server.of('/game').emit('launchGame', {hostUserSocket: hostUserSocket, invitedUserSocket: client, gameMode: acceptGameDto.gameMode})
+  // }
 
   //==========================================================================================
   
-  @SubscribeMessage('decline-game')
-  async onDeclineGame(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() hostId: number) {
-      const invitedUser = await this.socketToUser(client);
-      if (!invitedUser) {
-        client.emit('decline-game-fail', 'Unidentified Invited User Error in onDeclineGame');
-        return ;
-      }
+  // @SubscribeMessage('decline-game')
+  // async onDeclineGame(
+  //   @ConnectedSocket() client: Socket,
+  //   @MessageBody() hostId: number) {
+  //     const invitedUser = await this.socketToUser(client);
+  //     if (!invitedUser) {
+  //       client.emit('decline-game-fail', 'Unidentified Invited User Error in onDeclineGame');
+  //       return ;
+  //     }
 
-      const hostUserSocket = this.userIdToSocket(hostId);
-      if (!hostUserSocket) {
-        client.emit('decline-game-fail', 'Unidentified Host User Socket Error in onDeclineGame');
-      }
+  //     const hostUserSocket = this.userIdToSocket(hostId);
+  //     if (!hostUserSocket) {
+  //       client.emit('decline-game-fail', 'Unidentified Host User Socket Error in onDeclineGame');
+  //     }
 
-      hostUserSocket.emit('decline-game-success', 'declined');
-      client.emit('decline-game-success', 'declined');
-  }
+  //     hostUserSocket.emit('decline-game-success', 'declined');
+  //     client.emit('decline-game-success', 'declined');
+  // }
   //==========================================================================================
   
   @SubscribeMessage('gameStatusUpdate')
-  async onGameStatusUpdate(@MessageBody() playerId: any) {
-    console.log('gamestatus: ', playerId);
+  async onGameStatusUpdate(@MessageBody() playerId: number) {
     this.emitUserStatus(playerId);
   }
+  
+  //==========================================================================================
 
   private async emitUserStatus(userId: number) {
     let listOfWhoFriendedMe: FriendDto[] = [];

@@ -8,6 +8,7 @@ import * as config from 'config';
 import { AxiosRequestConfig } from 'axios';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { MailService } from './mail.service';
+import { UserStatus } from 'src/user/enum/user-status.enum';
 
 const dbconfig = config.get('intra');
 const grant_type = dbconfig.get('grant_type');
@@ -25,7 +26,7 @@ export class AuthService {
 	) {}
 	
 	async signUp(code: string, res: Response) {
-		try {
+		// try {
 			const generateRandomString = async ( len: number) => {
 				const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
 				let randomString: string = '';
@@ -47,6 +48,12 @@ export class AuthService {
 				withCredentials: true,
 			}
 			const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
+			const duplicateTest = await this.userService.getProfileByUserId(user.data.id);
+			if (duplicateTest) {
+				if (duplicateTest.status !== UserStatus.OFFLINE) {
+					throw new HttpException('User already logged in this site.', HttpStatus.UNAUTHORIZED);
+				}
+			}
 			const payload = { username: user.data.login, id: user.data.id };
 			const newAccessToken = this.jwtService.sign({ payload });
 			const found = await this.userService.getProfileByUserId(user.data.id);
@@ -89,9 +96,9 @@ export class AuthService {
 				two_factor: false
 			})
 			return;
-		} catch (err) {
-			throw new HttpException(`SignUp Error: ${err}`, HttpStatus.UNAUTHORIZED);
-		}
+		// } catch (err) {
+		// 	throw new HttpException(`SignUp Error: ${err}`, HttpStatus.UNAUTHORIZED);
+		// }
 	}
 
 	async checkLoginState(req: Request, res: Response) {
@@ -103,7 +110,7 @@ export class AuthService {
 			try {
 				const { payload } = this.jwtService.verify(token);
 			} catch (err) {
-				throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
+				throw new HttpException('[Login State] Unauthorized Token', HttpStatus.UNAUTHORIZED);
 			}
 			const { payload } = this.jwtService.verify(token);
 			const found = await this.userService.getProfileByUserId(payload.id);	// 토큰에 해당하는 유저찾기
@@ -121,8 +128,12 @@ export class AuthService {
 		return;
 	}
 
-	signOut(res: Response) {
-		res.clearCookie('token').json({ message: "Signned Out" });
+	async signOut(req: Request, res: Response) {
+		const token = req.cookies['token'];
+		const payload = await this.verifyToken(token);
+		const user = await this.userService.getProfileByUserId(payload.user_id);
+		this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
+		res.clearCookie('token').json({ status: 200, message: "Signned Out" });
 	}
 
 	async verifyToken(token: string) {

@@ -4,6 +4,7 @@ import { IChatMate, IChatUser, ISocial } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 import useAuthContext from '../user/auth';
+import { useRouter } from 'next/navigation';
 
 enum ERelationType {
 	FRIEND = "friend",
@@ -38,6 +39,7 @@ const UserModal = ({
 }) => {
 	const { chatSocket, gameSocket } = useSocketContext();
 	const { user } = useAuthContext();
+	const router = useRouter();
 
 	const relContent: IRelationDto = {
 		senderId: user.id,
@@ -124,7 +126,7 @@ const UserModal = ({
 	function handleDm() {
 		handleEvent('enter-dm-channel', 'enter-dm-success', 'enter-dm-fail', 
 			{receiverId: targetUser.userId}, 
-			(data: IChatUser) => {setUser(data)},
+			(data: IChatUser) => {console.log('dm: ', data);setUser(data)},
 			(msg: any) => {console.log(`enter-dm fail: ${msg}`); alert('오류: DM을 보낼 수 없습니다.');},
 		)
 	}

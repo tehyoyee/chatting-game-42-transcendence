@@ -1,12 +1,12 @@
 import { Injectable, NotAcceptableException, NotFoundException, ServiceUnavailableException } from "@nestjs/common";
 import { DataSource, Repository } from "typeorm";
-import { Channel } from "./entity/channel.entity";
+import { Channel } from "../entity/channel.entity";
 import { User } from "src/user/entity/user.entity";
 import * as bcrypt from 'bcrypt';
-import { UserType } from "./enum/user_type.enum";
-import { ChannelType } from "./enum/channel_type.enum";
-import { GroupChannelDto } from "./dto/channel-dto";
-import { UpdatePasswordDto } from "./dto/update-dto";
+import { UserType } from "../enum/user_type.enum";
+import { ChannelType } from "../enum/channel_type.enum";
+import { GroupChannelDto } from "../dto/channel-dto";
+import { UpdatePasswordDto } from "../dto/update-dto";
 
 @Injectable()
 export class ChannelRepository extends Repository<Channel> {

@@ -1,6 +1,6 @@
 import { DataSource, Not, Repository } from "typeorm";
 import { User } from "./entity/user.entity";
-import { ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { NotFoundError } from "rxjs";
 import { UserStatus } from "./enum/user-status.enum";
 import { UserAchievement } from "./enum/user-achievements.enum";
@@ -99,7 +99,7 @@ export class UserRepository extends Repository<User> {
     async updateStatus(id: number, newStatus: UserStatus): Promise<User> {
         const found = await this.getProfileByUserId(id);
         if (!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
 
         found.status = newStatus;
         return await this.save(found);
@@ -108,7 +108,7 @@ export class UserRepository extends Repository<User> {
     async updateAchievement(id: number, newAchievement: UserAchievement): Promise<User> {
         const found = await this.getProfileByUserId(id);
         if (!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
 
         found.achievement = newAchievement;
         return await this.save(found);
@@ -117,7 +117,7 @@ export class UserRepository extends Repository<User> {
     async getGameHistoryByUserId(id: number) {
         const found = await this.getProfileByUserId(id);
         if (!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
         return found.gameHistories;
     }
 
@@ -130,7 +130,7 @@ export class UserRepository extends Repository<User> {
     async updateGameHistory(id: number, gameHistory: GameHistory) {
         const found = await this.getProfileByUserId(id);
         if (!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
         found.gameHistories.push(gameHistory);
         this.save(found);
     }
@@ -138,7 +138,7 @@ export class UserRepository extends Repository<User> {
     async updateGamePoint(id: number, value: number): Promise<void> {
         const found = await this.getProfileByUserId(id);
         if(!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
         found.point += value;
         await this.save(found);
     }
@@ -146,7 +146,7 @@ export class UserRepository extends Repository<User> {
     async winGame(id: number): Promise<User> {
         const found = await this.getProfileByUserId(id);
         if (!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
 
         found.win_count++;
         return await this.save(found);
@@ -155,7 +155,7 @@ export class UserRepository extends Repository<User> {
     async loseGame(id: number): Promise<User> {
         const found = await this.getProfileByUserId(id);
         if (!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
 
         found.lose_count++;
         return await this.save(found);
@@ -164,7 +164,7 @@ export class UserRepository extends Repository<User> {
     async updateAuthCodeByUserId(id: number, authCode: string): Promise<void> {
         const found = await this.getProfileByUserId(id);
         if (!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
         found.auth_code = authCode;
         return;
     }
@@ -172,14 +172,14 @@ export class UserRepository extends Repository<User> {
     async getAuthCodeByUserId(id: number): Promise<string> {
         const found = await this.getProfileByUserId(id);
         if (!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
         return found.auth_code;
     }
 
     async updateTwoFactorCode(id: number, newCode: string): Promise<void> {
         const found = await this.getProfileByUserId(id);
         if (!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
         found.auth_code = newCode;
 				await this.save(found);
 				return;

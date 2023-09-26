@@ -1,4 +1,4 @@
-import { OnModuleInit, UseFilters, UseGuards } from '@nestjs/common';
+import { OnModuleInit, Req, Res, UseFilters, UseGuards } from '@nestjs/common';
 import { WebSocketServer, MessageBody, SubscribeMessage, WebSocketGateway, BaseWsExceptionFilter, WsException } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io';
 import { AuthService } from "src/auth/auth.service";
@@ -10,6 +10,7 @@ import { KeyStatus } from "./game.keystatus.enum";
 import { WebsocketExceptionsFilter } from "src/exception/ws.exception.filter";
 import { AuthGuard } from "@nestjs/passport";
 import { UserStatus } from 'src/user/enum/user-status.enum';
+import { disconnect } from 'process';
 
 @WebSocketGateway({ namespace: '/game'})
 @UseFilters(WebsocketExceptionsFilter)
@@ -40,7 +41,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	server: Server;
 
 	onModuleInit() {
-		this.server.on('connection', (socket) => {
+		this.server.on('connection', async (socket) => {
 			console.log(`[Game] GameSocket_id: ${socket.id} connected.`);
 		});
 	}
@@ -70,8 +71,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				this.gameRoomMap.set(playerIdRight, newRoomName);
 				await this.userService.updateStatus(playerIdLeft, UserStatus.PLAYING);
 				await this.userService.updateStatus(playerIdRight, UserStatus.PLAYING);
-				this.server.emit('gameStatusUpdate', playerIdLeft);
-				this.server.emit('gameStatusUpdate', playerIdRight);
+				this.server.emit('refreshGameStatus', playerIdLeft);
+				this.server.emit('refreshGameStatus', playerIdRight);
 				this.server.to(newRoomName).emit('gameStart', {
 					leftUserName: user1.nickname,
 					rightUserName: user2.nickname,
@@ -102,8 +103,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				this.gameRoomMap.set(playerIdRight, newRoomName);
 				await this.userService.updateStatus(playerIdLeft, UserStatus.PLAYING);
 				await this.userService.updateStatus(playerIdRight, UserStatus.PLAYING);
-				this.server.emit('gameStatusUpdate', playerIdLeft);
-				this.server.emit('gameStatusUpdate', playerIdRight);
+				this.server.emit('refreshGameStatus', playerIdLeft);
+				this.server.emit('refreshGameStatus', playerIdRight);
 				console.log(`[Game] Game Room ${newRoomName} created !!`);
 				this.server.to(newRoomName).emit('gameStart', {
 					leftUserName: user1.nickname,
@@ -135,8 +136,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		if (!this.gameRoomMap.has(user1.user_id) && !this.gameRoomMap.has(user2.user_id)) {
 			await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
 			await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-			this.server.emit('gameStatusUpdate', user1.user_id);
-			this.server.emit('gameStatusUpdate', user2.user_id);
+			this.server.emit('refreshGameStatus', user1.user_id);
+			this.server.emit('refreshGameStatus', user2.user_id);
 			return ;											// CASE `1`: Both of them left.
 		}
 		if (!this.gameRoomMap.has(user1.user_id)){					// CASE `2` : User1 left
@@ -157,8 +158,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			console.log(`[Game] room ${roomName} removed.`);
 			await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
 			await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-			this.server.emit('gameStatusUpdate', user1.user_id);
-			this.server.emit('gameStatusUpdate', user2.user_id);
+			this.server.emit('refreshGameStatus', user1.user_id);
+			this.server.emit('refreshGameStatus', user2.user_id);
 			return;
 		}
 		else if (!this.gameRoomMap.has(user2.user_id)) {			// CASE `3` : User2 left
@@ -179,8 +180,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			console.log(`[Game] room ${roomName} removed.`);
 			await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
 			await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-			this.server.emit('gameStatusUpdate', user1.user_id);
-			this.server.emit('gameStatusUpdate', user2.user_id);
+			this.server.emit('refreshGameStatus', user1.user_id);
+			this.server.emit('refreshGameStatus', user2.user_id);
 			return;
 		}
 		if (point1 == this.MAXPOINT) {								// CASE `4` : User1 Win
@@ -203,8 +204,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			console.log(`[Game] room ${roomName} removed.`);
 			await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
 			await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-			this.server.emit('gameStatusUpdate', user1.user_id);
-			this.server.emit('gameStatusUpdate', user2.user_id);
+			this.server.emit('refreshGameStatus', user1.user_id);
+			this.server.emit('refreshGameStatus', user2.user_id);
 			return;
 		} else if (point2 == this.MAXPOINT) {							// CASE `5` : User 2 Win
 			console.log(`[Game] ${user1.username} winned !`);
@@ -226,8 +227,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			console.log(`[Game] room ${roomName} removed.`);
 			await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
 			await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-			this.server.emit('gameStatusUpdate', user1.user_id);
-			this.server.emit('gameStatusUpdate', user2.user_id);
+			this.server.emit('refreshGameStatus', user1.user_id);
+			this.server.emit('refreshGameStatus', user2.user_id);
 			return;
 		}
 
@@ -417,31 +418,53 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
-		// if (!user) {
-		// 	this.server.to(client).emit("forceLogout");
-		// }
-		this.userSocketMap.set(user.user_id, client);
-		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
+		if (!user) {
+			this.server.to(client.id).emit("forceLogout");
+		}
+		const token: any = client.handshake.query.token;
+		console.log('when login status userMap', this.userSocketMap);
+		if (this.userSocketMap.has(user.user_id)) {
+			console.log('forcelogout');
+			this.server.to(client.id).emit('forceLogout');
+		} else {
+			await this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
+			this.userSocketMap.set(user.user_id, client);
+			this.userKeyMap.set(user.user_id, KeyStatus.NONE);
+		}
 	}
   
-	async handleDisconnect(client: any) {
+	async handleDisconnect(client: Socket) {
 		console.log(`[Game] ${client.id} has left.`);
 		const user = await this.socketToUser(client);
-//		if (!user) return;
-		this.userSocketMap.delete(user.user_id);
-		this.gameRoomMap.delete(user.user_id);
-		this.userKeyMap.delete(user.user_id);
-
-		for (let i = 0; i < this.gameNormalQueue.length; i++) {
-			if (this.gameNormalQueue[i] === user.user_id) {
-				this.gameNormalQueue.splice(i, 1);
+		if (this.userSocketMap.has(user.user_id)) {
+			if (this.userSocketMap.get(user.user_id).id === client.id) {
+				console.log('일반 로그아웃');
+				this.userSocketMap.delete(user.user_id);
+				this.gameRoomMap.delete(user.user_id);
+				this.userKeyMap.delete(user.user_id);
+				await this.userService.updateStatus(user.user_id,UserStatus.OFFLINE);
+				this.server.emit('refresh');
+				for (let i = 0; i < this.gameNormalQueue.length; i++) {
+					if (this.gameNormalQueue[i] === user.user_id) {
+						this.gameNormalQueue.splice(i, 1);
+					}
+				}
+				for (let i = 0; i < this.gameAdvancedQueue.length; i++) {
+					if (this.gameAdvancedQueue[i] === user.user_id) {
+						this.gameAdvancedQueue.splice(i, 1);
+					}
+				}
+				await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
 			}
+		return;
 		}
-		for (let i = 0; i < this.gameAdvancedQueue.length; i++) {
-			if (this.gameAdvancedQueue[i] === user.user_id) {
-				this.gameAdvancedQueue.splice(i, 1);
-			}
-		}
+		// 	console.log('중복 로그아웃 disconnect');
+		// }
+		// const NotDuplicateLogout = this.getKeyByValue(this.userSocketMap, client);
+		// // if (!NotDuplicateLogout) {
+		// // 	console.log('duplicate');
+		// // 	return;
+		// // }
 	}
 
 	private async socketToUser(client: Socket): Promise<User> {

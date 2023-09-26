@@ -1,10 +1,10 @@
 import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Channel } from './entity/channel.entity';
 import { User } from 'src/user/entity/user.entity';
-import { ChannelRepository } from './channel.repository';
-import { MessageRepository } from './message.repository';
+import { ChannelRepository } from './repository/channel.repository';
+import { MessageRepository } from './repository/message.repository';
 import { ChatGateway } from './chat.gateway';
-import { UcbRepository } from './ucb.repository';
+import { UcbRepository } from './repository/ucb.repository';
 import { UserType } from './enum/user_type.enum';
 import { UserService } from 'src/user/user.service';
 import { UserChannelBridge } from './entity/user-channel-bridge.entity';
@@ -17,6 +17,7 @@ import { DmDto, GroupMessageDto, PreviousMessageDto } from './dto/message-dto';
 import { UpdatePasswordDto } from './dto/update-dto';
 import { BridgeDto } from './dto/bridge-dto';
 import { RelationService } from 'src/relation/relation.service';
+import { channel } from 'diagnostics_channel';
 
 @Injectable()
 export class ChatService {
@@ -110,8 +111,7 @@ export class ChatService {
     async getPrivateChannelByUserId(userId: number): Promise<Channel> {
         const user = await this.userService.getProfileByUserId(userId);
         if (!user) {
-            //exception handler
-            throw new HttpException('Unidentified User', HttpStatus.UNAUTHORIZED);
+            throw new HttpException('Unidentified User', HttpStatus.NOT_FOUND);
         }
             
         const channelName = 'user' + user.user_id.toString();
@@ -136,11 +136,13 @@ export class ChatService {
         .where('m.channel_id = :channelId', {channelId})
         .select(['m.user_id', 'm.content'])
         .orderBy('m.created_at', 'ASC')
-        .limit(10)
+        // .limit(10)
         .getMany();
 
         for (let r of rows) {
+            const user = await this.userService.getProfileByUserId(r.user_id);
             let message = { writerId: r.user_id,
+                            writerNickname: user.nickname,
                             content: r.content};
             
             previousMessages.push(message);
@@ -163,32 +165,36 @@ export class ChatService {
         return await this.ucbRepository.deleteUCBridge(userId, channelId, );
     }
 
-    //  방에 밴된유저만 남아있을경우 빈채널로 보고 삭제
     async deleteChannelIfEmpty(channelId: number) {
         const channels = await this.ucbRepository
         .createQueryBuilder('b')
         .where('b.channel_id = :channelId', {channelId})
         .select(['b.channel_id', 'b.user_id', 'b.is_banned'])
         .getMany();
-
+        
         if (channels.length === 0) {
+            await this.messageRepository.deleteMessagesByChannelId(channelId);
             await this.channelRepository.deleteChannelByChannelId(channelId);
             return ;
         }
+        
         for (let c of channels) {
             if (!c.is_banned) {
                 return ;
             }
         }
-
+        
+        //  방(bridge)에 밴 된 유저만 남아 있을 경우 빈 채널로 보고 삭제
         let bannedUsersId: number[] = [];
         for (let c of channels) {
             bannedUsersId.push(c.user_id);
         }
         for (let bId of bannedUsersId) {
-            this.deleteUCBridge(bId, channelId);
+            await this.deleteUCBridge(bId, channelId);
         }
-        this.channelRepository.deleteChannelByChannelId(channelId);
+        
+        await this.messageRepository.deleteMessagesByChannelId(channelId);
+        await this.channelRepository.deleteChannelByChannelId(channelId);
     }
 
     async deleteDmChannel(channelId: number) {
@@ -223,7 +229,7 @@ export class ChatService {
     async isOwnerOfChannel(userId: number, channelId: number) {
         const found = await this.ucbRepository.getUcbByIds(userId, channelId);
         if (!found)
-            throw new NotFoundException(`user ${userId} not found in channel ${channelId}`);
+            throw new HttpException('Unexist Bridge', HttpStatus.NOT_FOUND);
 
         if (found.user_type === UserType.OWNER)
             return true;
@@ -233,7 +239,7 @@ export class ChatService {
     async isAdminOfChannel(userId: number, channelId: number) {
         const found = await this.ucbRepository.getUcbByIds(userId, channelId);
         if (!found)
-            throw new NotFoundException(`user ${userId} not found in channel ${channelId}`);
+            throw new HttpException('Unexist Bridge', HttpStatus.NOT_FOUND);
 
         if (found.user_type === UserType.ADMIN)
             return true;

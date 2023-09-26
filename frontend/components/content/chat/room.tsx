@@ -17,6 +17,12 @@ type TSendMsg = {
 	content: string,
 };
 
+type TPrevMsg = {
+	writerId: number,
+	writerNickname: string,
+	content: string,
+}
+
 export default function ChatRoom() {
 	const { setPlayerState } = usePlayerContext();
 	useEffect(() => {
@@ -54,6 +60,13 @@ function ChatBox() {
 		chatSocket.off('message');
 		chatSocket.on('message', (data: TRecvMsg) => {
 			addMsg(`${data.user_nickname}: ${data.message}`)
+		})
+		chatSocket.off('messages');
+		chatSocket.on('messages', (data: TPrevMsg[]) => {
+			console.log('messages: ', data);
+			data.map(msg => {
+				addMsg(`${msg.writerNickname}: ${msg.content}`)
+			});
 		})
 	}, [chatSocket]);
 

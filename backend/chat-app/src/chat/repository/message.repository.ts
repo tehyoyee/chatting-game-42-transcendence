@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { DataSource, Repository } from "typeorm";
-import { Message } from "./entity/message.entity";
-import { GroupMessageDto } from "./dto/message-dto";
+import { Message } from "../entity/message.entity";
+import { GroupMessageDto } from "../dto/message-dto";
 import { User } from "src/user/entity/user.entity";
-import { Channel } from "./entity/channel.entity";
+import { Channel } from "../entity/channel.entity";
 
 @Injectable()
 export class MessageRepository extends Repository<Message> {
@@ -29,6 +29,10 @@ export class MessageRepository extends Repository<Message> {
         await newDM.save();
         
         return newDM;
+    }
+
+    async deleteMessagesByChannelId(channelId: number) {
+        await this.delete({ channel_id: channelId });
     }
    
 }

@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { DataSource, Repository } from "typeorm";
-import { UserChannelBridge } from "./entity/user-channel-bridge.entity";
-import { Channel } from "./entity/channel.entity";
-import { UserType } from "./enum/user_type.enum";
+import { UserChannelBridge } from "../entity/user-channel-bridge.entity";
+import { Channel } from "../entity/channel.entity";
+import { UserType } from "../enum/user_type.enum";
 import { User } from "src/user/entity/user.entity";
 
 @Injectable()

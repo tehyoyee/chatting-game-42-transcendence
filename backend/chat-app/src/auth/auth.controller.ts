@@ -25,10 +25,10 @@ export class AuthController {
 	}
 
 	@Get('/signout')
-	signOut(@Res() res: Response) {
+	signOut(@Req() req: Request, @Res() res: Response) {
 		if (g_debug)
 			console.log('/signout');
-		return this.authService.signOut(res);
+		return this.authService.signOut(req, res);
 	}
 
 	@Post('/twofactor')

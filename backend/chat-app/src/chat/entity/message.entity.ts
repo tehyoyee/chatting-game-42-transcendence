@@ -15,7 +15,7 @@ export class Message extends BaseEntity {
     
     @Column({ name: 'user_id' })
     user_id: number;
-    
+
     @Column({ name: 'channel_id' })
     channel_id: number;
     
