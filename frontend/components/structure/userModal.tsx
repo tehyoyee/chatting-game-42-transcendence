@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Socket } from 'socket.io-client';
-import { IChatMate, IChatUser, ISocial } from '../content/chat/context';
+import { IChatUser, ISocial } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 import useAuthContext from '../user/auth';
@@ -68,7 +68,7 @@ const UserModal = ({
 
 	function handleFriend() {
 		const url = `${relationUrl}/${targetUser.isFriend ? 'remove' : 'add'}/friend`;
-		console.log(JSON.stringify(relContent));
+		console.log('url=', url, ',content=', JSON.stringify(relContent));
 		fetch(url, {
 			method: targetUser.isFriend ? "DELETE" : "POST",
 			credentials: "include",
@@ -96,6 +96,7 @@ const UserModal = ({
 
 	function handleBlock() {
 		const url = `${relationUrl}/${targetUser.isBlocked ? 'remove' : 'add'}/block`;
+		console.log('url=', url, ',content=', JSON.stringify(relContent));
 		fetch(url, {
 			method: targetUser.isFriend ? "DELETE" : "POST",
 			credentials: "include",
@@ -133,7 +134,7 @@ const UserModal = ({
 
 	// TODO waiting page?
 	function handleGameNormal() {
-		handleEvent('invite-game', 'invite-game-success', 'invite-game-fail',
+		handleEvent('inviteGame', 'invite-game-success', 'invite-game-fail',
 			{targetUserId: targetUser.userId , gameMode: "NORMAL" ,},
 			(data: any) => {console.log(`${data.user_nickname}에게 초대를 보냈습니다.`)},
 			(msg: any) => {console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},
@@ -141,7 +142,7 @@ const UserModal = ({
 	}
 
 	function handleGameFast() {
-		handleEvent('invite-game', 'invite-game-success', 'invite-game-fail',
+		handleEvent('inviteGame', 'invite-game-success', 'invite-game-fail',
 			{targetUserId: targetUser.userId , gameMode: "ADVANCED" ,},
 			(data: any) => {console.log(`${data.user_nickname}에게 초대를 보냈습니다.`)},
 			(msg: any) => {console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},

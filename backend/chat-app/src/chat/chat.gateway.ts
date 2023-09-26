@@ -50,6 +50,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   //==========================================================================================
 
   async handleConnection(client: Socket) {
+    // console.log('client: ', client);
     this.logger.debug("handle connection in");
     const user = await this.socketToUser(client);
     if (!user) {
@@ -116,21 +117,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     // exception 날리지 않고 disconnect하도록 수정
     const token: any = client.handshake.query.token;
     if (!token) {
-      // throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
       this.logger.debug('Null Token');
-      client.disconnect();
-      return;
+      // client.disconnect();
+      return null;
     }
   
     try {
-      const decoded = await this.authService.verifyToken(token);
+      const decoded = await this.authService.verifyTokenSocket(token);
       const user: User = await this.userService.getProfileByUserId(decoded.id);
       return user;
     }
     catch (err) {
         this.logger.debug(err);
-        client.disconnect();
-        return;
+        // client.disconnect();
+        return null;
     }
   }
   
@@ -294,6 +294,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('post-fail', 'Unidentified User Error in onPostGroupMessage');
       return ;
     }
+
+    const decodedToken = await this.authService.verifyTokenSocket(groupMessageDto.token);
+		if (!decodedToken) {
+      this.server.to(client.id).emit("forceLogout");
+			this.handleDisconnect(client);
+			return ;
+		}
     
     if (groupMessageDto.content === '') {
       client.emit('post-fail', 'Empty Content Error in onPostGroupMessage');
@@ -310,6 +317,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('post-fail', 'Cannot Post Message Error in onPostGroupMessage');
       return ;
     }
+    
 
     const messageEntity = await this.chatService.createGroupMessage(user, channel, groupMessageDto.content);
 		const newMessage = messageEntity.content;

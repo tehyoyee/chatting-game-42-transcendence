@@ -13,6 +13,7 @@ type TRecvMsg = {
 };
 
 type TSendMsg = {
+	token: string | undefined,
 	channel_id: number,
 	content: string,
 };
@@ -84,6 +85,7 @@ function ChatBox() {
 		if (!inputField?.value || !chatLog || !chatSocket) return;
 
 		const sendmsg: TSendMsg = {
+			token: document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1],
 			channel_id: user.channel_id,
 			content: inputField.value,
 		}

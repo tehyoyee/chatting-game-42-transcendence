@@ -15,8 +15,8 @@ type SocketContextType = {
 };
 
 type TGameInvite = {
-	user_id: string,
-	user_nickname: string,
+	hostId: string,
+	hostNickname: string,
 	gameMode: string,
 };
 
@@ -70,12 +70,13 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 			console.log("gamesocket disconnected");
 			router.push('/');
 		});
-		socket.on('got-invited', (data: TGameInvite) => {
-			if (!confirm(`${data.user_nickname} 님이 ${data.gameMode}에 초대하셨습니다. 수락하시겠습니까?`)) {
-				socket.emit('decline-game', data.user_id);
+		socket.on('gotInvited', (data: TGameInvite) => {
+			if (!confirm(`${data.hostNickname} 님이 ${data.gameMode}에 초대하셨습니다. 수락하시겠습니까?`)) {
+//				socket.emit('declineGame', data.user_id);
+				return;
 			}
-			socket.emit('accept-game', {
-				hostUserId: data.user_id,
+			socket.emit('acceptGame', {
+				hostId: data.hostId,
 				gameMode: data.gameMode,
 			});
 		});
