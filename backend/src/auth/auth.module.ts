@@ -12,7 +12,6 @@ import { UserRepository } from '../user/user.repository';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MailService } from './mail.service';
 import { JwtStrategy } from './jwt.strategy';
-import { HttpExceptionFilter } from '../exception/http.exception.filter';
 
 @Module({
   imports: [
