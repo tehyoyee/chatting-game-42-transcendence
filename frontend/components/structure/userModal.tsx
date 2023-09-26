@@ -98,7 +98,7 @@ const UserModal = ({
 		const url = `${relationUrl}/${targetUser.isBlocked ? 'remove' : 'add'}/block`;
 		console.log('url=', url, ',content=', JSON.stringify(relContent));
 		fetch(url, {
-			method: targetUser.isFriend ? "DELETE" : "POST",
+			method: targetUser.isBlocked ? "DELETE" : "POST",
 			credentials: "include",
 			headers: {
 				'Content-Type': 'application/json',
@@ -132,6 +132,17 @@ const UserModal = ({
 		)
 	}
 
+	function handleGameNormal() {
+		console.log('handleGameNormal emitted');
+		gameSocket?.emit('inviteGame', {targetUserId: targetUser.userId , gameMode: "NORMAL" ,});
+	}
+
+	function handleGameFast() {
+		console.log('handleGameFast emitted');
+		gameSocket?.emit('inviteGame', {targetUserId: targetUser.userId , gameMode: "ADVANCED" ,});
+	}
+	/*
+	// NOTE WARNING
 	// TODO waiting page?
 	function handleGameNormal() {
 		handleEvent('inviteGame', 'invite-game-success', 'invite-game-fail',
@@ -148,6 +159,7 @@ const UserModal = ({
 			(msg: any) => {console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},
 		);
 	}
+	*/
 
   return (
 		<ul>

@@ -1,5 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, HttpException, HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class MailService {
@@ -19,7 +19,7 @@ export class MailService {
 		this.mailerService
     		.sendMail({
         	to: `${clientEmail}`,
-        	from: 'tehyoyee@gmail.com',
+        	from: 'transcendence@42seoul.com',
         	subject: 'Here\'s your verification code',
         	text: `Verification Code = ${code}`,
       	})
@@ -27,7 +27,7 @@ export class MailService {
         	console.log(result);
       	})
       	.catch((error) => {
-        	new ConflictException(error);
+        	return null;
       	});
     	return code;
   	}

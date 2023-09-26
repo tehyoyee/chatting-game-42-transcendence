@@ -53,7 +53,7 @@ export interface IProfileType {
   email: string;
 }
 
-type TGameUsers = {
+export type TGameUsers = {
 	leftUserName: string,
 	rightUserName: string,
 	leftUserId: number,
@@ -103,11 +103,13 @@ export default function Matching() {
         });
     })();
   }, []);
+
   const exitQueueHandler = () => {
     console.log("exitQueue handler worked!");
     SocketContext.gameSocket?.emit("exitQueue");
   };
 
+	/*
 	useEffect(() => {
 		if (!SocketContext.gameSocket) return;
 		SocketContext.gameSocket?.on("gameStart", (obj) => {
@@ -115,24 +117,36 @@ export default function Matching() {
 			setReady(true);
 		});
 		return () => {
-			SocketContext.gameSocket?.off();
+			SocketContext.gameSocket?.off("gameStart");
 		};
 	}, [SocketContext.gameSocket]);
-
-	/*
-	useEffect(() => {
-		const userData = {
-			leftUserName: searchParams.get('');
-
-		};	}, []);
-		*/
+	*/
 
   useEffect(() => {
     setPlayerState(EPlayerState.GAME_MATCHING);
   }, []);
 
+	useEffect(() => {
+		if (!searchParams.get('gameStart')) return;
+		const lun = searchParams.get('leftUserName');
+		const run = searchParams.get('rightUserName');
+		const lui = Number(searchParams.get('leftUserId'));
+		const rui = Number(searchParams.get('rightUserId'));
+
+		if (!lun || !run || !lui || !rui) return;
+		const userData: TGameUsers = {
+			leftUserName: lun,
+			rightUserName: run,
+			leftUserId:  lui,
+			rightUserId: rui,
+		};
+		console.log('game started: ', userData);
+		setUserObj(userData);
+		setReady(true);
+	}, [searchParams]);
+
   useEffect(() => {
-    if (!queue) {
+    if (!queue && !searchParams.get('gameStart')) {
       const JoinQueue = () => {
         searchParams.get("normal")
           ? SocketContext.gameSocket?.emit("joinQueue", "NORMAL")

@@ -1,5 +1,5 @@
 FRONT_PATH		= ./frontend/
-BACK_PATH			= ./backend/chat-app/
+BACK_PATH			= ./backend/
 FRONT_MODULE	= $(FRONT_PATH)node_module
 BACK_MODULE		= $(BACK_PATH)node_module
 

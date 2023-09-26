@@ -26,87 +26,86 @@ export class AuthService {
 	) {}
 	
 	async signUp(code: string, res: Response) {
-		// try {
-			const generateRandomString = async ( len: number) => {
-				const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
-				let randomString: string = '';
-				for (let i = 0; i < len; i++) {
-				const rnum = Math.floor(Math.random() * chars.length);
-				randomString += chars.substring(rnum, rnum + 1);
-				}
-				const checkDuplicate = await this.userService.getProfileByNickName(randomString);
-				if (checkDuplicate) {
-					return generateRandomString(len);
-				}
-				return randomString;
+		const generateRandomString = async ( len: number) => {
+			const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
+			let randomString: string = '';
+			for (let i = 0; i < len; i++) {
+			const rnum = Math.floor(Math.random() * chars.length);
+			randomString += chars.substring(rnum, rnum + 1);
 			}
-			const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
-			const axiosConfig: AxiosRequestConfig = {
-				headers: {
-				Authorization: `Bearer ${accessToken.data.access_token}`
-				},
-				withCredentials: true,
+			const checkDuplicate = await this.userService.getProfileByNickName(randomString);
+			if (checkDuplicate) {
+				return generateRandomString(len);
 			}
-			const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
+			return randomString;
+		}
+		const accessToken = await firstValueFrom(this.httpService.post(`https://api.intra.42.fr/oauth/token?grant_type=${grant_type}&client_id=${client_id}&client_secret=${client_secret}&code=${code}&redirect_uri=${redirect_uri}`).pipe());
+		const axiosConfig: AxiosRequestConfig = {
+			headers: {
+			Authorization: `Bearer ${accessToken.data.access_token}`
+			},
+			withCredentials: true,
+		}
+		const user = await firstValueFrom(this.httpService.get('https://api.intra.42.fr/v2/me', axiosConfig).pipe());
+		if (!user) {
+			throw new HttpException('intra error', HttpStatus.BAD_REQUEST);
+		}
+		const payload = { username: user.data.login, id: user.data.id };
+		const newAccessToken = this.jwtService.sign({ payload });
+		const found = await this.userService.getProfileByUserId(user.data.id);
+
+		if (found) {
 			const duplicateTest = await this.userService.getProfileByUserId(user.data.id);
 			if (duplicateTest) {
 				if (duplicateTest.status !== UserStatus.OFFLINE) {
 					throw new HttpException('User already logged in this site.', HttpStatus.UNAUTHORIZED);
 				}
 			}
-			const payload = { username: user.data.login, id: user.data.id };
-			const newAccessToken = this.jwtService.sign({ payload });
-			const found = await this.userService.getProfileByUserId(user.data.id);
-
-			if (found) {
-				const two_factor = await this.userService.getTwoFactorByUserId(payload.id);
-				if (two_factor) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
-					const clientEmail = await this.userService.getEmailByUserId(payload.id);
-					const verificationCode = this.mailService.secondAuthentication(clientEmail);
-					this.userService.updateTwoFactorCode(payload.id, verificationCode);
-					res.send({
-						id: payload.id,
-						firstLogin: false,
-						two_factor: true
-					})
-				} else {
-					res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: false, sameSite: 'lax' });
-					res.send({
-						id: payload.id,
-						firstLogin: false,
-						two_factor: false
-					})
+			const two_factor = await this.userService.getTwoFactorByUserId(payload.id);
+			if (two_factor) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
+				const clientEmail = await this.userService.getEmailByUserId(payload.id);
+				const verificationCode = this.mailService.secondAuthentication(clientEmail);
+				if (!verificationCode) {
+					throw new HttpException('mailing error', HttpStatus.BAD_REQUEST);
 				}
-				return ;
+				const signedVerificationCode = this.jwtService.sign(verificationCode);
+				this.userService.updateTwoFactorCode(payload.id, signedVerificationCode);
+				res.send({
+					id: payload.id,
+					firstLogin: false,
+					two_factor: true
+				})
+			} else {
+				res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: false, sameSite: 'lax' });
+				res.send({
+					id: payload.id,
+					firstLogin: false,
+					two_factor: false
+				})
 			}
+			return ;
+		}
 
-			const createUserDto: CreateUserDto = {
-				user_id: user.data.id,
-				username: user.data.login,
-				nickname: await generateRandomString(12),
-				email: user.data.email,
-				avatar: __dirname + '/../../uploads/default.png',
-			};
+		const createUserDto: CreateUserDto = {
+			user_id: user.data.id,
+			username: user.data.login,
+			nickname: await generateRandomString(12),
+			email: user.data.email,
+			avatar: __dirname + '/../../uploads/default.png',
+		};
 
-			this.userService.createUser(createUserDto);
-			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: false, sameSite: 'lax' });
-			res.send({
-				id: createUserDto.user_id,
-				firstLogin: true,
-				two_factor: false
-			})
-			return;
-		// } catch (err) {
-		// 	throw new HttpException(`SignUp Error: ${err}`, HttpStatus.UNAUTHORIZED);
-		// }
+		this.userService.createUser(createUserDto);
+		res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: false, sameSite: 'lax' });
+		res.send({
+			id: createUserDto.user_id,
+			firstLogin: true,
+			two_factor: false
+		})
+		return;
 	}
 
 	async checkLoginState(req: Request, res: Response) {
 			const token = req.cookies['token'];
-			
-			// if (!token) {
-			// 	return;
-			// }
 			try {
 				const { payload } = this.jwtService.verify(token);
 			} catch (err) {
@@ -114,7 +113,7 @@ export class AuthService {
 			}
 			const { payload } = this.jwtService.verify(token);
 			const found = await this.userService.getProfileByUserId(payload.id);	// 토큰에 해당하는 유저찾기
-			if (!found) { // 유저정보 없음.
+			if (!found) {
 				throw new HttpException('Unregistered User', HttpStatus.UNAUTHORIZED);
 			}
 
@@ -161,11 +160,12 @@ export class AuthService {
 
 	async authTwoFactor(body: any, inputCode: any, res: Response) {
 		const thisUser = await this.userService.getProfileByUserId(body.id);
-		if (thisUser.auth_code === inputCode) {
+		const decoded = this.jwtService.verify(thisUser.auth_code);
+		if (decoded === inputCode) {
 			const payload = { username: thisUser.username, id: thisUser.user_id };
 			const newAccessToken = this.jwtService.sign({ payload });
 			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: false, sameSite: 'lax' });
-			res.send({state: true});
+			res.send({ loggedIn: true, state: true });
 			return ;
 		} else {
 			console.log("invalid varification code");
