@@ -21,6 +21,8 @@ import * as serverConfig from 'config';
 import { AcceptGameDto, InviteGameDto } from './dto/game-dto';
 import { BridgeDto } from './dto/bridge-dto';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { length } from 'class-validator';
+import { constants } from 'perf_hooks';
 
 @WebSocketGateway({
 	// path: "/api/socket.io",
@@ -63,12 +65,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   
     client.data.user = user;
   
-    const privateChannelName = 'user' + user.user_id.toString();
-    const privateChannel = await this.chatService.getChannelByName(privateChannelName)
-    if (!privateChannel) {
-      await this.chatService.createPrivateChannelAndBridge(user, user.user_id, privateChannelName);
-    }
-    client.join(privateChannelName);
+    // const privateChannelName = 'user' + user.user_id.toString();
+    // const privateChannel = await this.chatService.getChannelByName(privateChannelName)
+    // if (!privateChannel) {
+    //   await this.chatService.createPrivateChannelAndBridge(user, user.user_id, privateChannelName);
+    // }
+    // client.join(privateChannelName);
     
     const joinedGroupChannels = await this.chatService.getJoinedGroupChannelsByUserId(user.user_id);
     for (let c of joinedGroupChannels) {
@@ -93,8 +95,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
       await this.emitUserStatus(user.user_id);
     }
+    else if (!user){
+      const userId = Number(this.getKeyByValue(this.userSocketMap, client));
+      if (userId) {
+        this.userSocketMap.delete(userId);
+        await this.userService.updateStatus(userId, UserStatus.OFFLINE);
+        await this.emitUserStatus(userId);
+      }
+    }
     client.disconnect();
   }
+
+  private getKeyByValue(map, value) {
+		return Object.keys(map).find(key => map[key] === value);
+	}
 
   //==========================================================================================
     
@@ -402,14 +416,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('leave-fail', 'Unexist Channel Error in onLeaveChannel');
       return ;
     }
-    if (channel.channel_type === ChannelType.PRIVATE) {
-      client.emit('leave-fail', 'Cannot Leave Private Channel Error in onLeaveChannel');
-      return ;
-    }
+    // if (channel.channel_type === ChannelType.PRIVATE) {
+    //   client.emit('leave-fail', 'Cannot Leave Private Channel Error in onLeaveChannel');
+    //   return ;
+    // }
     if (channel.channel_type === ChannelType.DM) {
       const receiverId = await this.chatService.getReceiverIdByDmChannelName(user.user_id, channel.channel_name);
       if (!receiverId) {
         client.emit('leave-fail', 'Unidentified Receiver User Error in onLeaveChannel');
+        return ;
+      }
+      if (user.user_id === receiverId) {
+        client.emit('leave-fail', 'Cannot Leave Private Channel Error in onLeaveChannel');
         return ;
       }
 
@@ -427,6 +445,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.leave(channel.channel_name);
       client.emit('leave-success', channel.channel_id);
 
+      await this.chatService.deleteMessagesByChannelId(channel.channel_id);
       await this.chatService.deleteDmChannel(channel.channel_id);
 
       return ;

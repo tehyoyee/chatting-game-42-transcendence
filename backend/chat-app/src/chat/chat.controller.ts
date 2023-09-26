@@ -52,10 +52,10 @@ export class ChatController {
         }
 
         //유저의 Private채널 리스트 가져오기
-        @Get('channel/joined/private/:id')
-        async getJoinedPrivateChannelsByUserId(@Param('id', ParseIntPipe) id: number): Promise<Channel> {
-            return await this.chatService.getPrivateChannelByUserId(id);
-        }
+        // @Get('channel/joined/private/:id')
+        // async getJoinedPrivateChannelsByUserId(@Param('id', ParseIntPipe) id: number): Promise<Channel> {
+        //     return await this.chatService.getPrivateChannelByUserId(id);
+        // }
 
         //특정 채널을 id로 가져오기
         @Get('/channel/:id')
