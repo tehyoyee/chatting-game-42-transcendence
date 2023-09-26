@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import usePlayerContext, { EPlayerState } from "./player_state";
-import { IChatMate, EChatUserType } from '../content/chat/context';
+import { IChatMate, EChatUserType, ISocial } from '../content/chat/context';
 import UserList from "@/components/structure/userList";
 import { useFetch } from "@/lib/hook";
 import useAuthContext from "@/components/user/auth";
@@ -36,8 +36,8 @@ export default function Social() {
 	const { user } = useAuthContext();
 	const { chatSocket, gameSocket } = useSocketContext();
 
-	const [friendList, updateFriendList] = useFetch<IChatMate[]>(`${relationUrl}/social/friends/${user.id}`, [], friendFetcher);
-	const [blocksList, updateBlocksList] = useFetch<IChatMate[]>(`${relationUrl}/social/blocks/${user.id}`, [], blockFetcher);
+	const [friendList, updateFriendList] = useFetch<ISocial[]>(`${relationUrl}/social/friends/${user.id}`, [], friendFetcher);
+	const [blocksList, updateBlocksList] = useFetch<ISocial[]>(`${relationUrl}/social/blocks/${user.id}`, [], blockFetcher);
 
 	function updateUserList() {
 		updateBlocksList();
