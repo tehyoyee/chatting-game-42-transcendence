@@ -472,7 +472,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async handleDisconnect(client: Socket) {
 		console.log(`[Game] ${client.id} has left.`);
 		const user = await this.socketToUser(client);
-		if (this.userSocketMap.has(user.user_id)) {
+		if (user && this.userSocketMap.has(user.user_id)) {
 			if (this.userSocketMap.get(user.user_id).id === client.id) {
 				console.log('일반 로그아웃');
 				this.userSocketMap.delete(user.user_id);
@@ -492,15 +492,27 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				}
 				await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
 			}
-		return;
+		} else if (!user) {
+			const userId = Number(this.getKeyByValue(this.userSocketMap, client));
+			if (userId) {
+				this.userSocketMap.delete(userId);
+				this.gameRoomMap.delete(userId);
+				this.userKeyMap.delete(userId);
+				await this.userService.updateStatus(userId, UserStatus.OFFLINE);
+				this.server.emit('refresh');
+				for (let i = 0; i < this.gameNormalQueue.length; i++) {
+					if (this.gameNormalQueue[i] === userId) {
+						this.gameNormalQueue.splice(i, 1);
+					}
+				}
+				for (let i = 0; i < this.gameAdvancedQueue.length; i++) {
+					if (this.gameAdvancedQueue[i] === userId) {
+						this.gameAdvancedQueue.splice(i, 1);
+					}
+				}
+				await this.userService.updateStatus(userId, UserStatus.OFFLINE);
+			}
 		}
-		// 	console.log('중복 로그아웃 disconnect');
-		// }
-		// const NotDuplicateLogout = this.getKeyByValue(this.userSocketMap, client);
-		// // if (!NotDuplicateLogout) {
-		// // 	console.log('duplicate');
-		// // 	return;
-		// // }
 	}
 
 	private async socketToUser(client: Socket): Promise<User> {
