@@ -8,7 +8,6 @@ import Login from "@/components/user/login";
 export default function Page() {
   const { loggedIn, updated } = useAuthContext();
   const router = useRouter();
-  const called = useRef(false);
 
   console.log(`rendering loginpage: updated=${updated} loggedIn=${loggedIn}`);
 // TODO: buggy

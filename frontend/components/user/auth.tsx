@@ -40,6 +40,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
     await fetch(stateUrl, {
       method: 'GET',
       credentials: 'include',
+			cache: 'no-cache',
     })
     .then(res => res.json())
     .then(data => {
@@ -49,6 +50,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
       data.user && setUser(data.user);
     })
     .catch(reason => {
+			setLoggedIn(false);
       console.log(`${stateUrl}: fecth failed: ${reason}`);
     });
   }, []);
