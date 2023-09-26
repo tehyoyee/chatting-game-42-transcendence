@@ -476,6 +476,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		const token: any = client.handshake.query.token;
 		if (!user) {
 			this.server.to(client.id).emit("forceLogout");
+			return;
 		}
 		else if (this.userSocketMap.has(user.user_id)) {
 			console.log('forcelogout');

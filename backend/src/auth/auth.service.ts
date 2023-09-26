@@ -68,7 +68,7 @@ export class AuthService {
 				if (!verificationCode) {
 					throw new HttpException('mailing error', HttpStatus.BAD_REQUEST);
 				}
-				const signedVerificationCode = this.jwtService.sign(verificationCode);
+				const signedVerificationCode = this.jwtService.sign({ verificationCode });
 				this.userService.updateTwoFactorCode(payload.id, signedVerificationCode);
 				res.send({
 					id: payload.id,
@@ -160,7 +160,7 @@ export class AuthService {
 
 	async authTwoFactor(body: any, inputCode: any, res: Response) {
 		const thisUser = await this.userService.getProfileByUserId(body.id);
-		const decoded = this.jwtService.verify(thisUser.auth_code);
+		const { decoded } = this.jwtService.verify(thisUser.auth_code);
 		if (decoded === inputCode) {
 			const payload = { username: thisUser.username, id: thisUser.user_id };
 			const newAccessToken = this.jwtService.sign({ payload });
