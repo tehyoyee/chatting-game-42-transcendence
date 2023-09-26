@@ -353,11 +353,13 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async inviteGame(@ConnectedSocket() hostSocket: Socket, @MessageBody() invitation: any) {
 		const hostUser: User = await this.socketToUser(hostSocket);
 		const targetUserSocket: Socket = this.userSocketMap.get(invitation.targetUserId);
+		console.log(`[Game] InviteGame ${hostUser.username} to ${invitation.targetUserId}`);
 		this.server.to(targetUserSocket.id).emit('gotInvited', {
 			hostId: hostUser.user_id,
 			hostNickname: hostUser.nickname,
 			gameMode: invitation.gameMode
 		});
+		console.log(`[Game] Event ('gotInvited') sended`);
 	}
 
 	@SubscribeMessage('acceptGame')
@@ -366,6 +368,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		const playerIdLeft: number = Number(this.getKeyByValue(this.userSocketMap,invitation.hostId));
 		const playerLeft: User = await this.userService.getProfileByUserId(playerIdLeft);
 		const playerRight: User = await this.socketToUser(playerRightSocket);
+		console.log(`[Game] Listend Event ['acceptGame'] ${playerLeft.username} and ${playerRight.username}`);
 		if (!playerLeft || !playerRight) {
 			return ;
 		}
