@@ -1,5 +1,6 @@
 import './globals.css';
 import titleStyles from '@/styles/title.module.css';
+import localFont from 'next/font/local'
 
 import React from 'react';
 import type { Metadata } from 'next';
@@ -13,6 +14,12 @@ export const metadata: Metadata = {
   description: 'enjoy ping pong and chat',
 }
 
+const myFont = localFont({
+  src: './fonts/KimjungchulGothic-Bold.otf',
+  display: 'swap',
+})
+
+
 export default function RootLayout({
   children,
 }: {
@@ -23,7 +30,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
-      <body className={`${inter.className} full-background`}>
+      <body className={`${myFont.className} full-background`}>
         <h1 className={titleStyles.mainTitle}>Transcendence</h1>
         <AuthContextProvider>
           {children}

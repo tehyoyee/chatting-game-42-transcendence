@@ -14,6 +14,8 @@ import { useRouter, notFound, useSearchParams } from "next/navigation";
 import styles from "@/styles/matching.module.css";
 import DotLoader from "./dotLoader";
 // import queryRouter from 'next/router';
+import localFont from 'next/font/local'
+
 
 // import { GameKeyContext } from './GameKeyProvider';
 import { io, Socket } from "socket.io-client";
@@ -26,6 +28,12 @@ import WebSocketContex, {
 import useSocketContext from "@/lib/socket";
 import usePlayerContext, { EPlayerState } from "./player_state";
 import useAuthContext from "../user/auth";
+
+const myFontPartialSans = localFont({
+  src: '../../app/fonts/PartialSansKR-Regular.otf',
+  display: 'swap',
+})
+
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 const profileUrl = `${serverUrl}/profile`;
@@ -179,7 +187,7 @@ export default function Matching() {
       )} */}
       {countdown !== null && ready && countdown > 0 && (
         <div className={styles.countdownContainer}>
-          <p className={styles.countdown}>{countdown}</p>
+          <p className={`${myFontPartialSans.className} ${styles.countdown}`}>{countdown}</p>
         </div>
       )}
       {!ready && (
