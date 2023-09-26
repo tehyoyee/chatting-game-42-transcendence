@@ -4,7 +4,6 @@ import { GameRepository } from './game.repository';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
-import { DataSource } from 'typeorm';
 
 // Logistic function
 const logisticFunction = (p1: number, p2: number): number => {
