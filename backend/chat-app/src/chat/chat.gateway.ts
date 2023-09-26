@@ -123,7 +123,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
   
     try {
-      const decoded = await this.authService.verifyToken(token);
+      const decoded = await this.authService.verifyTokenSocket(token);
       const user: User = await this.userService.getProfileByUserId(decoded.id);
       return user;
     }
@@ -294,6 +294,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('post-fail', 'Unidentified User Error in onPostGroupMessage');
       return ;
     }
+
+    const decodedToken = await this.authService.verifyToken(groupMessageDto.token);
+		if (!decodedToken) {
+			this.handleDisconnect(client);
+			return ;
+		}
     
     if (groupMessageDto.content === '') {
       client.emit('post-fail', 'Empty Content Error in onPostGroupMessage');

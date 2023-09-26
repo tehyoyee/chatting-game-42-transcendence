@@ -7,6 +7,9 @@ export class GroupMessageDto {
 
     @IsString()
     content: string;
+
+		@IsString()
+		token: string;
 }
 
 export class DmDto {

@@ -148,6 +148,17 @@ export class AuthService {
 		}
 	}
 
+	async verifyTokenSocket(token: string) {
+		try {
+			const { payload }  = await this.jwtService.verify(token);
+			if (payload)
+				return payload;
+			return null;
+		} catch (error) {
+			return null;
+		}
+	}
+
 	async authTwoFactor(body: any, inputCode: any, res: Response) {
 		const thisUser = await this.userService.getProfileByUserId(body.id);
 		if (thisUser.auth_code === inputCode) {

@@ -45,6 +45,13 @@ export interface IProfileType {
   email: string;
 }
 
+type TGameUsers = {
+	leftUserName: string,
+	rightUserName: string,
+	leftUserId: number,
+	rightUserId: number,
+};
+
 export default function Matching() {
   const ref = useRef(false);
   const router = useRouter();
@@ -56,7 +63,7 @@ export default function Matching() {
   const searchParams = useSearchParams();
   const { setPlayerState } = usePlayerContext();
   const { user } = useAuthContext();
-  const [userObj, setUserObj] = useState({
+  const [userObj, setUserObj] = useState<TGameUsers>({
     leftUserName: "",
     rightUserName: "",
     leftUserId: 0,
@@ -103,6 +110,14 @@ export default function Matching() {
 			SocketContext.gameSocket?.off();
 		};
 	}, [SocketContext.gameSocket]);
+
+	/*
+	useEffect(() => {
+		const userData = {
+			leftUserName: searchParams.get('');
+
+		};	}, []);
+		*/
 
   useEffect(() => {
     setPlayerState(EPlayerState.GAME_MATCHING);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Socket } from 'socket.io-client';
-import { IChatMate, IChatUser, ISocial } from '../content/chat/context';
+import { IChatUser, ISocial } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 import useAuthContext from '../user/auth';
@@ -68,7 +68,7 @@ const UserModal = ({
 
 	function handleFriend() {
 		const url = `${relationUrl}/${targetUser.isFriend ? 'remove' : 'add'}/friend`;
-		console.log(JSON.stringify(relContent));
+		console.log('url=', url, ',content=', JSON.stringify(relContent));
 		fetch(url, {
 			method: targetUser.isFriend ? "DELETE" : "POST",
 			credentials: "include",
@@ -96,6 +96,7 @@ const UserModal = ({
 
 	function handleBlock() {
 		const url = `${relationUrl}/${targetUser.isBlocked ? 'remove' : 'add'}/block`;
+		console.log('url=', url, ',content=', JSON.stringify(relContent));
 		fetch(url, {
 			method: targetUser.isFriend ? "DELETE" : "POST",
 			credentials: "include",
