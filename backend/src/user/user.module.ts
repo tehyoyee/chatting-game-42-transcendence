@@ -18,39 +18,41 @@ import { format } from 'light-date';
     MulterModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
-          storage: diskStorage({
-              destination: function (req, file, cb) {
-                  // 파일저장위치 + 년월 에다 업로드 파일을 저장한다.
-                  const dest = __dirname + `/../../uploads/${format(new Date(), '{yyyy}{MM}')}/`;
+        storage: diskStorage({
+          destination: function (req, file, cb) {
+            // 파일저장위치 + 년월 에다 업로드 파일을 저장한다.
+            const dest =
+              __dirname + `/../../uploads/${format(new Date(), '{yyyy}{MM}')}/`;
 
-                  if (!fs.existsSync(dest)) {
-                      fs.mkdirSync(dest, { recursive: true });
-                  }
+            if (!fs.existsSync(dest)) {
+              fs.mkdirSync(dest, { recursive: true });
+            }
 
-                  cb(null, dest);
-              },
-              filename: (req, file, cb) => {
-                  // 업로드 후 저장되는 파일명을 랜덤하게 업로드 한다.(동일한 파일명을 업로드 됐을경우 오류방지)
-                  const randomName = Array(32)
-                      .fill(null)
-                      .map(() => Math.round(Math.random() * 16).toString(16))
-                      .join('');
-                  return cb(null, `${randomName}${extname(file.originalname)}`);
-              },
-          }),
+            cb(null, dest);
+          },
+          filename: (req, file, cb) => {
+            // 업로드 후 저장되는 파일명을 랜덤하게 업로드 한다.(동일한 파일명을 업로드 됐을경우 오류방지)
+            const randomName = Array(32)
+              .fill(null)
+              .map(() => Math.round(Math.random() * 16).toString(16))
+              .join('');
+            return cb(null, `${randomName}${extname(file.originalname)}`);
+          },
+        }),
       }),
       inject: [ConfigService],
     }),
     PassportModule.register({
-      defaultStrategy: 'jwt'
+      defaultStrategy: 'jwt',
     }),
     JwtModule.register({
       secret: process.env.JWT_SECRET || config.get('jwt.secret'),
-      signOptions:{
+      signOptions: {
         expiresIn: '60m',
-      }
+      },
     }),
-    TypeOrmModule.forFeature([User])],
+    TypeOrmModule.forFeature([User]),
+  ],
   controllers: [UserController],
   providers: [UserService, UserRepository, ConfigService],
   exports: [TypeOrmModule, UserRepository],

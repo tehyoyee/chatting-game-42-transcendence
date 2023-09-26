@@ -9,178 +9,199 @@ import { BlockDto, FriendDto } from './dto/relation-dto';
 
 @Injectable()
 export class RelationService {
-    constructor(
-        private userService: UserService,
-        private relationRepository: RelationRepository) {}
-    
-    private logger = new Logger('RelationService');
+  constructor(
+    private userService: UserService,
+    private relationRepository: RelationRepository,
+  ) {}
 
-    async addFriend(sender: User, receiverId: number): Promise<Relation> {
-        if (sender.user_id === receiverId) {
-            throw new HttpException('Cannot Set To Yourself', HttpStatus.CONFLICT);
-        }
-        
-        //이미 sender가 receiver를 친구로 등록했는지 검사
-        if (await this.checkFriended(sender.user_id, receiverId)) {
-            throw new HttpException('Friended Already', HttpStatus.CONFLICT);
-        }
-       
-        //이미 sender가 receiver를 block했는지 검사 -> 바꿔는 줌
-        if (await this.checkBlocked(sender.user_id, receiverId)) {
-            await this.unBlock(sender.user_id, receiverId);
-            this.logger.debug('Block To Friend');
-        }
+  private logger = new Logger('RelationService');
 
-        return await this.relationRepository.addRelation(sender, receiverId, RelationType.FRIEND);
+  async addFriend(sender: User, receiverId: number): Promise<Relation> {
+    if (sender.user_id === receiverId) {
+      throw new HttpException('Cannot Set To Yourself', HttpStatus.CONFLICT);
     }
 
-    async addBlock(sender: User, receiverId: number): Promise<Relation> {
-        if (sender.user_id === receiverId) {
-            throw new HttpException('Cannot Set To Yourself', HttpStatus.CONFLICT);
-        }
-
-        //이미 sender가 receiver를 block했는지 검사
-        if (await this.checkBlocked(sender.user_id, receiverId)) {
-            throw new HttpException('Blocked Already', HttpStatus.CONFLICT);
-        }
-       
-        //이미 sender가 receiver를 친구등록 했는지 검사 -> 바꿔는 줌
-        if (await this.checkFriended(sender.user_id, receiverId)) {
-            await this.unFriend(sender.user_id, receiverId);
-            this.logger.debug('Friend To Block');
-        }
-
-        return await this.relationRepository.addRelation(sender, receiverId, RelationType.BLOCK);
+    //이미 sender가 receiver를 친구로 등록했는지 검사
+    if (await this.checkFriended(sender.user_id, receiverId)) {
+      throw new HttpException('Friended Already', HttpStatus.CONFLICT);
     }
 
-    async unFriend(senderId: number, receiverId: number) {
-        const relation = await this.getRelationByIds(senderId, receiverId);
-        if (!relation || (relation && relation.relation_type !== RelationType.FRIEND)) {
-            throw new HttpException('Not Friended Before', HttpStatus.CONFLICT);
-        }
-
-        await this.relationRepository.deleteRelation(relation.relation_id);
+    //이미 sender가 receiver를 block했는지 검사 -> 바꿔는 줌
+    if (await this.checkBlocked(sender.user_id, receiverId)) {
+      await this.unBlock(sender.user_id, receiverId);
+      this.logger.debug('Block To Friend');
     }
 
-    async unBlock(senderId: number, receiverId: number) {
-        const relation = await this.getRelationByIds(senderId, receiverId);
-        if (!relation || (relation && relation.relation_type !== RelationType.BLOCK)) {
-            throw new HttpException('Not Blocked Before', HttpStatus.CONFLICT);
-        }
+    return await this.relationRepository.addRelation(
+      sender,
+      receiverId,
+      RelationType.FRIEND,
+    );
+  }
 
-        await this.relationRepository.deleteRelation(relation.relation_id);
+  async addBlock(sender: User, receiverId: number): Promise<Relation> {
+    if (sender.user_id === receiverId) {
+      throw new HttpException('Cannot Set To Yourself', HttpStatus.CONFLICT);
     }
 
-    async getRelationByIds(senderId: number, receiverId: number): Promise<Relation> {
-        return await this.relationRepository.getRelationByIds(senderId, receiverId);
+    //이미 sender가 receiver를 block했는지 검사
+    if (await this.checkBlocked(sender.user_id, receiverId)) {
+      throw new HttpException('Blocked Already', HttpStatus.CONFLICT);
     }
 
-    async checkFriended(senderId: number, receiverId: number) {
-        const friended = await this.getRelationByIds(senderId, receiverId);
-        if (friended && friended.relation_type === RelationType.FRIEND) {
-            return true;
-        }
-
-        return false;
+    //이미 sender가 receiver를 친구등록 했는지 검사 -> 바꿔는 줌
+    if (await this.checkFriended(sender.user_id, receiverId)) {
+      await this.unFriend(sender.user_id, receiverId);
+      this.logger.debug('Friend To Block');
     }
 
-    async checkBlocked(senderId: number, receiverId: number) {
-        const blocked = await this.getRelationByIds(senderId, receiverId);
-        if (blocked && blocked.relation_type === RelationType.BLOCK) {
-            return true;
-        }
-        
-        return false;
+    return await this.relationRepository.addRelation(
+      sender,
+      receiverId,
+      RelationType.BLOCK,
+    );
+  }
+
+  async unFriend(senderId: number, receiverId: number) {
+    const relation = await this.getRelationByIds(senderId, receiverId);
+    if (
+      !relation ||
+      (relation && relation.relation_type !== RelationType.FRIEND)
+    ) {
+      throw new HttpException('Not Friended Before', HttpStatus.CONFLICT);
     }
 
-    async getFriendsOfUser(userId: number): Promise<SocialDto[]> {
-        let friends: SocialDto[] = [];
-        const relationType = RelationType.FRIEND;
+    await this.relationRepository.deleteRelation(relation.relation_id);
+  }
 
-        const relations = await this.relationRepository
-            .createQueryBuilder('r')
-            .where('r.sender_id = :userId', {userId})
-            .andWhere('r.relation_type = :relationType', {relationType})
-            .select(['r.receiver_id'])
-            .getMany();
-
-        for (let r of relations) {
-			const user = await this.userService.getProfileByUserId(r.receiver_id);
-            const currentStatus = await this.userService.getCurrentUserStatusByUserId(r.receiver_id);
-            friends.push({
-								userId: user.user_id, 
-								userNickName: user.nickname,
-								isFriend: true,
-								isBlocked: false,
-                                userStatus: currentStatus,
-                            });
-        }
-
-        return friends;
+  async unBlock(senderId: number, receiverId: number) {
+    const relation = await this.getRelationByIds(senderId, receiverId);
+    if (
+      !relation ||
+      (relation && relation.relation_type !== RelationType.BLOCK)
+    ) {
+      throw new HttpException('Not Blocked Before', HttpStatus.CONFLICT);
     }
 
-    async getBlocksOfUser(userId: number): Promise<SocialDto[]> {
-        let blocks: SocialDto[] = [];
-        const relationType = RelationType.BLOCK;
+    await this.relationRepository.deleteRelation(relation.relation_id);
+  }
 
-        const relations = await this.relationRepository
-            .createQueryBuilder('r')
-            .where('r.sender_id = :userId', {userId})
-            .andWhere('r.relation_type = :relationType', {relationType})
-            .select(['r.receiver_id'])
-            .getMany();
+  async getRelationByIds(
+    senderId: number,
+    receiverId: number,
+  ): Promise<Relation> {
+    return await this.relationRepository.getRelationByIds(senderId, receiverId);
+  }
 
-        for (let r of relations) {
-            const user = await this.userService.getProfileByUserId(r.receiver_id);
-            const currentStatus = await this.userService.getCurrentUserStatusByUserId(r.receiver_id);
-            blocks.push({
-								userId: user.user_id, 
-								userNickName: user.nickname,
-								isFriend: false,
-								isBlocked: true,
-                                userStatus: currentStatus,
-						});
-        }
-
-        return blocks;
+  async checkFriended(senderId: number, receiverId: number) {
+    const friended = await this.getRelationByIds(senderId, receiverId);
+    if (friended && friended.relation_type === RelationType.FRIEND) {
+      return true;
     }
 
-    async getEveryoneWhoBlockedMe(myId: number): Promise<BlockDto[]> {
-        let whoBlockedMe: BlockDto[] = [];
-        const relationType = RelationType.BLOCK;
+    return false;
+  }
 
-        const relations = await this.relationRepository
-        .createQueryBuilder('r')
-        .where('r.receiver_id = :myId', {myId})
-        .andWhere('r.relation_type = :relationType', {relationType})
-        .select(['r.sender_id'])
-        .getMany();
-
-        for (let r of relations) {
-            let b_id = { userId: r.sender_id };
-            whoBlockedMe.push(b_id);
-        }
-
-        return whoBlockedMe;
+  async checkBlocked(senderId: number, receiverId: number) {
+    const blocked = await this.getRelationByIds(senderId, receiverId);
+    if (blocked && blocked.relation_type === RelationType.BLOCK) {
+      return true;
     }
 
-    async getEveryoneWhoFriendedMe(myId: number): Promise<FriendDto[]> {
-        let whoFriendedMe: FriendDto[] = [];
-        const relationType = RelationType.FRIEND;
+    return false;
+  }
 
-        const relations = await this.relationRepository
-        .createQueryBuilder('r')
-        .where('r.receiver_id = :myId', {myId})
-        .andWhere('r.relation_type = :relationType', {relationType})
-        .select(['r.sender_id'])
-        .getMany();
+  async getFriendsOfUser(userId: number): Promise<SocialDto[]> {
+    const friends: SocialDto[] = [];
+    const relationType = RelationType.FRIEND;
 
-        for (let r of relations) {
-            let f_id = { userId: r.sender_id };
-            whoFriendedMe.push(f_id);
-        }
+    const relations = await this.relationRepository
+      .createQueryBuilder('r')
+      .where('r.sender_id = :userId', { userId })
+      .andWhere('r.relation_type = :relationType', { relationType })
+      .select(['r.receiver_id'])
+      .getMany();
 
-        return whoFriendedMe;
+    for (const r of relations) {
+      const user = await this.userService.getProfileByUserId(r.receiver_id);
+      const currentStatus = await this.userService.getCurrentUserStatusByUserId(
+        r.receiver_id,
+      );
+      friends.push({
+        userId: user.user_id,
+        userNickName: user.nickname,
+        isFriend: true,
+        isBlocked: false,
+        userStatus: currentStatus,
+      });
     }
 
+    return friends;
+  }
+
+  async getBlocksOfUser(userId: number): Promise<SocialDto[]> {
+    const blocks: SocialDto[] = [];
+    const relationType = RelationType.BLOCK;
+
+    const relations = await this.relationRepository
+      .createQueryBuilder('r')
+      .where('r.sender_id = :userId', { userId })
+      .andWhere('r.relation_type = :relationType', { relationType })
+      .select(['r.receiver_id'])
+      .getMany();
+
+    for (const r of relations) {
+      const user = await this.userService.getProfileByUserId(r.receiver_id);
+      const currentStatus = await this.userService.getCurrentUserStatusByUserId(
+        r.receiver_id,
+      );
+      blocks.push({
+        userId: user.user_id,
+        userNickName: user.nickname,
+        isFriend: false,
+        isBlocked: true,
+        userStatus: currentStatus,
+      });
+    }
+
+    return blocks;
+  }
+
+  async getEveryoneWhoBlockedMe(myId: number): Promise<BlockDto[]> {
+    const whoBlockedMe: BlockDto[] = [];
+    const relationType = RelationType.BLOCK;
+
+    const relations = await this.relationRepository
+      .createQueryBuilder('r')
+      .where('r.receiver_id = :myId', { myId })
+      .andWhere('r.relation_type = :relationType', { relationType })
+      .select(['r.sender_id'])
+      .getMany();
+
+    for (const r of relations) {
+      const b_id = { userId: r.sender_id };
+      whoBlockedMe.push(b_id);
+    }
+
+    return whoBlockedMe;
+  }
+
+  async getEveryoneWhoFriendedMe(myId: number): Promise<FriendDto[]> {
+    const whoFriendedMe: FriendDto[] = [];
+    const relationType = RelationType.FRIEND;
+
+    const relations = await this.relationRepository
+      .createQueryBuilder('r')
+      .where('r.receiver_id = :myId', { myId })
+      .andWhere('r.relation_type = :relationType', { relationType })
+      .select(['r.sender_id'])
+      .getMany();
+
+    for (const r of relations) {
+      const f_id = { userId: r.sender_id };
+      whoFriendedMe.push(f_id);
+    }
+
+    return whoFriendedMe;
+  }
 }

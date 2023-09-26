@@ -1,20 +1,20 @@
-import { IsInt, IsPositive, IsString } from "class-validator";
+import { IsInt, IsPositive, IsString } from 'class-validator';
 
 export class UpdateUserInfoDto {
-    @IsInt()
-    @IsPositive()
-    targetUserId: number;
+  @IsInt()
+  @IsPositive()
+  targetUserId: number;
 
-    @IsInt()
-    @IsPositive()
-    channelId;
+  @IsInt()
+  @IsPositive()
+  channelId;
 }
 
 export class UpdatePasswordDto {
-    @IsInt()
-    @IsPositive()
-    channelId;
+  @IsInt()
+  @IsPositive()
+  channelId;
 
-    @IsString()
-    password: string;
+  @IsString()
+  password: string;
 }
