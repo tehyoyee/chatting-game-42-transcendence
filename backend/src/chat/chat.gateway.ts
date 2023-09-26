@@ -52,12 +52,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   async handleConnection(client: Socket) {
     // console.log('client: ', client);
     this.logger.debug("handle connection in");
+    const token: any = client.handshake.query.token;
     const user = await this.socketToUser(client);
     if (!user) {
       this.server.to(client.id).emit("forceLogout");
     }
-    const token: any = client.handshake.query.token;
-		if (this.userSocketMap.has(user.user_id)) {
+		else if (this.userSocketMap.has(user.user_id)) {
 			this.server.to(client.id).emit('forceLogout');
 		} else {
 			await this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
@@ -329,7 +329,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     let listOfWhoBlockedMe: BlockDto[] = [];
     listOfWhoBlockedMe = await this.relationServie.getEveryoneWhoBlockedMe(user.user_id);
-    console.log('listofwhoblockedme: ', listOfWhoBlockedMe);
+    // console.log('listofwhoblockedme: ', listOfWhoBlockedMe);
 
     for (let i of inners) {
       const hasMatchingUser = listOfWhoBlockedMe.some(blockedUser => blockedUser.userId === i.userId);
