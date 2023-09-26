@@ -148,40 +148,50 @@ function socketInit(
 		setPlayerData(null);
 	}
 
-	chatSocket.off('leave-fail')
+	function socketOff() {
+		chatSocket.off('leave-fail')
+		chatSocket.off('leave-success')
+		chatSocket.off('close-fail')
+		chatSocket.off('close-success')
+		chatSocket.off('got-kicked');
+		chatSocket.off('got-banned');
+		chatSocket.off('kick');
+		chatSocket.off('ban');
+		chatSocket.off('mute');
+		chatSocket.off('leave');
+		chatSocket.off('join');
+	}
+
+	socketOff();
+
 	chatSocket.on('leave-fail', (msg) => {console.log(`leave-fail error: ${msg}`)})
 
-	chatSocket.off('leave-success')
 	chatSocket.on('leave-success', (msg) => {
 		console.log(`leave-success: ${msg}`)
 		close();
-		chatSocket.off(); // NOTE
+		socketOff();
 	});
 
-	chatSocket.off('close-fail')
 	chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
 
-	chatSocket.off('close-success')
 	chatSocket.on('close-success', (msg) => {
 		console.log(`close-success: ${msg}`)
 		close();
-		chatSocket.off(); // NOTE
+		socketOff();
 	});
 
-	chatSocket.off('got-kicked');
 	chatSocket.on('got-kicked', (msg) => {
 		console.log(`got-kicked: ${msg}`)
 		close();
 		alert('채널에서 퇴장당했습니다.');
-		chatSocket.off(); // NOTE
+		socketOff();
 	});
 
-	chatSocket.off('got-banned');
 	chatSocket.on('got-banned', (msg) => {
 		console.log(`got-banned: ${msg}`)
 		close();
 		alert('채널에서 영구 퇴장당했습니다.');
-		chatSocket.off(); // NOTE
+		socketOff();
 	});
 
 	/*
@@ -191,32 +201,27 @@ function socketInit(
 	});
 	*/
 
-	chatSocket.off('kick');
 	chatSocket.on('kick', () => {
 		console.log("an user got kicked");
 		updateUserList();
 	});
 
-	chatSocket.off('ban');
 	chatSocket.on('ban', () => {
 		console.log("an user got banned");
 		updateUserList();
 	});
 
-	chatSocket.off('mute');
 	chatSocket.on('mute', () => {
 		console.log("an user got muted");
 		updateUserList();
 	});
 
-	chatSocket.off('leave');
 	chatSocket.on('leave', (msg) => {
 		console.log("an user exited");
 		console.log(`exit: ${JSON.stringify(msg)}`)
 		updateUserList();
 	});
 
-	chatSocket.off('join');
 	chatSocket.on('join', (msg) => {
 		console.log("new user joined");
 		console.log(`join: ${JSON.stringify(msg)}`)
