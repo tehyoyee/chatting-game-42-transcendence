@@ -15,7 +15,7 @@ async function bootstrap() {
 //    origin: `http://localhost:${process.env.FRONT_PORT || 3001}`,
     origin: `${serverConfig.get('server.url')}:${serverConfig.get('server.front_port') || 3001}`,
     credentials: true,
-    methods: ['GET', 'POST', 'PATCH']
+    methods: ['GET', 'POST', 'PATCH', 'DELETE']
   })
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());
