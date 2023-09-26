@@ -31,7 +31,7 @@ const fetcher = async (path: string): Promise<IChatMate[]> => {
 
 export default function ChatMenu() {
 	const { user: userInfo } = useAuthContext();
-	const { chatSocket } = useSocketContext();
+	const { chatSocket, gameSocket } = useSocketContext();
 	const chatContext = useChatContext();
 	const { user, setUser, joined, setJoined } = chatContext;
 	const [userList, updateUserList] = useFetch<IChatMate[]>(`${chatInfoReqUrl}/${userInfo.id}/${user.channel_id}`, [], fetcher);
@@ -44,6 +44,17 @@ export default function ChatMenu() {
 	}, [chatSocket]);
 
 	useEffect(() => {
+		if (!chatSocket || !gameSocket) return;
+		chatSocket.on('refreshStatus', () => {
+			updateUserList();
+		});
+		gameSocket?.on('refreshGameStatus', () => {
+			updateUserList();
+		});
+		return () => {
+			chatSocket.off('refreshStatus');
+			gameSocket.off('refreshGameStatus');
+		}
 	}, []);
 
 	return (

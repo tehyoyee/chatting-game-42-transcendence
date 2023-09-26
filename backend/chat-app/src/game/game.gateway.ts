@@ -1,4 +1,4 @@
-import { OnModuleInit, UseFilters, UseGuards } from '@nestjs/common';
+import { OnModuleInit, Req, Res, UseFilters, UseGuards } from '@nestjs/common';
 import { WebSocketServer, MessageBody, SubscribeMessage, WebSocketGateway, BaseWsExceptionFilter, WsException } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io';
 import { AuthService } from "src/auth/auth.service";
@@ -70,8 +70,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				this.gameRoomMap.set(playerIdRight, newRoomName);
 				await this.userService.updateStatus(playerIdLeft, UserStatus.PLAYING);
 				await this.userService.updateStatus(playerIdRight, UserStatus.PLAYING);
-				this.server.emit('gameStatusUpdate', playerIdLeft);
-				this.server.emit('gameStatusUpdate', playerIdRight);
+				this.server.emit('refreshGameStatus', playerIdLeft);
+				this.server.emit('refreshGameStatus', playerIdRight);
 				this.server.to(newRoomName).emit('gameStart', {
 					leftUserName: user1.nickname,
 					rightUserName: user2.nickname,
@@ -102,8 +102,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				this.gameRoomMap.set(playerIdRight, newRoomName);
 				await this.userService.updateStatus(playerIdLeft, UserStatus.PLAYING);
 				await this.userService.updateStatus(playerIdRight, UserStatus.PLAYING);
-				this.server.emit('gameStatusUpdate', playerIdLeft);
-				this.server.emit('gameStatusUpdate', playerIdRight);
+				this.server.emit('refreshGameStatus', playerIdLeft);
+				this.server.emit('refreshGameStatus', playerIdRight);
 				console.log(`[Game] Game Room ${newRoomName} created !!`);
 				this.server.to(newRoomName).emit('gameStart', {
 					leftUserName: user1.nickname,
@@ -135,8 +135,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		if (!this.gameRoomMap.has(user1.user_id) && !this.gameRoomMap.has(user2.user_id)) {
 			await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
 			await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-			this.server.emit('gameStatusUpdate', user1.user_id);
-			this.server.emit('gameStatusUpdate', user2.user_id);
+			this.server.emit('refreshGameStatus', user1.user_id);
+			this.server.emit('refreshGameStatus', user2.user_id);
 			return ;											// CASE `1`: Both of them left.
 		}
 		if (!this.gameRoomMap.has(user1.user_id)){					// CASE `2` : User1 left
@@ -157,8 +157,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			console.log(`[Game] room ${roomName} removed.`);
 			await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
 			await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-			this.server.emit('gameStatusUpdate', user1.user_id);
-			this.server.emit('gameStatusUpdate', user2.user_id);
+			this.server.emit('refreshGameStatus', user1.user_id);
+			this.server.emit('refreshGameStatus', user2.user_id);
 			return;
 		}
 		else if (!this.gameRoomMap.has(user2.user_id)) {			// CASE `3` : User2 left
@@ -179,8 +179,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			console.log(`[Game] room ${roomName} removed.`);
 			await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
 			await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-			this.server.emit('gameStatusUpdate', user1.user_id);
-			this.server.emit('gameStatusUpdate', user2.user_id);
+			this.server.emit('refreshGameStatus', user1.user_id);
+			this.server.emit('refreshGameStatus', user2.user_id);
 			return;
 		}
 		if (point1 == this.MAXPOINT) {								// CASE `4` : User1 Win
@@ -203,8 +203,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			console.log(`[Game] room ${roomName} removed.`);
 			await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
 			await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-			this.server.emit('gameStatusUpdate', user1.user_id);
-			this.server.emit('gameStatusUpdate', user2.user_id);
+			this.server.emit('refreshGameStatus', user1.user_id);
+			this.server.emit('refreshGameStatus', user2.user_id);
 			return;
 		} else if (point2 == this.MAXPOINT) {							// CASE `5` : User 2 Win
 			console.log(`[Game] ${user1.username} winned !`);
@@ -226,8 +226,8 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			console.log(`[Game] room ${roomName} removed.`);
 			await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
 			await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-			this.server.emit('gameStatusUpdate', user1.user_id);
-			this.server.emit('gameStatusUpdate', user2.user_id);
+			this.server.emit('refreshGameStatus', user1.user_id);
+			this.server.emit('refreshGameStatus', user2.user_id);
 			return;
 		}
 
@@ -417,9 +417,14 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
-		// if (!user) {
-		// 	this.server.to(client).emit("forceLogout");
-		// }
+		if (!user) {
+			this.server.to(client.id).emit("forceLogout");
+		}
+		const token: any = client.handshake.query.token;
+		if (this.userSocketMap.has(user.user_id)) {
+			console.log('forcelogout');
+			this.server.to(client.id).emit('forceLogout');
+		}
 		this.userSocketMap.set(user.user_id, client);
 		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 	}
@@ -427,11 +432,15 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async handleDisconnect(client: any) {
 		console.log(`[Game] ${client.id} has left.`);
 		const user = await this.socketToUser(client);
-//		if (!user) return;
+		const NotDuplicateLogout = this.getKeyByValue(this.userSocketMap, client);
+		if (!NotDuplicateLogout) {
+			return;
+		}
 		this.userSocketMap.delete(user.user_id);
 		this.gameRoomMap.delete(user.user_id);
 		this.userKeyMap.delete(user.user_id);
-
+		this.userService.updateStatus(user.user_id,UserStatus.OFFLINE);
+		this.server.emit('refresh');
 		for (let i = 0; i < this.gameNormalQueue.length; i++) {
 			if (this.gameNormalQueue[i] === user.user_id) {
 				this.gameNormalQueue.splice(i, 1);

@@ -136,7 +136,7 @@ export class ChatService {
         .where('m.channel_id = :channelId', {channelId})
         .select(['m.user_id', 'm.content'])
         .orderBy('m.created_at', 'ASC')
-        .limit(10)
+//        .limit(10)
         .getMany();
 
         for (let r of rows) {
