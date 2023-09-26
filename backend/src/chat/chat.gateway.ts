@@ -56,9 +56,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const user = await this.socketToUser(client);
     if (!user) {
       this.server.to(client.id).emit("forceLogout");
+      return ;
     }
 		else if (this.userSocketMap.has(user.user_id)) {
 			this.server.to(client.id).emit('forceLogout');
+      return ;
 		} else {
 			await this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
 			this.userSocketMap.set(user.user_id, client);
