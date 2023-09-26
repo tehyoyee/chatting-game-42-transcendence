@@ -55,10 +55,14 @@ export default function ChatList() {
 		updatePub();
 	}, [menuModal]);
 
+	function socketOff() {
+		chatSocket?.off('join-fail');
+		chatSocket?.off('join-success');
+	};
+
 	useEffect(() => {
 		if (!chatSocket) return;
-		chatSocket.off('join-fail');
-		chatSocket.off('join-success');
+		socketOff();
 		chatSocket.on('join-fail', (msg) => {
 			console.log(`join-fail: ${msg}`)
 			setJoined(false)
@@ -70,7 +74,7 @@ export default function ChatList() {
 			setUser(msg);
 			setPlayerState(EPlayerState.CHAT_JOINING);
 			setPlayerData(msg);
-			chatSocket.off();
+			socketOff();
 		});
 	}, [chatSocket])
 

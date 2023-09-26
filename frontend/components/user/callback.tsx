@@ -53,10 +53,11 @@ export default function Callback() {
 					setTfa(true);
 					sessionStorage.setItem('tfa', 'true');
 					return;
-				} else if (res.firstLogin === true) {
-					router.push('/login/setprofile');
+					
+				} /*else if (res.firstLogin === true) {
+					router.push('/profile');
 					return;
-				}
+				}*/
 			})
       .catch(reason => {
         console.log(`${tokenUrl}: fetch failed: ${JSON.stringify(reason)}`);
