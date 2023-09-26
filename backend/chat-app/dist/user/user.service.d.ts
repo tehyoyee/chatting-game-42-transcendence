@@ -1,0 +1,35 @@
+import { UserRepository } from './user.repository';
+import { User } from './entity/user.entity';
+import { UserStatus } from './enum/user-status.enum';
+import { UserAchievement } from './enum/user-achievements.enum';
+import { CreateUserDto } from './dto/create-user.dto';
+import { GameHistory } from 'src/game/game.history.entity';
+export declare class UserService {
+    private userRepository;
+    constructor(userRepository: UserRepository);
+    private logger;
+    createUser(createUserDto: CreateUserDto): Promise<User>;
+    getMyProfile(id: number): Promise<User>;
+    getProfileByUserName(nickname: string): Promise<User>;
+    getProfileByUserId(id: number): Promise<User>;
+    getProfileByNickName(username: string): Promise<User>;
+    getRanking(): Promise<any[]>;
+    getTwoFactorByUserId(id: number): Promise<Boolean>;
+    getEmailByUserId(id: number): Promise<string>;
+    updateNickName(id: number, nickName: string): Promise<User>;
+    getAvatarByUserId(id: number): Promise<string>;
+    getCurrentUserStatusByUserId(userId: number): Promise<UserStatus>;
+    updateAvatar(id: number, filePath: string): Promise<void>;
+    updateTwoFactor(id: number, twoFactor: boolean): Promise<User>;
+    updateStatus(id: number, status: UserStatus): Promise<User>;
+    updateAchievement(id: number, achievement: UserAchievement): Promise<User>;
+    getGameHistoryByUserId(id: number): Promise<GameHistory[]>;
+    updateGameHistory(id: number, gameHistory: GameHistory): Promise<void>;
+    updateGamePoint(id: number, value: number): Promise<void>;
+    winGame(id: number): Promise<User>;
+    loseGame(id: number): Promise<User>;
+    checkAchievementLevelChanged(user: User): Promise<UserAchievement>;
+    updateAuthCodeByUserId(id: number, authCode: string): Promise<void>;
+    getAuthCodeByUserId(id: number): Promise<string>;
+    updateTwoFactorCode(id: number, newCode: string): Promise<void>;
+}
