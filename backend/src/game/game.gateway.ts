@@ -365,7 +365,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	@SubscribeMessage('acceptGame')
 	async launchGame(@ConnectedSocket() playerRightSocket: Socket, @MessageBody() invitation: any) {
 
-		const playerIdLeft: number = Number(this.getKeyByValue(this.userSocketMap,invitation.hostId));
+		const playerIdLeft: number = invitation.hostId;
 		const playerLeft: User = await this.userService.getProfileByUserId(playerIdLeft);
 		const playerRight: User = await this.socketToUser(playerRightSocket);
 		console.log(`[Game] Listend Event ['acceptGame'] ${playerLeft.username} and ${playerRight.username}`);

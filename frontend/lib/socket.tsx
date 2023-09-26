@@ -16,7 +16,7 @@ type SocketContextType = {
 };
 
 type TGameInvite = {
-	hostId: string,
+	hostId: number,
 	hostNickname: string,
 	gameMode: string,
 };
@@ -73,6 +73,7 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 			router.push('/');
 		});
 		socket.on('gotInvited', (data: TGameInvite) => {
+			console.log('gotInvited');
 			if (!confirm(`${data.hostNickname} 님이 ${data.gameMode}에 초대하셨습니다. 수락하시겠습니까?`)) {
 //				socket.emit('declineGame', data.user_id);
 				return;
@@ -84,7 +85,7 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 		});
 
 		socket.on("gameStart", (obj: TGameUsers) => {
-			router.push(`/game/matching/?leftUserName=${obj.leftUserName}&leftUserId=${obj.leftUserId}&rightUserName=${obj.rightUserName}&rightUserId=${obj.rightUserId}`);
+			router.push(`/game/matching?gameStart=true&leftUserName=${obj.leftUserName}&leftUserId=${obj.leftUserId}&rightUserName=${obj.rightUserName}&rightUserId=${obj.rightUserId}`);
 		});
 	}
 
