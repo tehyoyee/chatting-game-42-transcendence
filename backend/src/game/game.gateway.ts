@@ -353,7 +353,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async inviteGame(@ConnectedSocket() hostSocket: Socket, @MessageBody() invitation: any) {
 		const hostUser: User = await this.socketToUser(hostSocket);
 		const targetUserSocket: Socket = this.userSocketMap.get(invitation.targetUserId);
-		this.server.to(targetUserSocket.id).emit('getInvited', {
+		this.server.to(targetUserSocket.id).emit('gotInvited', {
 			hostId: hostUser.user_id,
 			hostNickname: hostUser.nickname,
 			gameMode: invitation.gameMode
@@ -464,7 +464,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			this.server.to(client.id).emit("forceLogout");
 		}
 		const token: any = client.handshake.query.token;
-		console.log('when login status userMap', this.userSocketMap);
 		if (this.userSocketMap.has(user.user_id)) {
 			console.log('forcelogout');
 			this.server.to(client.id).emit('forceLogout');

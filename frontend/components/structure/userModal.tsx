@@ -98,7 +98,7 @@ const UserModal = ({
 		const url = `${relationUrl}/${targetUser.isBlocked ? 'remove' : 'add'}/block`;
 		console.log('url=', url, ',content=', JSON.stringify(relContent));
 		fetch(url, {
-			method: targetUser.isFriend ? "DELETE" : "POST",
+			method: targetUser.isBlocked ? "DELETE" : "POST",
 			credentials: "include",
 			headers: {
 				'Content-Type': 'application/json',
