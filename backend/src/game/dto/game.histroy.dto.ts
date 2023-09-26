@@ -1,19 +1,17 @@
-import { User } from "src/user/entity/user.entity";
+import { User } from 'src/user/entity/user.entity';
 
 export class GameHistoryDto {
+  player: User;
 
-	player: User;
+  winner_id: number;
 
-	winner_id: number;
+  loser_id: number;
 
-	loser_id: number;
+  winner_nickname: string;
 
-	winner_nickname: string;
-	
-	loser_nickname: string;
-	
-	score1: number;
+  loser_nickname: string;
 
-	score2: number;
+  score1: number;
 
+  score2: number;
 }

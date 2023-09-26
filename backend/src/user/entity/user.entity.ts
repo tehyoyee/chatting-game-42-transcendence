@@ -1,62 +1,68 @@
-import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
-import { UserStatus } from "../enum/user-status.enum";
-import { UserAchievement } from "../enum/user-achievements.enum";
-import { UserChannelBridge } from "src/chat/entity/user-channel-bridge.entity";
-import { Message } from "src/chat/entity/message.entity";
-import { Relation } from "src/relation/entity/relation.entity";
-import { type } from "os";
-import { GameHistory } from "src/game/game.history.entity";
+import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { UserStatus } from '../enum/user-status.enum';
+import { UserAchievement } from '../enum/user-achievements.enum';
+import { UserChannelBridge } from 'src/chat/entity/user-channel-bridge.entity';
+import { Message } from 'src/chat/entity/message.entity';
+import { Relation } from 'src/relation/entity/relation.entity';
+import { type } from 'os';
+import { GameHistory } from 'src/game/game.history.entity';
 
 @Entity()
 export class User extends BaseEntity {
-    @PrimaryColumn()
-    user_id: number;
-    
-    @Column({ default: false })
-    two_factor: boolean;
+  @PrimaryColumn()
+  user_id: number;
 
-    @Column()
-    username: string;
-    
-    @Column()
-    nickname: string;
+  @Column({ default: false })
+  two_factor: boolean;
 
-    @Column()
-    email: string;
+  @Column()
+  username: string;
 
-    @Column({ default: UserStatus.OFFLINE })
-    status: UserStatus;
-    
-    @Column({ default: 'default_image' }) 
-    avatar: string;
-    
-    @Column({ default: 0 })
-    win_count: number;
-    
-    @Column({ default: 0 })
-    lose_count: number;
-    
-    @Column({ default: 1000 })
-    point: number;
+  @Column()
+  nickname: string;
 
-    @Column({ default: UserAchievement.A0 })
-    achievement: UserAchievement;
+  @Column()
+  email: string;
 
-    @Column({ default: '' })
-    auth_code: string;
-    
-    //아래는 관계표현
-    @OneToMany(type => UserChannelBridge, join_channels => join_channels.user, { eager: false })
-    join_channels: UserChannelBridge[];
-    
-    @OneToMany(type => Message, messages => messages.user, { eager: false })
-    messages: Message[];
+  @Column({ default: UserStatus.OFFLINE })
+  status: UserStatus;
 
-    @OneToMany(type => Relation, senders => senders.sender, {eager: true})
-    senders: Relation[];
-    
-    // @OneToMany(() => GameHistory, (gameHistory) => gameHistory.game_id)
-    // game_histories: GameHistory[];
-    @OneToMany(type => GameHistory, gameHistory => gameHistory.player, {eager: true})
-    gameHistories: GameHistory[];
+  @Column({ default: 'default_image' })
+  avatar: string;
+
+  @Column({ default: 0 })
+  win_count: number;
+
+  @Column({ default: 0 })
+  lose_count: number;
+
+  @Column({ default: 1000 })
+  point: number;
+
+  @Column({ default: UserAchievement.A0 })
+  achievement: UserAchievement;
+
+  @Column({ default: '' })
+  auth_code: string;
+
+  //아래는 관계표현
+  @OneToMany(
+    (type) => UserChannelBridge,
+    (join_channels) => join_channels.user,
+    { eager: false },
+  )
+  join_channels: UserChannelBridge[];
+
+  @OneToMany((type) => Message, (messages) => messages.user, { eager: false })
+  messages: Message[];
+
+  @OneToMany((type) => Relation, (senders) => senders.sender, { eager: true })
+  senders: Relation[];
+
+  // @OneToMany(() => GameHistory, (gameHistory) => gameHistory.game_id)
+  // game_histories: GameHistory[];
+  @OneToMany((type) => GameHistory, (gameHistory) => gameHistory.player, {
+    eager: true,
+  })
+  gameHistories: GameHistory[];
 }

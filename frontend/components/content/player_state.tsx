@@ -3,6 +3,7 @@
 import useSocketContext from "@/lib/socket";
 import React, { useEffect, useContext, createContext, useState } from "react";
 import useAuthContext from "../user/auth";
+import { IChatMate, IChatUser } from "./chat/context";
 
 export enum EPlayerState {
 	CHAT = 0,
@@ -33,7 +34,7 @@ export default function usePlayerContext() {
 
 export function PlayerContextProvider({ children }: { children: React.ReactNode }) {
 	const [state, setState] = useState<EPlayerState>(EPlayerState.PROFILE);
-	const [data, setData] = useState<any>(null);
+	const [data, setData] = useState<IChatUser | null>(null);
 	const [prevState, setPrevState] = useState<EPlayerState>(state);
 	const { chatSocket, gameSocket } = useSocketContext();
 	const { updateLoginState } = useAuthContext();
@@ -54,7 +55,7 @@ export function PlayerContextProvider({ children }: { children: React.ReactNode 
 				break;
 			case EPlayerState.CHAT_JOINING:
 				if (state === EPlayerState.CHAT) break;
-				chatSocket?.emit('close-channel-window', data.channel_id);
+				chatSocket?.emit('close-channel-window', data?.channel_id);
 				console.log('close-channel-window');
 				break;
 			default:
