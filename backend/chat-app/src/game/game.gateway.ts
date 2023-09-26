@@ -348,22 +348,47 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	@SubscribeMessage('launchGame')
 	async launchGame(@MessageBody() invitation: any) {
-		const playerLeft: User = await this.socketToUser(invitation.hostUserSocket);
+			
+		const playerIdLeft: number = Number(this.getKeyByValue(this.userSocketMap,invitation.hostId));
+		const playerLeft: User = await this.userService.getProfileByUserId(playerIdLeft);
+		// leftuser online?
 		const playerRight: User = await this.socketToUser(invitation.clientUserSocket);
-		const newRoomName: string = invitation.hostUserSocket.id + invitation.clientUserSocket.id;
+		const playerLeftSocket: Socket = this.userSocketMap.get(playerIdLeft);
+		const playerRightSocket: Socket = this.userSocketMap.get(playerRight.user_id);
+		const newRoomName: string = playerLeftSocket.id + playerRightSocket.id;
 		console.log(`[Game] ${invitation.gameMode} match created by invitation.`);
 		console.log(`[Game] playerLeft: ${playerLeft}`);
 		console.log(`[Game] playerRight: ${playerRight}`);
-		invitation.hostUserSocket.join(newRoomName);
-		invitation.clientUserSocket.join(newRoomName);
+		playerLeftSocket.join(newRoomName);
+		playerRightSocket.join(newRoomName);
 		this.gameRoomMap.set(playerLeft.user_id, newRoomName);
 		this.gameRoomMap.set(playerRight.user_id, newRoomName);
 		console.log(`[Game] Game room ${newRoomName} created.`);
 		this.server.to(newRoomName).emit('gameStart', {
-			roomName: newRoomName
+			leftUserName: playerLeft.nickname,
+			rightUserName: playerRight.nickname,
+			leftUserId: playerIdLeft,
+			rightUserId: playerRight.user_id,
 		});
 		console.log(`[Game] ${invitation.gameMode} match created.`);
-		setTimeout(async () => await this.runGame(invitation.gameMode, newRoomName, invitation.hostUserSocket, invitation.clientUserSocket, 0, 0), 3000);
+		setTimeout(async () => await this.runGame(invitation.gameMode, newRoomName, playerLeftSocket, playerRightSocket, 0, 0), 3000);
+	
+		// const playerLeft: User = await this.socketToUser(invitation.hostUserSocket);
+		// const playerRight: User = await this.socketToUser(invitation.clientUserSocket);
+		// const newRoomName: string = invitation.hostUserSocket.id + invitation.clientUserSocket.id;
+		// console.log(`[Game] ${invitation.gameMode} match created by invitation.`);
+		// console.log(`[Game] playerLeft: ${playerLeft}`);
+		// console.log(`[Game] playerRight: ${playerRight}`);
+		// invitation.hostUserSocket.join(newRoomName);
+		// invitation.clientUserSocket.join(newRoomName);
+		// this.gameRoomMap.set(playerLeft.user_id, newRoomName);
+		// this.gameRoomMap.set(playerRight.user_id, newRoomName);
+		// console.log(`[Game] Game room ${newRoomName} created.`);
+		// this.server.to(newRoomName).emit('gameStart', {
+		// 	roomName: newRoomName
+		// });
+		// console.log(`[Game] ${invitation.gameMode} match created.`);
+		// setTimeout(async () => await this.runGame(invitation.gameMode, newRoomName, invitation.hostUserSocket, invitation.clientUserSocket, 0, 0), 3000);
 	}
 
 	@SubscribeMessage('exitQueue')
