@@ -50,6 +50,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   //==========================================================================================
 
   async handleConnection(client: Socket) {
+    console.log('client: ', client);
     this.logger.debug("handle connection in");
     const user = await this.socketToUser(client);
     if (!user) {
@@ -310,6 +311,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       client.emit('post-fail', 'Cannot Post Message Error in onPostGroupMessage');
       return ;
     }
+    
 
     const messageEntity = await this.chatService.createGroupMessage(user, channel, groupMessageDto.content);
 		const newMessage = messageEntity.content;
