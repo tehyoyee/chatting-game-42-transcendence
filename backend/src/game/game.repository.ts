@@ -2,14 +2,12 @@ import { DataSource, Repository } from "typeorm";
 import { GameHistory } from "./game.history.entity";
 import { Injectable } from '@nestjs/common';
 import { User } from "src/user/entity/user.entity";
-import { UserRepository } from "src/user/user.repository";
 import { GameHistoryDto } from "./dto/game.histroy.dto";
 
 @Injectable()
 export class GameRepository extends Repository<GameHistory> {
     constructor(
 		dataSource: DataSource,
-		private userRepository: UserRepository
 	) {
         super(GameHistory, dataSource.createEntityManager())
 	}
