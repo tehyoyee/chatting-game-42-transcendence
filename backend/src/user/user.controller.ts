@@ -12,6 +12,7 @@ import {
   UploadedFile,
   UseInterceptors,
   Header,
+  HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entity/user.entity';
@@ -80,6 +81,12 @@ export class UserController {
     @Param('nickName') nickName: string,
   ): Promise<void> {
     if (g_debug) console.log('/updateName/:id/:nickName');
+
+    const regex = /^[a-zA-Z0-9]{4,16}$/;
+    if (!regex.test(nickName)) {
+      throw new HttpException('Unexist UserId', HttpStatus.CONFLICT);
+    }
+  
     await this.userService.updateNickName(id, nickName);
   }
 
@@ -89,6 +96,9 @@ export class UserController {
     @UploadedFile() file: Express.Multer.File,
     @Param('id', ParseIntPipe) id: number,
   ) {
+    if (file.size > 1024 * 200) {
+      throw new HttpException('Too Big Image', HttpStatus.CONFLICT);
+    }
     const path = file.path.replace(__dirname + `/../../uploads`, '');
     await this.userService.updateAvatar(id, path);
     console.log(`/updateAvatar/:id path=${path}`);
