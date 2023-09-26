@@ -52,6 +52,10 @@ function ChatBox() {
 	};
 
 	useEffect(() => {
+		setChatLog([]);
+	}, [user]);
+
+	useEffect(() => {
 		if (!chatSocket) return;
 		chatSocket.off('got-mutted');
 		chatSocket.on('got-mutted', (msg) => {
