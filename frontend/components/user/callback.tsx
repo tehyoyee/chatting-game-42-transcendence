@@ -19,6 +19,7 @@ export default function Callback() {
   const called = useRef(false);
   const router = useRouter();
 	const [tfa, setTfa] = useState(false);
+	const [firstLogin, setFirstLogin] = useState<boolean>(false);
 	const [loginData, setLoginData] = useState<LoginData>({
 		// NOTE: is initialization value OK?
 		id: -1,
@@ -53,13 +54,12 @@ export default function Callback() {
 					setTfa(true);
 					sessionStorage.setItem('tfa', 'true');
 					return;
-					
 				} 
-				router.push('/');
-				/*else if (res.firstLogin === true) {
+				else if (res.firstLogin === true) {
 					router.push('/profile');
 					return;
-				}*/
+				}
+				router.push('/');
 			})
       .catch(reason => {
         console.log(`${tokenUrl}: fetch failed: ${JSON.stringify(reason)}`);
@@ -70,7 +70,7 @@ export default function Callback() {
   }, [updateLoginState, loggedIn, router]);
   return (
 		<>
-			{tfa && <Tfa loginData={loginData}></Tfa>}
+			{tfa && <Tfa loginData={loginData} firstLogin={firstLogin}></Tfa>}
 		</>
 	);
 }

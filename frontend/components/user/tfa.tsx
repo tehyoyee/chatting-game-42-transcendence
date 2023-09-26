@@ -9,7 +9,13 @@ import { setTimeout } from 'timers';
 
 const authUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/twofactor`
 
-export default function Tfa({ loginData }: { loginData: LoginData }) {
+export default function Tfa({
+	loginData,
+	firstLogin,
+}: { 
+	loginData: LoginData,
+	firstLogin: boolean,
+}) {
   const [message, setMessage] = useState('');
 	const { loggedIn, updateLoginState } = useAuthContext();
 	const router = useRouter();
