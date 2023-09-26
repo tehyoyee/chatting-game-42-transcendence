@@ -458,10 +458,6 @@ export class GameGateway
     @MessageBody() invitation: any,
   ) {
     const hostUser: User = await this.socketToUser(hostSocket);
-    const targetUser: User = await this.socketToUser(invitation.targetUserId);
-    if (targetUser.status !== UserStatus.ONLINE) {
-      return;
-    }
     const targetUserSocket: Socket = this.userSocketMap.get(
       invitation.targetUserId,
     );
