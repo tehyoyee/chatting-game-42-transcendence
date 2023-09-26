@@ -1,31 +1,41 @@
-import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { ChannelType} from "../enum/channel_type.enum";
-import { Message } from "./message.entity";
-import { UserChannelBridge } from "./user-channel-bridge.entity";
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { ChannelType } from '../enum/channel_type.enum';
+import { Message } from './message.entity';
+import { UserChannelBridge } from './user-channel-bridge.entity';
 
 @Entity()
 export class Channel extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    channel_id: number;
+  @PrimaryGeneratedColumn()
+  channel_id: number;
 
-    @Column({ unique: true })
-    channel_name: string;
+  @Column({ unique: true })
+  channel_name: string;
 
-    @Column()
-    channel_type: ChannelType;
+  @Column()
+  channel_type: ChannelType;
 
-    @Column()
-    salt: string;
+  @Column()
+  salt: string;
 
-    @Column({ nullable: true })
-    channel_pwd: string;
+  @Column({ nullable: true })
+  channel_pwd: string;
 
-    //아래는 관계 표현
-    @OneToMany(type => UserChannelBridge, details => details.channel, { eager: false })
-    details: UserChannelBridge[];
+  //아래는 관계 표현
+  @OneToMany((type) => UserChannelBridge, (details) => details.channel, {
+    eager: false,
+  })
+  details: UserChannelBridge[];
 
-    @OneToMany(type => Message, messages => messages.channel, { eager: false })
-    messages: Message[];
+  @OneToMany((type) => Message, (messages) => messages.channel, {
+    eager: false,
+  })
+  messages: Message[];
 }
 
 /*

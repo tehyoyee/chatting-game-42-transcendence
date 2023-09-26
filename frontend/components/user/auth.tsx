@@ -44,7 +44,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
     })
     .then(res => res.json())
     .then(data => {
-      console.log(`updateLoginState: ${JSON.stringify(data)}`);
+      console.log('updateLoginState: ', data);
       setUpdated(true);
       setLoggedIn(data.loggedIn);
       data.user && setUser(data.user);

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import styles from '@/styles/chat_manage.module.css';
 import useSocketContext from '@/lib/socket';
-import useChatContext from './context';
+import useChatContext, { IChatUser } from './context';
+import usePlayerContext from '../player_state';
 
 enum Type {
 	Public = 0,
@@ -20,19 +21,21 @@ const evt_create_dm = "create-dm-channel";
 
 export function ChatCreate({ onClose }: { onClose: Function }) {
 	const { user, setUser, setJoined } = useChatContext();
-	const [chatType, setChatType] = useState<Type>(Type.Public);
+	const [ chatType, setChatType ] = useState<Type>(Type.Public);
 	const { chatSocket } = useSocketContext();
+	const { setPlayerData } = usePlayerContext();
 
 	// NOTE: is it necessary to check socket established?
 	useEffect(() => {
 		if (!chatSocket) return;
 			chatSocket.off('creation-success');
 			chatSocket.off('creation-fail');
-			chatSocket.on('creation-success', (data) => {
+			chatSocket.on('creation-success', (data: IChatUser) => {
 				console.log(`생성 성공: ${JSON.stringify(data)}`)
 				onClose();
 				setUser(data);
 				setJoined(true);
+				setPlayerData(data);
 			});
 			chatSocket.on('creation-fail', (data) => {alert(`생성 실패: ${JSON.stringify(data)}`);});
 	}, [chatSocket]);

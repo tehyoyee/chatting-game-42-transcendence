@@ -7,23 +7,22 @@ import { PassportModule } from '@nestjs/passport';
 import * as config from 'config';
 import { User } from 'src/user/entity/user.entity';
 import { UserService } from 'src/user/user.service';
-import { HttpModule, HttpService } from "@nestjs/axios";
+import { HttpModule, HttpService } from '@nestjs/axios';
 import { UserRepository } from '../user/user.repository';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MailService } from './mail.service';
 import { JwtStrategy } from './jwt.strategy';
-import { HttpExceptionFilter } from '../exception/http.exception.filter';
 
 @Module({
   imports: [
     PassportModule.register({
-      defaultStrategy: 'jwt'
+      defaultStrategy: 'jwt',
     }),
     JwtModule.register({
       secret: process.env.JWT_SECRET || config.get('jwt.secret'),
-      signOptions:{
+      signOptions: {
         expiresIn: 3600,
-      }
+      },
     }),
     TypeOrmModule.forFeature([User]),
     HttpModule,
@@ -37,7 +36,7 @@ import { HttpExceptionFilter } from '../exception/http.exception.filter';
         port: 587,
         auth: {
           user: config.get('mail.user'),
-          pass: config.get('mail.pass')
+          pass: config.get('mail.pass'),
         },
       },
       defaults: {
@@ -52,7 +51,13 @@ import { HttpExceptionFilter } from '../exception/http.exception.filter';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, UserRepository, MailService, JwtStrategy],
+  providers: [
+    AuthService,
+    UserService,
+    UserRepository,
+    MailService,
+    JwtStrategy,
+  ],
   exports: [TypeOrmModule, JwtStrategy, PassportModule, JwtModule],
 })
 export class AuthModule {}

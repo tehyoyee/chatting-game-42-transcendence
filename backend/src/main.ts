@@ -10,16 +10,18 @@ import { BaseWsExceptionFilter } from '@nestjs/websockets';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT || 3000;
-	console.log(process.env.FRONT_URL)
+  console.log(process.env.FRONT_URL);
   app.enableCors({
-//    origin: `http://localhost:${process.env.FRONT_PORT || 3001}`,
-    origin: `${serverConfig.get('server.url')}:${serverConfig.get('server.front_port') || 3001}`,
+    //    origin: `http://localhost:${process.env.FRONT_PORT || 3001}`,
+    origin: `${serverConfig.get('server.url')}:${
+      serverConfig.get('server.front_port') || 3001
+    }`,
     credentials: true,
-    methods: ['GET', 'POST', 'PATCH', 'DELETE']
-  })
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  });
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());
-    
+
   const config = new DocumentBuilder()
     .setTitle('jiwkwon')
     .setDescription('user API description')

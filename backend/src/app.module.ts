@@ -13,8 +13,11 @@ import { RelationModule } from './relation/relation.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeORMConfig),
-    UserModule, AuthModule, ChatModule, 
-    GameModule, RelationModule, 
+    UserModule,
+    AuthModule,
+    ChatModule,
+    GameModule,
+    RelationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

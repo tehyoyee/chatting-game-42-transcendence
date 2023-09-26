@@ -1,4 +1,4 @@
 export enum RelationType {
-    FRIEND = 'friend',
-    BLOCK = 'block'
+  FRIEND = 'friend',
+  BLOCK = 'block',
 }
