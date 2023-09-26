@@ -182,7 +182,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     const regex = /^.{2,16}$/;
-    if (groupChannelDto.password !== '' && !regex.test(groupChannelDto.password)) {
+    if (groupChannelDto.channelName !== '' && !regex.test(groupChannelDto.channelName)) {
       client.emit('creation-fail', 'Wrong Input in onCreateGroupChanne');
       return;
     }
@@ -422,8 +422,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.emit('post-fail', 'Empty Content Error in onPostGroupMessage');
       return;
     }
-    const regex = /^.{1,200}$/;
-    if (groupMessageDto.content !== '' && regex.test(groupMessageDto.content)) {
+    const regex = /^.{1,256}$/;
+    if (groupMessageDto.content !== '' && !regex.test(groupMessageDto.content)) {
       client.emit('post-fail', 'Wrong Input in onPostGroupMessage');
       return;
     }
