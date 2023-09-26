@@ -1,0 +1,27 @@
+FROM node:18.18.0
+
+WORKDIR ./app
+
+COPY ./package*.json ./
+COPY ./next.config.js ./
+COPY ./tsconfig.json ./
+
+RUN mkdir app/
+
+COPY ./tsconfig.json ./
+
+
+RUN npm install bufferutil utf-8-validate --save-optional
+RUN npm install socket.io-client 
+RUN npm install @types/react @types/react-dom @types/node
+
+RUN npm install react-notifications-component
+
+COPY ./app ./
+
+RUN npm run build
+
+
+EXPOSE 3001
+
+CMD ["npm", "run", "start"]
