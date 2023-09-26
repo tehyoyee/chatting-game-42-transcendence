@@ -295,8 +295,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
 
+		console.log('post request');
     const decodedToken = await this.authService.verifyTokenSocket(groupMessageDto.token);
 		if (!decodedToken) {
+			console.log('post fail by invalid token');
       this.server.to(client.id).emit("forceLogout");
 			this.handleDisconnect(client);
 			return ;

@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect, useContext, createContext } from 'react
 import { io, Socket } from 'socket.io-client';
 import { useRouter } from 'next/navigation';
 import useAuthContext from '@/components/user/auth';
+import { TGameUsers } from '@/components/content/matching';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 const chatUrl = `${serverUrl}/chat`;
@@ -45,6 +46,7 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 		});
 		socket.on('disconnect', () => {
 			console.log("chatsocket disconnected");
+			router.push('/');
 		});
 		socket.on('forceLogout', async () => {
 			console.log('chatSocket forceLogout');
@@ -79,6 +81,10 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 				hostId: data.hostId,
 				gameMode: data.gameMode,
 			});
+		});
+
+		socket.on("gameStart", (obj: TGameUsers) => {
+			router.push(`/game/matching/?leftUserName=${obj.leftUserName}&leftUserId=${obj.leftUserId}&rightUserName=${obj.rightUserName}&rightUserId=${obj.rightUserId}`);
 		});
 	}
 
