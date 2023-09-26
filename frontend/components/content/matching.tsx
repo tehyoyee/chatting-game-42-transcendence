@@ -114,7 +114,12 @@ export default function Matching() {
 	}, [SocketContext.gameSocket]);
 	*/
 
+  useEffect(() => {
+    setPlayerState(EPlayerState.GAME_MATCHING);
+  }, []);
+
 	useEffect(() => {
+		if (!searchParams.get('gameStart')) return;
 		const lun = searchParams.get('leftUserName');
 		const run = searchParams.get('rightUserName');
 		const lui = Number(searchParams.get('leftUserId'));
@@ -130,14 +135,10 @@ export default function Matching() {
 		console.log('game started: ', userData);
 		setUserObj(userData);
 		setReady(true);
-	}, []);
+	}, [searchParams]);
 
   useEffect(() => {
-    setPlayerState(EPlayerState.GAME_MATCHING);
-  }, []);
-
-  useEffect(() => {
-    if (!queue) {
+    if (!queue && !searchParams.get('gameStart')) {
       const JoinQueue = () => {
         searchParams.get("normal")
           ? SocketContext.gameSocket?.emit("joinQueue", "NORMAL")
