@@ -51,12 +51,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.logger.debug("handle connection in");
     const user = await this.socketToUser(client);
     if (!user) {
-      client.emit('creation-fail', 'Unidentified User Error in handleConnection');
-      return ;
+      this.server.to(client.id).emit("forceLogout");
     }
+    const token: any = client.handshake.query.token;
+		if (this.userSocketMap.has(user.user_id)) {
+			this.server.to(client.id).emit('forceLogout');
+		} else {
+			await this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
+			this.userSocketMap.set(user.user_id, client);
+		}
   
     client.data.user = user;
-    this.userSocketMap.set(user.user_id, client);
   
     const privateChannelName = 'user' + user.user_id.toString();
     const privateChannel = await this.chatService.getChannelByName(privateChannelName)
@@ -83,7 +88,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   
   async handleDisconnect(client: any) {
     const user = await this.socketToUser(client);
-    if (user) {
+    if (user && this.userSocketMap.has(user.user_id)) {
       this.userSocketMap.delete(user.user_id);
       await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
       await this.emitUserStatus(user.user_id);
