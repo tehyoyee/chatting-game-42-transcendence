@@ -49,6 +49,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	@SubscribeMessage('joinQueue')
 	async joinQueue(@ConnectedSocket() client: any, @MessageBody() gameMode: string) {
 		const user = await this.socketToUser(client);
+		if (!user) {
+			return ;
+		}
 		if (gameMode === 'NORMAL') {
 			this.gameNormalQueue.push(user.user_id);
 			console.log(`[Game] added normalQueue user : ${user.username}`);
@@ -60,6 +63,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				const playerSocketRight = this.userSocketMap.get(playerIdRight);
 				const user1 = await this.socketToUser(playerSocketLeft);
 				const user2 = await this.socketToUser(playerSocketRight);
+				if (!user1 || !user2) {
+					return ;
+				}
 				const newRoomName = playerSocketLeft.id + playerSocketRight.id;
 
 				console.log(`[Game] playerLeft: ${playerIdLeft}`);
@@ -93,6 +99,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				const playerSocketRight = this.userSocketMap.get(playerIdRight);
 				const user1 = await this.socketToUser(playerSocketLeft);
 				const user2 = await this.socketToUser(playerSocketRight);
+				if (!user1 || !user2) {
+					return ;
+				}
 				const newRoomName = playerSocketLeft.id + playerSocketRight.id;
 
 				console.log(`[Game] playerLeft: ${playerIdLeft}`);
@@ -120,13 +129,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	async runGame(gameMode: string, roomName: string, player1: Socket, player2: Socket, point1: number, point2: number) {
 		const user1 = await this.socketToUser(player1);
-		if (!user1) {
-			this.server.to(player1.id).emit("forceLogout");
-		}
 		const user2 = await this.socketToUser(player2);
-		if (!user2) {
-			this.server.to(player2.id).emit("forceLogout");
-		}
 		if (!user1 && !user2) {
 			return ;
 		}
@@ -363,6 +366,9 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		const playerIdLeft: number = Number(this.getKeyByValue(this.userSocketMap,invitation.hostId));
 		const playerLeft: User = await this.userService.getProfileByUserId(playerIdLeft);
 		const playerRight: User = await this.socketToUser(playerRightSocket);
+		if (!playerLeft || !playerRight) {
+			return ;
+		}
 		const playerLeftSocket: Socket = this.userSocketMap.get(playerIdLeft);
 		// if (playerLeft)
 		// const playerRightSocket: Socket = this.userSocketMap.get(playerRight.user_id);
@@ -444,7 +450,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	@SubscribeMessage('keyS')
 	async updateKeyStatusS (@ConnectedSocket() client: any, @MessageBody() newStatus: string) {
-		const user = await this.socketToUser(client);		
+		const user = await this.socketToUser(client);
 		if (newStatus === KeyStatus.UP) {
 			this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 		} else if (newStatus === KeyStatus.DOWN) {
@@ -474,7 +480,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		const user = await this.socketToUser(client);
 		if (user && this.userSocketMap.has(user.user_id)) {
 			if (this.userSocketMap.get(user.user_id).id === client.id) {
-				console.log('일반 로그아웃');
 				this.userSocketMap.delete(user.user_id);
 				this.gameRoomMap.delete(user.user_id);
 				this.userKeyMap.delete(user.user_id);
@@ -517,20 +522,18 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	private async socketToUser(client: Socket): Promise<User> {
 		const token: any = client.handshake.query.token;
-		if (!token)
-			this.server.to(client.id).emit('forceLogout');	
-		try {
-			const decoded = await this.authService.verifyToken(token);
-			const user: User = await this.userService.getProfileByUserId(decoded.id);
-			return user;
+		if (!token) {
+			return null;
 		}
-		catch (error) {
-			this.server.to(client.id).emit('forceLogout');
-			return undefined;
+		const decoded = await this.authService.verifyTokenSocket(token);
+		if (!decoded) {
+			return null;
 		}
+		const user: User = await this.userService.getProfileByUserId(decoded.id);
+		return user;
 	}
 
-	getKeyByValue(map, value) {
+	private getKeyByValue(map, value) {
 		return Object.keys(map).find(key => map[key] === value);
 	}
 }
