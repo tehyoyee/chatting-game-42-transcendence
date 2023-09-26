@@ -50,7 +50,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   //==========================================================================================
 
   async handleConnection(client: Socket) {
-    console.log('client: ', client);
+    // console.log('client: ', client);
     this.logger.debug("handle connection in");
     const user = await this.socketToUser(client);
     if (!user) {
@@ -117,10 +117,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     // exception 날리지 않고 disconnect하도록 수정
     const token: any = client.handshake.query.token;
     if (!token) {
-      // throw new HttpException('Unauthorized Token', HttpStatus.UNAUTHORIZED);
       this.logger.debug('Null Token');
-      client.disconnect();
-      return;
+      // client.disconnect();
+      return null;
     }
   
     try {
@@ -130,8 +129,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
     catch (err) {
         this.logger.debug(err);
-        client.disconnect();
-        return;
+        // client.disconnect();
+        return null;
     }
   }
   
@@ -296,8 +295,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
       return ;
     }
 
-    const decodedToken = await this.authService.verifyToken(groupMessageDto.token);
+    const decodedToken = await this.authService.verifyTokenSocket(groupMessageDto.token);
 		if (!decodedToken) {
+      this.server.to(client.id).emit("forceLogout");
 			this.handleDisconnect(client);
 			return ;
 		}
