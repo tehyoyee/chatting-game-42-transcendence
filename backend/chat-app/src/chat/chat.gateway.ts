@@ -51,12 +51,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.logger.debug("handle connection in");
     const user = await this.socketToUser(client);
     if (!user) {
-      client.emit('creation-fail', 'Unidentified User Error in handleConnection');
-      return ;
+      this.server.to(client.id).emit("forceLogout");
     }
+    const token: any = client.handshake.query.token;
+		if (this.userSocketMap.has(user.user_id)) {
+			this.server.to(client.id).emit('forceLogout');
+		} else {
+			await this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
+			this.userSocketMap.set(user.user_id, client);
+		}
   
     client.data.user = user;
-    this.userSocketMap.set(user.user_id, client);
   
     const privateChannelName = 'user' + user.user_id.toString();
     const privateChannel = await this.chatService.getChannelByName(privateChannelName)
@@ -83,7 +88,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
   
   async handleDisconnect(client: any) {
     const user = await this.socketToUser(client);
-    if (user) {
+    if (user && this.userSocketMap.has(user.user_id)) {
       this.userSocketMap.delete(user.user_id);
       await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
       await this.emitUserStatus(user.user_id);
@@ -180,17 +185,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //   return ;
     // }
 
-    let channel, bridge, receiverBridge;
+    let channel: Channel, bridge, receiverBridge;
+
+
     const exist = await this.chatService.checkDmRoomExists(user.user_id, dmChannelDto.receiverId);
     if (exist) {
       channel = exist;
-      let previousMessages: PreviousMessageDto[] = [];
-      previousMessages = await this.chatService.getAllMessagesExceptBlockByChannelId(user.user_id, channel.channel_id);
-
-      this.server.to(channel.channel_name).emit("messages", previousMessages);
     }
     else {
       channel = await this.chatService.createDmChannelAndBridges(user, user.user_id, dmChannelDto.receiverId);
+			console.debug('dm channel message fail: create new dm channel');
     }
 
     bridge = await this.chatService.checkUserInThisChannel(user.user_id, channel.channel_id);
@@ -204,6 +208,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     this.server.to(channel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
     // this.server.to(channel.channel_name).emit("join", {user_id: receiver.user_id, user_nickname: receiver.nickname});
+		let previousMessages: PreviousMessageDto[] = [];
+		previousMessages = await this.chatService.getAllMessagesExceptBlockByChannelId(user.user_id, channel.channel_id);
+
+		this.server.to(client.id).emit("messages", previousMessages);
     
     // this.server.to(channel.channel_name).emit("join", {
     //   user_id: user.user_id, user_nickname: user.nickname,

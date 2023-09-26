@@ -173,7 +173,7 @@ export class ChatService {
         .getMany();
         
         if (channels.length === 0) {
-            await this.messageRepository.deleteMessagesByChannelId(channelId);
+            await this.deleteMessagesByChannelId(channelId);
             await this.channelRepository.deleteChannelByChannelId(channelId);
             return ;
         }
@@ -193,12 +193,16 @@ export class ChatService {
             await this.deleteUCBridge(bId, channelId);
         }
         
-        await this.messageRepository.deleteMessagesByChannelId(channelId);
+        await this.deleteMessagesByChannelId(channelId);
         await this.channelRepository.deleteChannelByChannelId(channelId);
     }
 
     async deleteDmChannel(channelId: number) {
         return await this.channelRepository.deleteChannelByChannelId(channelId);
+    }
+
+    async deleteMessagesByChannelId(channelId: number) {
+        await this.messageRepository.deleteMessagesByChannelId(channelId);
     }
 
     async updateUserTypeOfUCBridge(targetUserId: number, channelId: number, newType: UserType) {

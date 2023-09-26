@@ -19,6 +19,7 @@ type TSendMsg = {
 
 type TPrevMsg = {
 	writerId: number,
+	writerNickname: string,
 	content: string,
 }
 
@@ -62,8 +63,9 @@ function ChatBox() {
 		})
 		chatSocket.off('messages');
 		chatSocket.on('messages', (data: TPrevMsg[]) => {
+			console.log('messages: ', data);
 			data.map(msg => {
-				addMsg(`${msg.writerId}: ${msg.content}`)
+				addMsg(`${msg.writerNickname}: ${msg.content}`)
 			});
 		})
 	}, [chatSocket]);

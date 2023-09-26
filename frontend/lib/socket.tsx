@@ -46,6 +46,13 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 		socket.on('disconnect', () => {
 			console.log("chatsocket disconnected");
 		});
+		socket.on('forceLogout', async () => {
+			console.log('chatSocket forceLogout');
+			sessionStorage.removeItem('tfa');
+			document.cookie = 'token' + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+			await updateLoginState();
+			router.push('/');
+		});
 	}
 
 	function initGameSocket(socket: Socket) {
@@ -53,9 +60,8 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 			console.log("gamesocket connected");
 		});
 		socket.on('forceLogout', async () => {
-			console.log('gameSocket disconnected');
+			console.log('gameSocket forceLogout');
 			sessionStorage.removeItem('tfa');
-			// document.cookie = '';
 			document.cookie = 'token' + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 			await updateLoginState();
 			router.push('/');
