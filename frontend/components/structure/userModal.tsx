@@ -133,7 +133,7 @@ const UserModal = ({
 
 	// TODO waiting page?
 	function handleGameNormal() {
-		handleEvent('invite-game', 'invite-game-success', 'invite-game-fail',
+		handleEvent('inviteGame', 'invite-game-success', 'invite-game-fail',
 			{targetUserId: targetUser.userId , gameMode: "NORMAL" ,},
 			(data: any) => {console.log(`${data.user_nickname}에게 초대를 보냈습니다.`)},
 			(msg: any) => {console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},
@@ -141,7 +141,7 @@ const UserModal = ({
 	}
 
 	function handleGameFast() {
-		handleEvent('invite-game', 'invite-game-success', 'invite-game-fail',
+		handleEvent('inviteGame', 'invite-game-success', 'invite-game-fail',
 			{targetUserId: targetUser.userId , gameMode: "ADVANCED" ,},
 			(data: any) => {console.log(`${data.user_nickname}에게 초대를 보냈습니다.`)},
 			(msg: any) => {console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},

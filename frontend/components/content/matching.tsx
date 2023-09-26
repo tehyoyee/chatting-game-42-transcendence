@@ -88,15 +88,21 @@ export default function Matching() {
         });
     })();
   }, []);
-  SocketContext.gameSocket?.on("gameStart", (obj) => {
-    setUserObj(obj);
-    setReady(true);
-  });
-
   const exitQueueHandler = () => {
     console.log("exitQueue handler worked!");
     SocketContext.gameSocket?.emit("exitQueue");
   };
+
+	useEffect(() => {
+		if (!SocketContext.gameSocket) return;
+		SocketContext.gameSocket?.on("gameStart", (obj) => {
+			setUserObj(obj);
+			setReady(true);
+		});
+		return () => {
+			SocketContext.gameSocket?.off();
+		};
+	}, [SocketContext.gameSocket]);
 
   useEffect(() => {
     setPlayerState(EPlayerState.GAME_MATCHING);
