@@ -4,7 +4,7 @@ import { IChatMate, IChatUser, ISocial } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 import useAuthContext from '../user/auth';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 enum ERelationType {
 	FRIEND = "friend",
