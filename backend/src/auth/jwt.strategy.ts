@@ -18,14 +18,5 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload) {
-        // const { username, id } = payload;
-        // console.log(username, id);
-        // const found: User = await this.userService.getProfileByUserId(id);
-
-        // // if(!found) {
-        // //     console.log("asdf");
-        // //     throw new UnauthorizedException("인증되지않은 사용자");
-        // // }
-        // return id;
     }
 }

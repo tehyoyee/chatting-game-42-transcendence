@@ -19,7 +19,7 @@ export class MailService {
 		this.mailerService
     		.sendMail({
         	to: `${clientEmail}`,
-        	from: 'tehyoyee@gmail.com',
+        	from: 'transcendence@42seoul.com',
         	subject: 'Here\'s your verification code',
         	text: `Verification Code = ${code}`,
       	})
