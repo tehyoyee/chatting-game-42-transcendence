@@ -1,5 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
-// import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable } from '@nestjs/common';
 import { UserRepository } from 'src/user/user.repository';
 import { GameRepository } from './game.repository';
 import { UserService } from 'src/user/user.service';
@@ -43,7 +42,7 @@ export class GameService {
 		// 게임기록 변경
 		const newGameHistory1 = await this.gameRepository.createGameHistory(winUser, winUser.user_id, loseUser.user_id, winUser.nickname, loseUser.nickname, point1, point2);
 		await this.userService.updateGameHistory(winUser.user_id, newGameHistory1);
-		const newGameHistory2 = await this.gameRepository.createGameHistory(loseUser, winUser.user_id, loseUser.user_id, winUser.nickname, loseUser.nickname, point2, point1);
+		const newGameHistory2 = await this.gameRepository.createGameHistory(loseUser, winUser.user_id, loseUser.user_id, winUser.nickname, loseUser.nickname, point1, point2);
 		await this.userService.updateGameHistory(loseUser.user_id, newGameHistory2);
 	}
 }

@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-// import { getUser } from './decorator/get-user.decorator';
 import * as config from 'config';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigService, ConfigModule } from '@nestjs/config';
