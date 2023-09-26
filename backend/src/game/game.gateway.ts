@@ -458,12 +458,13 @@ export class GameGateway
     @MessageBody() invitation: any,
   ) {
     const hostUser: User = await this.socketToUser(hostSocket);
-    const targetUserSocket: Socket = this.userSocketMap.get(
-      invitation.targetUserId,
-    );
-    console.log(
-      `[Game] InviteGame ${hostUser.username} to ${invitation.targetUserId}`,
-    );
+    const targetUserSocket: Socket = this.userSocketMap.get(invitation.targetUserId);
+	const targetUser: User = await this.socketToUser(targetUserSocket);
+	if (!targetUser || targetUser.status !== UserStatus.ONLINE || targetUser.user_id === hostUser.user_id) {
+		return;
+	}
+	
+    console.log(`[Game] InviteGame ${hostUser.username} to ${invitation.targetUserId}`);
     this.server.to(targetUserSocket.id).emit('gotInvited', {
       hostId: hostUser.user_id,
       hostNickname: hostUser.nickname,
