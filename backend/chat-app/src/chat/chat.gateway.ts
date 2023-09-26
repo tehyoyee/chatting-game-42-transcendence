@@ -180,17 +180,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     //   return ;
     // }
 
-    let channel, bridge, receiverBridge;
+    let channel: Channel, bridge, receiverBridge;
+
+
     const exist = await this.chatService.checkDmRoomExists(user.user_id, dmChannelDto.receiverId);
     if (exist) {
       channel = exist;
-      let previousMessages: PreviousMessageDto[] = [];
-      previousMessages = await this.chatService.getAllMessagesExceptBlockByChannelId(user.user_id, channel.channel_id);
-
-      this.server.to(channel.channel_name).emit("messages", previousMessages);
     }
     else {
       channel = await this.chatService.createDmChannelAndBridges(user, user.user_id, dmChannelDto.receiverId);
+			console.debug('dm channel message fail: create new dm channel');
     }
 
     bridge = await this.chatService.checkUserInThisChannel(user.user_id, channel.channel_id);
@@ -204,6 +203,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     this.server.to(channel.channel_name).emit("join", {user_id: user.user_id, user_nickname: user.nickname});
     // this.server.to(channel.channel_name).emit("join", {user_id: receiver.user_id, user_nickname: receiver.nickname});
+		let previousMessages: PreviousMessageDto[] = [];
+		previousMessages = await this.chatService.getAllMessagesExceptBlockByChannelId(user.user_id, channel.channel_id);
+
+		this.server.to(client.id).emit("messages", previousMessages);
     
     // this.server.to(channel.channel_name).emit("join", {
     //   user_id: user.user_id, user_nickname: user.nickname,

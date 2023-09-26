@@ -19,6 +19,7 @@ type TSendMsg = {
 
 type TPrevMsg = {
 	writerId: number,
+	writerNickname: string,
 	content: string,
 }
 
@@ -51,6 +52,10 @@ function ChatBox() {
 	};
 
 	useEffect(() => {
+		setChatLog([]);
+	}, [user]);
+
+	useEffect(() => {
 		if (!chatSocket) return;
 		chatSocket.off('got-mutted');
 		chatSocket.on('got-mutted', (msg) => {
@@ -62,8 +67,9 @@ function ChatBox() {
 		})
 		chatSocket.off('messages');
 		chatSocket.on('messages', (data: TPrevMsg[]) => {
+			console.log('messages: ', data);
 			data.map(msg => {
-				addMsg(`${msg.writerId}: ${msg.content}`)
+				addMsg(`${msg.writerNickname}: ${msg.content}`)
 			});
 		})
 	}, [chatSocket]);
