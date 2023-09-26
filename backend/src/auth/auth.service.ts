@@ -63,7 +63,11 @@ export class AuthService {
 				if (two_factor) {	// 2차인증 ON & 2차인증 안한상태 => 메일보내기
 					const clientEmail = await this.userService.getEmailByUserId(payload.id);
 					const verificationCode = this.mailService.secondAuthentication(clientEmail);
-					this.userService.updateTwoFactorCode(payload.id, verificationCode);
+					if (!verificationCode) {
+						throw new HttpException('mailing error', HttpStatus.BAD_REQUEST);
+					}
+					const signedVerificationCode = this.jwtService.sign(verificationCode);
+					this.userService.updateTwoFactorCode(payload.id, signedVerificationCode);
 					res.send({
 						id: payload.id,
 						firstLogin: false,
@@ -161,11 +165,12 @@ export class AuthService {
 
 	async authTwoFactor(body: any, inputCode: any, res: Response) {
 		const thisUser = await this.userService.getProfileByUserId(body.id);
-		if (thisUser.auth_code === inputCode) {
+		const decoded = this.jwtService.verify(thisUser.auth_code);
+		if (decoded === inputCode) {
 			const payload = { username: thisUser.username, id: thisUser.user_id };
 			const newAccessToken = this.jwtService.sign({ payload });
 			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: false, sameSite: 'lax' });
-			res.send({state: true});
+			res.send({ loggedIn: true, state: true });
 			return ;
 		} else {
 			console.log("invalid varification code");
