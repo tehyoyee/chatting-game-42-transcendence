@@ -249,14 +249,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     let previousMessages: PreviousMessageDto[] = [];
     previousMessages = await this.chatService.getAllMessagesExceptBlockByChannelId(user.user_id, channel.channel_id);
-    //console.log('preMsgs: ', previousMessages);
+    // console.log('preMsgs: ', previousMessages);
 
     client.join(channel.channel_name);
 
     client.emit('join-success', {channel_id: channel.channel_id, user_type: newBridge.user_type});
     //client.emit('get-users-channel', inners);
 
-    this.server.to(channel.channel_name).emit("messages", previousMessages);
+    this.server.to(client.id).emit("messages", previousMessages);
     this.server.to(channel.channel_name).emit("join", {userId: user.user_id, userNickname: user.nickname});
   }
 

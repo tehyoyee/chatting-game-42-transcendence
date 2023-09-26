@@ -85,11 +85,12 @@ export class UserService {
     async updateNickName(id: number, nickName: string): Promise<User> {
         const found = await this.userRepository.getProfileByUserId(id);
         if (!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
+
         if (nickName && found.nickname !== nickName) {
             const duplicate = await this.getProfileByNickName(nickName);
             if (duplicate)
-                throw new ForbiddenException(`${nickName} 은/는 이미 있는 닉네임입니다.`);
+                throw new HttpException('Duplicate Nickname', HttpStatus.FORBIDDEN);
             
             await this.userRepository.updateNickName(found, nickName);
         }
@@ -107,7 +108,7 @@ export class UserService {
     async updateAvatar(id: number, filePath: string) {
         const found = await this.userRepository.getProfileByUserId(id);
         if (!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
         await this.userRepository.updateAvatar(found, filePath);
     }
     // async updateAvatar(id: number, file, res) {
@@ -162,7 +163,7 @@ export class UserService {
     async updateTwoFactor(id: number, twoFactor: boolean): Promise<User> {
         const found = await this.userRepository.getProfileByUserId(id);
         if (!found)
-            throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
 
         if (found.two_factor !== twoFactor)
             await this.userRepository.updateTwoFactor(found, twoFactor);
@@ -195,9 +196,7 @@ export class UserService {
 
         const user = await this.getProfileByUserId(id);
         if (!user) {
-            // //exception handler
-            this.logger.debug('UnexistUser');
-            throw new HttpException('Unexist User', HttpStatus.UNAUTHORIZED);
+            throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
         }
 
         const changed = await this.checkAchievementLevelChanged(user);

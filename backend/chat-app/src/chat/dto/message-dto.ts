@@ -24,5 +24,8 @@ export class PreviousMessageDto {
     writerId: number;
 
     @IsString()
+    writerNickname: string;
+
+    @IsString()
     content: string;
 }

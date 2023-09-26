@@ -55,7 +55,6 @@ export class User extends BaseEntity {
     @OneToMany(type => Relation, senders => senders.sender, {eager: true})
     senders: Relation[];
     
-    //게임기록 추가 필요
     // @OneToMany(() => GameHistory, (gameHistory) => gameHistory.game_id)
     // game_histories: GameHistory[];
     @OneToMany(type => GameHistory, gameHistory => gameHistory.player, {eager: true})
