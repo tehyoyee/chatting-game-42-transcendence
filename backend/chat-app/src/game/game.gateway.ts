@@ -346,15 +346,26 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		await render();
 	}
 
-	@SubscribeMessage('launchGame')
-	async launchGame(@MessageBody() invitation: any) {
-			
+	@SubscribeMessage('inviteGame')
+	async inviteGame(@ConnectedSocket() hostSocket: Socket, @MessageBody() invitation: any) {
+		const hostUser: User = await this.socketToUser(hostSocket);
+		const targetUserSocket: Socket = this.userSocketMap.get(invitation.targetUserId);
+		this.server.to(targetUserSocket.id).emit({
+			hostId: hostUser.user_id,
+			hostNickname: hostUser.nickname,
+			gameMode: invitation.gameMode
+		})
+	}
+
+	@SubscribeMessage('acceptGame')
+	async launchGame(@ConnectedSocket() playerRightSocket: Socket, @MessageBody() invitation: any) {
+
 		const playerIdLeft: number = Number(this.getKeyByValue(this.userSocketMap,invitation.hostId));
 		const playerLeft: User = await this.userService.getProfileByUserId(playerIdLeft);
-		// leftuser online?
-		const playerRight: User = await this.socketToUser(invitation.clientUserSocket);
+		const playerRight: User = await this.socketToUser(playerRightSocket);
 		const playerLeftSocket: Socket = this.userSocketMap.get(playerIdLeft);
-		const playerRightSocket: Socket = this.userSocketMap.get(playerRight.user_id);
+		// if (playerLeft)
+		// const playerRightSocket: Socket = this.userSocketMap.get(playerRight.user_id);
 		const newRoomName: string = playerLeftSocket.id + playerRightSocket.id;
 		console.log(`[Game] ${invitation.gameMode} match created by invitation.`);
 		console.log(`[Game] playerLeft: ${playerLeft}`);
