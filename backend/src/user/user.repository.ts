@@ -1,6 +1,6 @@
 import { DataSource, Not, Repository } from "typeorm";
 import { User } from "./entity/user.entity";
-import { ConflictException, ForbiddenException, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { NotFoundError } from "rxjs";
 import { UserStatus } from "./enum/user-status.enum";
 import { UserAchievement } from "./enum/user-achievements.enum";

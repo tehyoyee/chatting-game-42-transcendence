@@ -1,15 +1,9 @@
-import { Bind, Body, Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Patch, Post, Req, Res, UploadedFile, UseGuards, UseInterceptors, Header } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Patch, Post, Req, Res, UploadedFile, UseInterceptors, Header } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entity/user.entity';
-// import { getUser } from './decorator/get-user.decorator';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiOperation } from '@nestjs/swagger';
 import { GameHistory } from 'src/game/game.history.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
-// import { AuthGuard } from '@nestjs/passport';
-import * as config from 'config';
 import { StreamableFile } from '@nestjs/common';
-import { join } from 'path';
 import { createReadStream } from 'fs';
 import { HttpException } from '@nestjs/common';
 
@@ -18,8 +12,6 @@ const g_debug = true;
 @Controller()
 export class UserController {
     constructor(private userService: UserService) {}
-
-    // @UseGuards(AuthGuard())
 
 	@Get('/profile/ranking')
 	async getRanking() {
@@ -31,9 +23,7 @@ export class UserController {
         return await this.userService.getGameHistoryByUserId(id);
     }
 
-    // @UseGuards(AuthGuard())
     @Get('/profile')
-    //가드 처리
     async getMyProfile(@Body('user_id') id: number, @Req() req: Request): Promise<User> {
         console.log(req);
         return await this.userService.getMyProfile(id);
@@ -61,9 +51,7 @@ export class UserController {
                 throw new HttpException('File not Found', 404);
         }
     }
- 
 
-    // @UseGuards(AuthGuard())
     @Patch('/updateName/:id/:nickName')
     async updateNickName(@Param('id', ParseIntPipe) id: number,
                         @Param('nickName') nickName: string): Promise<void> {
@@ -71,7 +59,6 @@ export class UserController {
 					console.log('/updateName/:id/:nickName');
         await this.userService.updateNickName(id, nickName);
     }
-    
 
     @Post('/updateAvatar/:id')
     @UseInterceptors(FileInterceptor('file'))
@@ -93,6 +80,4 @@ export class UserController {
 					console.log('/updateTFA/:id/:twoFactor');
         await this.userService.updateTwoFactor(id, twoFactor);
     }
-    
-
 }

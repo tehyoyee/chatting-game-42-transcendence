@@ -1,22 +1,16 @@
-import { ForbiddenException, HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { User } from './entity/user.entity';
-import { UpdateDescription } from 'typeorm';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { UserStatus } from './enum/user-status.enum';
 import { UserAchievement } from './enum/user-achievements.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GameHistory } from 'src/game/game.history.entity';
-import * as fs from 'fs';
-// import { map } from 'rxjs';
-import { memoryStorage } from 'multer';
-import { ConfigService } from '@nestjs/config';
+
 @Injectable()
 export class UserService {
     constructor(
         private userRepository: UserRepository,
-        // private configService: ConfigService
-        ) {}
+    ) {}
 
     private logger = new Logger('UserService');
 
@@ -40,26 +34,6 @@ export class UserService {
         return await this.userRepository.getProfileByNickName(username);
     }
 
-    // async updateProfile(id: number, updateUserDto: UpdateUserDto): Promise<void> {
-    //     const found = await this.userRepository.getProfileByUserId(id);
-    //     if (!found)
-    //         throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
-
-    //     if (updateUserDto.two_factor === true || updateUserDto.two_factor === false && found.two_factor !== updateUserDto.two_factor)
-    //         await this.userRepository.updateTwoFactor(found, updateUserDto.two_factor);
-        
-    //     if (updateUserDto.avatar && found.avatar !== updateUserDto.avatar)
-    //         await this.userRepository.updateAvatar(found, updateUserDto.avatar);
-        
-    //     if (updateUserDto.nickname && found.nickname !== updateUserDto.nickname) {
-    //         const duplicate = await this.getProfileByNickName(updateUserDto.nickname);
-    //         if (duplicate)
-    //             throw new ForbiddenException(`${updateUserDto.nickname} 은/는 이미 있는 닉네임입니다.`);
-    //         else
-    //             await this.userRepository.updateNickName(found, updateUserDto.nickname);
-    //     }
-    // }
-
 	async getRanking() {
 		const ranking = await this.userRepository
 			.createQueryBuilder('user')
@@ -75,12 +49,6 @@ export class UserService {
     async getEmailByUserId(id: number): Promise<string> {
         return await this.userRepository.getEmailByUserId(id);
     }
-    
-    // async updateProfile(id: number, updateUserDto: UpdateUserDto): Promise<void> {
-    //     const found = await this.userRepository.getProfileByUserId(id);
-    //     if (!found)
-    //     throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
-    // }
     
     async updateNickName(id: number, nickName: string): Promise<User> {
         const found = await this.userRepository.getProfileByUserId(id);
@@ -111,54 +79,6 @@ export class UserService {
             throw new HttpException('Unexist UserId', HttpStatus.NOT_FOUND);
         await this.userRepository.updateAvatar(found, filePath);
     }
-    // async updateAvatar(id: number, file, res) {
-    //     const found = await this.userRepository.getProfileByUserId(id);
-    //     if (!found)
-    //         throw new NotFoundException(`아이디 ${id} 은/는 존재하지 않습니다.`);
-    //         //유저별 폴더 생성
-    //     const uploadFilePath = 'uploads';
-    //     try {
-    //         if (!fs.existsSync(uploadFilePath)) {
-    //             fs.mkdirSync(uploadFilePath);
-    //         }
-        
-    //         //파일 이름
-    //         const fileName = found.user_id;
-    //         //파일 업로드 경로
-    //         const uploadPath: string = __dirname + `/../../${uploadFilePath + '/' + fileName}`;
-
-    //         //파일 생성
-    //         fs.writeFileSync(uploadPath, file);
-    //         // this.userRepository.updateAvatar(found, uploadPath);
-    //     } catch(err) {
-    //         throw new HttpException('파일 업로드 중 에러', 404);
-    //     }
-
-
-    // async uploadFileMemory(user_id: number, file: File): any {
-    //     //유저별 폴더 생성
-    //     const uploadFilePath = `uploads/${user_id}`;
-    
-    //     if (!fs.existsSync(uploadFilePath)) {
-    //         fs.mkdirSync(uploadFilePath);
-    //     }
-    
-    //     //파일 이름
-    //     const fileName = user_id;
-    //     //파일 업로드 경로
-    //     const uploadPath =
-    //     __dirname + `/../../${uploadFilePath + '/' + fileName}`;
-
-    //     //파일 생성
-    //     fs.writeFileSync(uploadPath, file);
-
-    //     //업로드 경로 반환
-    //     // return uploadFileURL(uploadFilePath + '/' + fileName);
-    //     this.userRepository.updateAvatar(found, avatar);
-
-    //     };
-    // }
-
 
     async updateTwoFactor(id: number, twoFactor: boolean): Promise<User> {
         const found = await this.userRepository.getProfileByUserId(id);

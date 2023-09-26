@@ -2,7 +2,6 @@ import { DataSource, Repository } from "typeorm";
 import { GameHistory } from "./game.history.entity";
 import { Injectable } from '@nestjs/common';
 import { User } from "src/user/entity/user.entity";
-import { UserService } from "src/user/user.service";
 import { UserRepository } from "src/user/user.repository";
 import { GameHistoryDto } from "./dto/game.histroy.dto";
 

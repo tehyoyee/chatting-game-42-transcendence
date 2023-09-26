@@ -1,5 +1,5 @@
-import { OnModuleInit, Req, Res, UseFilters, UseGuards } from '@nestjs/common';
-import { WebSocketServer, MessageBody, SubscribeMessage, WebSocketGateway, BaseWsExceptionFilter, WsException } from "@nestjs/websockets";
+import { OnModuleInit } from '@nestjs/common';
+import { WebSocketServer, MessageBody, SubscribeMessage, WebSocketGateway } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io';
 import { AuthService } from "src/auth/auth.service";
 import { User } from "src/user/entity/user.entity";
@@ -7,13 +7,9 @@ import { UserService } from "src/user/user.service";
 import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { GameService } from "./game.service";
 import { KeyStatus } from "./game.keystatus.enum";
-import { WebsocketExceptionsFilter } from "src/exception/ws.exception.filter";
-import { AuthGuard } from "@nestjs/passport";
 import { UserStatus } from 'src/user/enum/user-status.enum';
-import { disconnect } from 'process';
 
 @WebSocketGateway({ namespace: '/game'})
-@UseFilters(WebsocketExceptionsFilter)
 export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect {
 	
 	private readonly MAP_X = 1800;
@@ -423,23 +419,6 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 		});
 		console.log(`[Game] ${invitation.gameMode} match created.`);
 		setTimeout(async () => await this.runGame(invitation.gameMode, newRoomName, playerLeftSocket, playerRightSocket, 0, 0), 3000);
-	
-		// const playerLeft: User = await this.socketToUser(invitation.hostUserSocket);
-		// const playerRight: User = await this.socketToUser(invitation.clientUserSocket);
-		// const newRoomName: string = invitation.hostUserSocket.id + invitation.clientUserSocket.id;
-		// console.log(`[Game] ${invitation.gameMode} match created by invitation.`);
-		// console.log(`[Game] playerLeft: ${playerLeft}`);
-		// console.log(`[Game] playerRight: ${playerRight}`);
-		// invitation.hostUserSocket.join(newRoomName);
-		// invitation.clientUserSocket.join(newRoomName);
-		// this.gameRoomMap.set(playerLeft.user_id, newRoomName);
-		// this.gameRoomMap.set(playerRight.user_id, newRoomName);
-		// console.log(`[Game] Game room ${newRoomName} created.`);
-		// this.server.to(newRoomName).emit('gameStart', {
-		// 	roomName: newRoomName
-		// });
-		// console.log(`[Game] ${invitation.gameMode} match created.`);
-		// setTimeout(async () => await this.runGame(invitation.gameMode, newRoomName, invitation.hostUserSocket, invitation.clientUserSocket, 0, 0), 3000);
 	}
 
 	@SubscribeMessage('exitQueue')
@@ -551,6 +530,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 				await this.userService.updateStatus(userId, UserStatus.OFFLINE);
 			}
 		}
+		client.disconnect();
 	}
 
 	private async socketToUser(client: Socket): Promise<User> {
