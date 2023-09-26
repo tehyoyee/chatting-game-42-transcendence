@@ -110,7 +110,7 @@ export class GameGateway
               0,
               0,
             ),
-          3000,
+          4000,
         );
       }
     } else if (gameMode === 'ADVANCED') {
@@ -157,7 +157,7 @@ export class GameGateway
               0,
               0,
             ),
-          3000,
+          4000,
         );
       }
     }
@@ -548,7 +548,7 @@ export class GameGateway
           0,
           0,
         ),
-      3000,
+      4000,
     );
   }
 
