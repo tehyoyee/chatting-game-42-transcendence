@@ -472,7 +472,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	async handleDisconnect(client: Socket) {
 		console.log(`[Game] ${client.id} has left.`);
 		const user = await this.socketToUser(client);
-		if (this.userSocketMap.has(user.user_id)) {
+		if (user && this.userSocketMap.has(user.user_id)) {
 			if (this.userSocketMap.get(user.user_id).id === client.id) {
 				console.log('일반 로그아웃');
 				this.userSocketMap.delete(user.user_id);

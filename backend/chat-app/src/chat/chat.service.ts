@@ -45,12 +45,12 @@ export class ChatService {
         return newChannel;
     }
 
-    async createPrivateChannelAndBridge(user: User, user_id: number, channelName: string): Promise<Channel> {
-        const newChannel = await this.channelRepository.createPrivateChannel(channelName);
-        await this.createUCBridge(user, newChannel, UserType.OWNER);
+    // async createPrivateChannelAndBridge(user: User, user_id: number, channelName: string): Promise<Channel> {
+    //     const newChannel = await this.channelRepository.createPrivateChannel(channelName);
+    //     await this.createUCBridge(user, newChannel, UserType.OWNER);
 
-        return newChannel;
-    }
+    //     return newChannel;
+    // }
 
     async createUCBridge(user: User, channel: Channel, userType: UserType) {
         await this.ucbRepository.createUCBridge(user, channel, userType);
@@ -108,17 +108,17 @@ export class ChatService {
         return joinedChannels;
     }
 
-    async getPrivateChannelByUserId(userId: number): Promise<Channel> {
-        const user = await this.userService.getProfileByUserId(userId);
-        if (!user) {
-            throw new HttpException('Unidentified User', HttpStatus.NOT_FOUND);
-        }
+    // async getPrivateChannelByUserId(userId: number): Promise<Channel> {
+    //     const user = await this.userService.getProfileByUserId(userId);
+    //     if (!user) {
+    //         throw new HttpException('Unidentified User', HttpStatus.NOT_FOUND);
+    //     }
             
-        const channelName = 'user' + user.user_id.toString();
-        const channel = await this.getChannelByName(channelName);
+    //     const channelName = 'user' + user.user_id.toString();
+    //     const channel = await this.getChannelByName(channelName);
 
-        return channel;
-    }
+    //     return channel;
+    // }
 
     async createGroupMessage(sender: User, channel: Channel, content: string): Promise<Message> {
         return await this.messageRepository.createGroupMessage(sender, channel, content);
