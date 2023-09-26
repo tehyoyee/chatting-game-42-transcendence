@@ -10,6 +10,7 @@ import { KeyStatus } from "./game.keystatus.enum";
 import { WebsocketExceptionsFilter } from "src/exception/ws.exception.filter";
 import { AuthGuard } from "@nestjs/passport";
 import { UserStatus } from 'src/user/enum/user-status.enum';
+import { disconnect } from 'process';
 
 @WebSocketGateway({ namespace: '/game'})
 @UseFilters(WebsocketExceptionsFilter)
@@ -40,7 +41,7 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 	server: Server;
 
 	onModuleInit() {
-		this.server.on('connection', (socket) => {
+		this.server.on('connection', async (socket) => {
 			console.log(`[Game] GameSocket_id: ${socket.id} connected.`);
 		});
 	}
@@ -421,36 +422,49 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 			this.server.to(client.id).emit("forceLogout");
 		}
 		const token: any = client.handshake.query.token;
+		console.log('when login status userMap', this.userSocketMap);
 		if (this.userSocketMap.has(user.user_id)) {
 			console.log('forcelogout');
 			this.server.to(client.id).emit('forceLogout');
+		} else {
+			await this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
+			this.userSocketMap.set(user.user_id, client);
+			this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 		}
-		this.userSocketMap.set(user.user_id, client);
-		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
 	}
   
-	async handleDisconnect(client: any) {
+	async handleDisconnect(client: Socket) {
 		console.log(`[Game] ${client.id} has left.`);
 		const user = await this.socketToUser(client);
-		const NotDuplicateLogout = this.getKeyByValue(this.userSocketMap, client);
-		if (!NotDuplicateLogout) {
-			return;
-		}
-		this.userSocketMap.delete(user.user_id);
-		this.gameRoomMap.delete(user.user_id);
-		this.userKeyMap.delete(user.user_id);
-		this.userService.updateStatus(user.user_id,UserStatus.OFFLINE);
-		this.server.emit('refresh');
-		for (let i = 0; i < this.gameNormalQueue.length; i++) {
-			if (this.gameNormalQueue[i] === user.user_id) {
-				this.gameNormalQueue.splice(i, 1);
+		if (this.userSocketMap.has(user.user_id)) {
+			if (this.userSocketMap.get(user.user_id).id === client.id) {
+				console.log('일반 로그아웃');
+				this.userSocketMap.delete(user.user_id);
+				this.gameRoomMap.delete(user.user_id);
+				this.userKeyMap.delete(user.user_id);
+				await this.userService.updateStatus(user.user_id,UserStatus.OFFLINE);
+				this.server.emit('refresh');
+				for (let i = 0; i < this.gameNormalQueue.length; i++) {
+					if (this.gameNormalQueue[i] === user.user_id) {
+						this.gameNormalQueue.splice(i, 1);
+					}
+				}
+				for (let i = 0; i < this.gameAdvancedQueue.length; i++) {
+					if (this.gameAdvancedQueue[i] === user.user_id) {
+						this.gameAdvancedQueue.splice(i, 1);
+					}
+				}
+				await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
 			}
+		return;
 		}
-		for (let i = 0; i < this.gameAdvancedQueue.length; i++) {
-			if (this.gameAdvancedQueue[i] === user.user_id) {
-				this.gameAdvancedQueue.splice(i, 1);
-			}
-		}
+		// 	console.log('중복 로그아웃 disconnect');
+		// }
+		// const NotDuplicateLogout = this.getKeyByValue(this.userSocketMap, client);
+		// // if (!NotDuplicateLogout) {
+		// // 	console.log('duplicate');
+		// // 	return;
+		// // }
 	}
 
 	private async socketToUser(client: Socket): Promise<User> {
