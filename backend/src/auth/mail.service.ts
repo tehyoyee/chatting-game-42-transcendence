@@ -24,7 +24,7 @@ export class MailService {
         	text: `Verification Code = ${code}`,
       	})
     	.then((result) => {
-        	console.log(result);
+        	// console.log(result);
       	})
       	.catch((error) => {
         	return null;

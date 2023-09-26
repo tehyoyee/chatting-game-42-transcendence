@@ -160,8 +160,8 @@ export class AuthService {
 
 	async authTwoFactor(body: any, inputCode: any, res: Response) {
 		const thisUser = await this.userService.getProfileByUserId(body.id);
-		const { decoded } = this.jwtService.verify(thisUser.auth_code);
-		if (decoded === inputCode) {
+		const { verificationCode } = this.jwtService.verify(thisUser.auth_code);
+		if (verificationCode === inputCode) {
 			const payload = { username: thisUser.username, id: thisUser.user_id };
 			const newAccessToken = this.jwtService.sign({ payload });
 			res.cookie('token', newAccessToken, { maxAge: 60*60*1000, httpOnly: false, sameSite: 'lax' });

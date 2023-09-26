@@ -54,17 +54,18 @@ export default function Callback() {
 					sessionStorage.setItem('tfa', 'true');
 					return;
 					
-				} /*else if (res.firstLogin === true) {
+				} 
+				router.push('/');
+				/*else if (res.firstLogin === true) {
 					router.push('/profile');
 					return;
 				}*/
 			})
       .catch(reason => {
         console.log(`${tokenUrl}: fetch failed: ${JSON.stringify(reason)}`);
-//				router.push('/');
+				router.push('/');
       });
 //      await updateLoginState();
-      router.push('/');
     })()
   }, [updateLoginState, loggedIn, router]);
   return (
