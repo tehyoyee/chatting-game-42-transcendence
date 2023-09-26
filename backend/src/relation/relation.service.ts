@@ -27,6 +27,7 @@ export class RelationService {
        
         //이미 sender가 receiver를 block했는지 검사 -> 바꿔는 줌
         if (await this.checkBlocked(sender.user_id, receiverId)) {
+            await this.unBlock(sender.user_id, receiverId);
             this.logger.debug('Block To Friend');
         }
 
@@ -45,6 +46,7 @@ export class RelationService {
        
         //이미 sender가 receiver를 친구등록 했는지 검사 -> 바꿔는 줌
         if (await this.checkFriended(sender.user_id, receiverId)) {
+            await this.unFriend(sender.user_id, receiverId);
             this.logger.debug('Friend To Block');
         }
 

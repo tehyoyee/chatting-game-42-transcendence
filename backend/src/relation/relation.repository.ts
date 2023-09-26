@@ -33,6 +33,4 @@ export class RelationRepository extends Repository<Relation> {
 
         return found;
     }
-
-
 }

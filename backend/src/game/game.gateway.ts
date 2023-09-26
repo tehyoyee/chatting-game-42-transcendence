@@ -473,11 +473,11 @@ export class GameGateway implements OnModuleInit, OnGatewayConnection, OnGateway
 
 	async handleConnection(client: Socket) {
 		const user = await this.socketToUser(client);
+		const token: any = client.handshake.query.token;
 		if (!user) {
 			this.server.to(client.id).emit("forceLogout");
 		}
-		const token: any = client.handshake.query.token;
-		if (this.userSocketMap.has(user.user_id)) {
+		else if (this.userSocketMap.has(user.user_id)) {
 			console.log('forcelogout');
 			this.server.to(client.id).emit('forceLogout');
 		} else {
