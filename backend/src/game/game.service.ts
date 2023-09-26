@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from 'src/user/user.repository';
 import { GameRepository } from './game.repository';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,7 +13,6 @@ const logisticFunction = (p1: number, p2: number): number => {
 export class GameService {
 	constructor(
 		@InjectRepository(User)
-		private readonly userRepository: UserRepository,
 		private userService: UserService,
 		private gameRepository: GameRepository,
 	) {}
