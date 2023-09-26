@@ -69,7 +69,7 @@ const UserList = ({
 								setTargetUser(user);
 								setShowModal(true);
 							}}
-							className={styles.button}>
+							className={styles.chatRoomButton}>
 							{user.userNickName}
 							{' '}
 							{user.userStatus}

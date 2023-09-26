@@ -97,7 +97,7 @@ export default function ChatList() {
 			<li>
 				<button
 					onClick={event => {event.preventDefault(); joinChat(info)}}
-					className={`${styles.button} ${className}`}
+					className={`${styles.chatRoomButton} ${className}`}
 					data-key={info.channel_id}
 					style={{
 					display: 'flex',
@@ -108,7 +108,7 @@ export default function ChatList() {
 					{
 						info.channel_type == ChatType.protected &&
 						<>
-							<Image 
+							<Image className={styles.lockIcon}
 								src="/lock.png"
 								height={20} 
 								width={20}
@@ -122,14 +122,15 @@ export default function ChatList() {
 	}
 	return (
 		<SideBar 
-			className={"full-background-color overflow-y-scroll overflow-x-hidden"}>
+			className={`${styles.chatList} full-background-color overflow-y-scroll overflow-x-hidden`}>
 			<ul>
 				<li>
 					<button
 						type='button'
 						onClick={(e) => {e.preventDefault(); setMenuModal(true);}}
-						className={`${styles.button}`}
+						className={styles.createChannelButton}
 						style={{
+							color: '#052302',
 							backgroundColor: 'lightgreen',
 						}}>
 						{'채널 만들기'} 
@@ -146,7 +147,7 @@ export default function ChatList() {
 							<ChatRoomBtn
 								info={info}
 								key={info.channel_id}
-								className={''}
+								className={styles.chatRoomButton}
 							></ChatRoomBtn>
 						);
 					})
@@ -155,3 +156,60 @@ export default function ChatList() {
 		</SideBar>
 	);
 }
+
+
+
+
+
+
+
+
+
+
+// // ... (rest of your code)
+
+// export default function ChatList() {
+//   // ... (your existing code)
+
+//   return (
+//     <div className={styles.chatList}>
+//       <button
+//         type="button"
+//         onClick={(e) => {
+//           e.preventDefault();
+//           setMenuModal(true);
+//         }}
+//         className={`${styles.createChannelButton}`}
+//       >
+//         {'채널 만들기'}
+//       </button>
+//       {menuModal && (
+//         <Modal onClose={setMenuModal}>
+//           <ChatCreate onClose={() => setMenuModal(false)} />
+//         </Modal>
+//       )}
+//       {list.map((info) => (
+//         <div className={styles.chatRoom} key={info.channel_id}>
+//           <button
+//             onClick={(event) => {
+//               event.preventDefault();
+//               joinChat(info);
+//             }}
+//             className={`${styles.chatRoomButton}`}
+//           >
+//             {info.channel_name}
+//           </button>
+//           {info.channel_type === ChatType.protected && (
+//             <Image
+//               src="/lock.png"
+//               height={20}
+//               width={20}
+//               alt="protected channel"
+//               className={styles.lockIcon}
+//             />
+//           )}
+//         </div>
+//       ))}
+//     </div>
+//   );
+// }

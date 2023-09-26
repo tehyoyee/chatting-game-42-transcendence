@@ -1,4 +1,103 @@
-.button {
+.chatList {
+	
+	width: 230px;
+	background-color: #333333;
+	color: #fff;
+	/* padding: 20px; */
+  }
+  
+  .createChannelButton {
+	width: 200px;
+	background-color: #00cc99;
+	color: #fff;
+	border: none;
+	margin: 6px 0px 0px 8px;
+	padding: 10px;
+	border-radius: 5px;
+	cursor: pointer;
+	margin-bottom: 10px;
+	font-size: 16px;
+	transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  .createChannelButton:hover {
+	background-color: #009966;
+	transform: scale(1.05);
+  }
+  
+  
+  .chatRoom {
+	display: flex;
+	align-items: center;
+	margin-bottom: 10px;
+  }
+  
+  .chatRoomName {
+	flex-grow: 1;
+	color: #fff;
+	margin-left: 10px; 
+	font-size: 16px;
+  }
+  
+  .lockIcon {
+	width: 20px;
+	height: 20px;
+	margin-left: 10px;
+  }
+  
+  
+  .chatRoomButton {
+	width: 200px;
+	height: 50px;
+	margin: 6px 0px 0px 9px;
+	padding: 2px;
+	border-radius: 0.2rem;
+	border-color: black;
+	border-style: solid;
+	border-width: 1px;
+	background-color: lightgray;
+
+	background-color: #555;
+	color: #fff;
+	border: none;
+	padding: 10px;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  .chatRoomButton:hover {
+	background-color: #333;
+	transform: scale(1.05);
+  }
+  
+  .chatRoomButtonSetting {
+	width: 200px;
+	height: 50px;
+	margin: 420px 0px 0px 9px;
+	padding: 2px;
+	border-radius: 0.2rem;
+	border-color: black;
+	border-style: solid;
+	border-width: 1px;
+	background-color: lightgray;
+
+	background-color: #555;
+	color: #fff;
+	border: none;
+	padding: 10px;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  .chatRoomButtonSetting:hover {
+	background-color: #333;
+	transform: scale(1.05);
+  }
+
+
+  .button {
 	width: 214px;
 	height: 40px;
 	margin: 2px;

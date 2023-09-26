@@ -59,8 +59,13 @@ export default function ChatMenu() {
 
 	return (
 		<SideBar
-			className={"full-background-color overflow-y-scroll overflow-x-hidden"}>
+			className={`${styles.chatList} full-background-color overflow-y-scroll overflow-x-hidden"`}>
 			<ul>
+				{
+					<div>
+						<UserList userList={userList} updateUserList={updateUserList}></UserList>
+					</div>
+				}
 				{
 					(user.user_type === EChatUserType.OWNER || user.user_type === EChatUserType.ADMIN) &&
 					<li>
@@ -68,8 +73,9 @@ export default function ChatMenu() {
 							type='button'
 							onClick={(e) => 
 									{e.preventDefault(); setControlModal(true);}}
-							className={`${styles.button}`}
+							className={`${styles.chatRoomButtonSetting}`}
 							style={{
+								color: 'black',
 								backgroundColor: 'lightsalmon',
 							}}>
 							{'채널 설정'} 
@@ -85,13 +91,15 @@ export default function ChatMenu() {
 							<ChatControl userList={userList}></ChatControl>
 						</Modal>
 				}
+				
 				<li>
 					<button
 						type='button'
 						onClick={(e) => 
 							{e.preventDefault(); chatSocket && exitChat(user, chatSocket);}}
-						className={`${styles.button}`}
+						className={`${styles.chatRoomButton}`}
 						style={{
+							color: 'black',
 							backgroundColor: 'lightsalmon',
 						}}>
 						{'채널 탈퇴'} 
@@ -102,18 +110,15 @@ export default function ChatMenu() {
 						type='button'
 						onClick={(e) => 
 							{e.preventDefault(); chatSocket && closeChat(user, chatSocket);}}
-						className={`${styles.button}`}
+						className={`${styles.chatRoomButton}`}
 						style={{
+							color: 'black',
 							backgroundColor: 'lightcyan',
 						}}>
 						{'채널 닫기'} 
 					</button>
 				</li>
-				{
-					<div>
-						<UserList userList={userList} updateUserList={updateUserList}></UserList>
-					</div>
-				}
+				
 			</ul>
 		</SideBar>
 	);
