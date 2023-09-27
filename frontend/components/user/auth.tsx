@@ -1,6 +1,5 @@
 'use client'
 
-import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState, useCallback, ReactNode, createContext } from 'react';
 
 const stateUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/state`;
@@ -34,25 +33,30 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
 		username: '',
 		id: 0,
 	});
-	const router = useRouter();
 
   const updateLoginState = useCallback(async () => {
+		let loggedInRet = false;
     await fetch(stateUrl, {
       method: 'GET',
       credentials: 'include',
 			cache: 'no-cache',
     })
-    .then(res => res.json())
+    .then(res => {
+			if (!res.ok) throw new Error(`invalid response: ${res.status}`);
+			return res.json()
+		})
     .then(data => {
       console.log('updateLoginState: ', data);
       setUpdated(true);
-      setLoggedIn(data.loggedIn);
+      setLoggedIn((loggedin) => data.loggedIn);
+			loggedInRet = data.loggedIn;
       data.user && setUser(data.user);
     })
     .catch(reason => {
 			setLoggedIn(false);
       console.log(`${stateUrl}: fecth failed: ${reason}`);
     });
+		return loggedInRet;
   }, []);
 
   useEffect(() => {

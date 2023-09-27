@@ -14,17 +14,17 @@ const logoutUrl = `${serverUrl}/auth/signout`;
 export default function Logout() {
   const { loggedIn, updateLoginState } = useAuthContext();
   const router = useRouter();
-	const ref = useRef(false);
 
   console.log("logout rerender");
-	const handleLogout = useCallback(async() => {
+	const handleLogout = (async() => {
+    await updateLoginState();
+		console.log('loggedIn: ', loggedIn);
     if (!loggedIn) {
       alert("Not logged in currently");
       return;
     }
     if (!confirm("confirm sign out")) return;
-		if (ref.current) return;
-		ref.current = true;
+		console.log('logout');
     await fetch(logoutUrl, {
       method: 'GET',
       credentials: 'include',
@@ -37,9 +37,9 @@ export default function Logout() {
 		});
 		sessionStorage.removeItem('tfa');
 		document.cookie = '';
-    await updateLoginState();
     router.push('/');
-  }, []);
+		console.log('logout');
+  })
   return (
     <>
       {loggedIn && <button className={styles.logoutBtn} type="button" onClick={(e) => {e.preventDefault(); handleLogout()}}>log out</button>}

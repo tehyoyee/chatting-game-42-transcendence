@@ -30,7 +30,7 @@ export default function Callback() {
   useEffect(() => {
     (async() => {
       if (loggedIn === true) {
-        router.push('/');
+        router.push('/profile');
         return;
       }
       if (called.current) return; // NOTE: prevent re-render caused by strict mode
@@ -49,14 +49,16 @@ export default function Callback() {
 				return res.json()
 			})
 			.then(res => {
+				console.log('res: ', res);
 				if (res.two_factor === true) {
+					setFirstLogin(res.firstLogin);
 					setLoginData(res);
 					setTfa(true);
 					sessionStorage.setItem('tfa', 'true');
 					return;
 				} 
 				else if (res.firstLogin === true) {
-					router.push('/profile');
+					router.push('/profile?firstLogin=true');
 					return;
 				}
 				router.push('/');

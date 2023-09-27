@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../../styles/tfa.module.css';
 import { LoginData } from '@/components/user/callback';
-import useAuthContext from '@/components/user/auth';
 import { setTimeout } from 'timers';
 
 const authUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/auth/twofactor`
@@ -17,7 +16,6 @@ export default function Tfa({
 	firstLogin: boolean,
 }) {
   const [message, setMessage] = useState('');
-	const { loggedIn, updateLoginState } = useAuthContext();
 	const router = useRouter();
 
 	const sleep = (delay: number) => {
@@ -61,7 +59,10 @@ export default function Tfa({
           setMessage('');
         }, 280);
 			} else {
-				router.push('/');
+				if (firstLogin)
+					router.push('/profile?firstLogin=true');
+				else
+					router.push('/');
 			}
 		} catch (error) {
 			console.error('인증 요청 중 오류 발생:', error);
@@ -72,7 +73,7 @@ export default function Tfa({
       }, 3000);
 			router.push('/');
 		}
-  }, [updateLoginState, router]);
+  }, [router]);
 
   const handleEnterKey = (e: any) => {
 		if (e.key === 'Enter') {

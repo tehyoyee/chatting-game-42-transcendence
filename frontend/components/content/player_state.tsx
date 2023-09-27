@@ -3,7 +3,7 @@
 import useSocketContext from "@/lib/socket";
 import React, { useEffect, useContext, createContext, useState } from "react";
 import useAuthContext from "../user/auth";
-import { IChatMate, IChatUser } from "./chat/context";
+import { EChatUserType, IChatMate, IChatUser } from "./chat/context";
 
 export enum EPlayerState {
 	CHAT = 0,
@@ -18,7 +18,7 @@ export enum EPlayerState {
 export type TPlayerContext = {
 	playerState: EPlayerState,
 	setPlayerState: React.Dispatch<React.SetStateAction<EPlayerState>>,
-	playerData: any,
+	playerData: IChatUser,
 	setPlayerData: React.Dispatch<React.SetStateAction<any>>,
 };
 
@@ -34,7 +34,7 @@ export default function usePlayerContext() {
 
 export function PlayerContextProvider({ children }: { children: React.ReactNode }) {
 	const [state, setState] = useState<EPlayerState>(EPlayerState.PROFILE);
-	const [data, setData] = useState<IChatUser | null>(null);
+	const [data, setData] = useState<IChatUser>({user_type: EChatUserType.MEMBER, channel_id: -1});
 	const [prevState, setPrevState] = useState<EPlayerState>(state);
 	const { chatSocket, gameSocket } = useSocketContext();
 	const { updateLoginState } = useAuthContext();
