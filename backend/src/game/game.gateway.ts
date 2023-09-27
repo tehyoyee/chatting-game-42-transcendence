@@ -28,7 +28,7 @@ export class GameGateway
   private readonly paddleSpeed = 20;
   private readonly PADDLE_SIZE = 150;
   private readonly paddleGap = 20;
-  private readonly DELAY = 20;
+  private readonly DELAY = 22;
   private readonly MAXPOINT = 5;
 
   constructor(
@@ -334,11 +334,14 @@ export class GameGateway
     };
 
     if (gameMode === 'ADVANCED') {
-      ball.dx += this.SPEED * (((point1 + point2) * 1.5) / this.MAXPOINT);
-      ball.dy += this.SPEED * (((point1 + point2) * 1.5) / this.MAXPOINT);
+      ball.dx += this.SPEED * (((point1 + point2)) / this.MAXPOINT);
+      ball.dy += this.SPEED * (((point1 + point2)) / this.MAXPOINT);
     }
     if (Math.random() >= 0.5) {
       ball.dx = -ball.dx;
+    }
+    if (Math.random() >= 0.5) {
+      ball.dy = -ball.dy;
     }
 
     let winFlag = 0;
