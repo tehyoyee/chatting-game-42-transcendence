@@ -117,24 +117,30 @@ function ChatBox() {
 				className={styles.chatBar}
 				id={"chat_form"} 
 				onSubmit={e => {e.preventDefault(); sendMsg()}}>
-				<button
-					style={{
-						padding: '5px',
-						border: 'solid 1px black',
-						backgroundColor: 'lightcyan',
-					}}
-					>Enter</button>
 				<input 
 					ref={inputRef}
 					id="chatInputField"
 					autoComplete='off'
 					style={{
+						translate: '-10px',
+						borderRadius: '5px',
 						width: '70%',
-						height: '2rem',
+						height: '2.15rem',
+						border: '1px solid #000000',
+						outline: 'none',
 					}}
 					max={256}
 					required
 				/>
+				<button
+					style={{
+						translate: '-10px',
+						padding: '5px',
+						borderRadius: '5px',
+						border: 'solid 1px black',
+						backgroundColor: 'rgb(200, 239, 255)',
+					}}
+					>Enter</button>
 			</form>
 		</div>
 	);

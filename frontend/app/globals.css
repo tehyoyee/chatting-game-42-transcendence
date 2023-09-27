@@ -47,7 +47,7 @@ body {
   display: flex;
   min-height: 100vh;
   width: auto;
-  background-color: lightgray;
+  background-color: rgb(255, 255, 255);
   justify-content: center;
 }
 

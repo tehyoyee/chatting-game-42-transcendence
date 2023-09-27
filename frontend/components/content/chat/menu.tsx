@@ -73,7 +73,7 @@ export default function ChatMenu() {
 							type='button'
 							onClick={(e) => 
 									{e.preventDefault(); setControlModal(true);}}
-							className={`${styles.chatRoomButtonSetting}`}
+							className={`${styles.chatRoomButton}`}
 							style={{
 								color: 'black',
 								backgroundColor: 'lightsalmon',
