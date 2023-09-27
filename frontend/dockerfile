@@ -1,25 +1,20 @@
-FROM node:18.18.0
+ARG NODE_VERSION
 
-COPY ./package*.json ./
-COPY ./next.config.js ./
-COPY ./tsconfig.json ./
+FROM node:$NODE_VERSION
 
-RUN mkdir app/
+RUN apt-get update && apt-get install -y \
+	gettext \
+	vim
 
-COPY ./tsconfig.json ./
+RUN mkdir /usr/frontend/
+RUN mkdir /usr/frontend/node_modules/
 
+WORKDIR /usr/frontend/
 
-RUN npm install bufferutil utf-8-validate --save-optional
-RUN npm install socket.io-client 
-RUN npm install @types/react @types/react-dom @types/node
+COPY ./resource ./
+COPY ./entrypoint.sh ./
 
-RUN npm install react-notifications-component
-
-COPY ./app ./
-
+RUN npm install
 RUN npm run build
 
-
-EXPOSE 3001
-
-CMD ["npm", "run", "start"]
+ENTRYPOINT ["bash", "entrypoint.sh"]

@@ -1,12 +1,12 @@
 db:
-  host: 'localhost'
-  username: 'postgres'
-  password: '1234'
+  host: "$POSTGRES_HOST"
+  username: "$POSTGRES_USER"
+  password: "$POSTGRES_PASSWORD"
   synchronize: true
 
 mail:
-  user: 'tehyoyee@gmail.com'
-  pass: 'icfdxuzxjlstesqx'
+  user: "$MAIL_USER"
+  pass: "$MAIL_PASS"
   
 jwt:
-  secret: 'Secret12345'
+  secret: "$JWT_SECRET"

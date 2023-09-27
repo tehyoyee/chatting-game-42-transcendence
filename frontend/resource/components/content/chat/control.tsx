@@ -128,53 +128,54 @@ function requestUser(type: ControlType, user: IChatUser, socket: Socket) {
   const input = document.querySelector("select") as HTMLSelectElement;
   const userid = input.value;
 
-  console.log(`userid = ${userid}`);
-  socket.on("usermod-success", (msg) => {
-    console.log(`usermod-success: ${msg}`);
-    socket.off("usermod-success");
-  });
-  socket.on("usermod-fail", (msg) => {
-    console.log(`usermod-fail: ${msg}`);
-    socket.off("usermod-fail");
-    alert("요청에 실패했습니다.");
-  });
-  socket.emit(`${controlTypeData[type].event}`, {
-    targetUserId: userid,
-    channelId: user.channel_id,
-  });
+	console.log(`userid = ${userid}`);
+	socket.on('usermod-success', (msg) => {
+		console.log(`usermod-success: ${msg}`);
+		socket.off('usermod-success');
+		alert('적용되었습니다.');
+	});
+	socket.on('usermod-fail', (msg) => {
+		console.log(`usermod-fail: ${msg}`);
+		socket.off('usermod-fail');
+		alert('요청에 실패했습니다.');
+	});
+	socket.emit(`${controlTypeData[type].event}`, {
+		targetUserId: userid,
+		channelId: user.channel_id,
+	});
 }
 
 function removePwd(user: IChatUser, socket: Socket) {
-  socket.on("removepwd-success", (msg) => {
-    console.log(`removepwd-success: ${msg}`);
-    socket.off("removepwd-success");
-  });
-  socket.on("removepwd-fail", (msg) => {
-    console.log(`removepwd-fail: ${msg}`);
-    socket.off("removepwd-fail");
-    alert("요청에 실패했습니다.");
-  });
-  socket.emit("remove-password", user.channel_id);
+	socket.on('removepwd-success', (msg) => {
+		console.log(`removepwd-success: ${msg}`);
+		socket.off('removepwd-success');
+		alert('비밀번호를 제거했습니다.');
+	});
+	socket.on('removepwd-fail', (msg) => {
+		console.log(`removepwd-fail: ${msg}`);
+		socket.off('removepwd-fail');
+		alert('요청에 실패했습니다.');
+	});
+	socket.emit('remove-password', user.channel_id);
 }
 
 function setPwd(user: IChatUser, socket: Socket) {
-  const input = document.querySelector(
-    `#${controlTypeData[ControlType.SetPwd].field}`
-  ) as HTMLInputElement;
-  socket.on("setpwd-success", (msg) => {
-    console.log(`setpwd-success: ${msg}`);
-    socket.off("setpwd-success");
-  });
-  socket.on("setpwd-fail", (msg) => {
-    console.log(`setpwd-fail: ${msg}`);
-    socket.off("setpwd-fail");
-    alert("요청에 실패했습니다.");
-  });
-  if (!input?.value) return;
-  socket.emit("set-password", {
-    channelId: user.channel_id,
-    password: input.value,
-  });
+	const input = document.querySelector(`#${controlTypeData[ControlType.SetPwd].field}`) as HTMLInputElement;
+	socket.on('setpwd-success', (msg) => {
+		console.log(`setpwd-success: ${msg}`);
+		socket.off('setpwd-success');
+		alert('비밀번호를 설정했습니다.');
+	});
+	socket.on('setpwd-fail', (msg) => {
+		console.log(`setpwd-fail: ${msg}`);
+		socket.off('setpwd-fail');
+		alert('요청에 실패했습니다.');
+	});
+	if (!input?.value) return;
+	socket.emit('set-password', {
+		channelId: user.channel_id,
+		password: input.value,
+	});
 }
 /*
  * ban (banned)

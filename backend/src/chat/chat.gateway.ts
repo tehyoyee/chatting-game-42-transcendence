@@ -1352,18 +1352,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   //==========================================================================================
 
   private async emitUserStatus(userId: number) {
-    let listOfWhoFriendedMe: FriendDto[] = [];
-    listOfWhoFriendedMe =
-      await this.relationServie.getEveryoneWhoFriendedMe(userId);
-
-    const currentStatus =
-      await this.userService.getCurrentUserStatusByUserId(userId);
-
-    for (const who of listOfWhoFriendedMe) {
-      const whoFriendedMeSocket = this.userIdToSocket(who.userId);
-      if (whoFriendedMeSocket) {
-        whoFriendedMeSocket.emit('refreshStatus');
-      }
-    }
-  }
+		this.server.emit('refreshStatus');
+	}
 }
