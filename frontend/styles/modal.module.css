@@ -28,7 +28,10 @@
 .modalHeader {
 	display: flex;
 	justify-content: flex-end;
-	font-size: 25px;
+	font-size: 35px;
+}
+.modalHeader:hover {
+	color: #7f7f7f;
 }
 
 .modalBody {
@@ -54,7 +57,6 @@
 	align-items: center;
 	z-index: 999;
   }
-  
 
   .modal-content {
 	background-color: white;
@@ -104,44 +106,13 @@
 	font-size: 1rem;
 	transition: background-color 0.3s ease-in-out;
   }
-  
 
+  
 .customButton:hover {
-	background-color: r#0056b3;
+	transform: scale(1.03);
+	background-color: #0056b3;	
   }
   
-
-  /* .redButton {
-	background-color: #f44336;
-  }
-  
-
-  .blueButton {
-	background-color: #007BFF;
-  }
-  
-
-  .grayButton {
-	background-color: #808080;
-  } */
-  
-
-  /* .roundedButton {
-	border-radius: 25px;
-  } */
-  
-/* .modal {
-
-	opacity: 1;
-	transform: scale(0.9);
-	transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-  
-
-  .modal.active {
-	opacity: 1;
-	transform: scale(1);
-  } */
 
 .gameHistory {
 	border-radius: 30px;
@@ -149,4 +120,13 @@
 	width: 900px;
 	overflow: scroll;
 	transform: translate(-169, 0);
+}
+
+.normalButton {
+	background-color: #007bff;
+}
+
+.normalButton:hover {
+	transform: scale(1.05);
+	background-color: #0056b3;	
 }

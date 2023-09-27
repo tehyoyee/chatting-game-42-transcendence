@@ -213,16 +213,15 @@
 }
 
 .backToTop:hover {
-	color: #dfdfdf;
+	color: #5aaaff;
 	background-color: rgb(255, 255, 255);
-	border-color: #5aaaff;
 	cursor: pointer;
 	transition: all .2s ease;
 	/* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
   }
 
 .backToTop:active {
-	color: rgb(177, 0, 242);
+	color: rgb(0, 44, 242);
 	/* background-color: #fff;
 	border-color: #5aaaff; */
 	cursor: pointer;

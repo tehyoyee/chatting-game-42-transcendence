@@ -5,6 +5,7 @@ import UserList from "@/components/structure/userList";
 import { useFetch } from "@/lib/hook";
 import useAuthContext from "@/components/user/auth";
 import useSocketContext from "@/lib/socket";
+import BackToTop from '@/components/content/backToTop';
 
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 const relationUrl = `${serverUrl}/relation`;
@@ -81,6 +82,8 @@ export default function Social() {
 				<p>차단 목록</p>
 				<UserList userList={blocksList} updateUserList={updateBlocksList}></UserList>
 			</div>
+			<BackToTop></BackToTop>
 		</div>
+
   );
 }
