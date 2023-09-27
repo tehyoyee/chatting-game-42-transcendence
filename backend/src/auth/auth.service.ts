@@ -96,7 +96,7 @@ export class AuthService {
         );
         res.send({
           id: payload.id,
-          firstLogin: false,
+          firstLogin: true,
           two_factor: true,
         });
       } else {
@@ -107,7 +107,7 @@ export class AuthService {
         });
         res.send({
           id: payload.id,
-          firstLogin: false,
+          firstLogin: true,
           two_factor: false,
         });
       }
