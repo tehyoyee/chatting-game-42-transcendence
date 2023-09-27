@@ -317,7 +317,7 @@ export class GameGateway
       this.server.emit('refreshGameStatus', user2.user_id);
       return;
     }
-
+	let speedPlus = 0;
     const ball = {
       x: this.MAP_X / 2,
       y: this.MAP_Y / 2,
@@ -334,8 +334,8 @@ export class GameGateway
     };
 
     if (gameMode === 'ADVANCED') {
-      ball.dx += this.SPEED * (((point1 + point2)) / this.MAXPOINT);
-      ball.dy += this.SPEED * (((point1 + point2)) / this.MAXPOINT);
+      ball.dx += this.SPEED * (1 + (speedPlus / 1000));
+      ball.dy += this.SPEED * (1 + (speedPlus++ / 1000));
     }
     if (Math.random() >= 0.5) {
       ball.dx = -ball.dx;
