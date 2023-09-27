@@ -24,8 +24,8 @@ export class GameGateway
 {
   private readonly MAP_X = 1800;
   private readonly MAP_Y = 1300;
-  private readonly SPEED = 16;
-  private readonly paddleSpeed = 20;
+  private readonly SPEED = 20;
+  private readonly paddleSpeed = 15;
   private readonly PADDLE_SIZE = 150;
   private readonly paddleGap = 20;
   private readonly DELAY = 22;
@@ -334,8 +334,8 @@ export class GameGateway
     };
 
     if (gameMode === 'ADVANCED') {
-      ball.dx += (this.SPEED * (1 + (speedPlus / 1000)));
-      ball.dy += (this.SPEED * (1 + (speedPlus++ / 1000)));
+      ball.dx += (this.SPEED * (0.5 + (speedPlus / 1000)));
+      ball.dy += (this.SPEED * (0.5 + ((speedPlus++) / 1000)));
     }
     if (Math.random() >= 0.5) {
       ball.dx = -ball.dx;

@@ -21,6 +21,14 @@ export class UserRepository extends Repository<User> {
     super(User, dataSource.createEntityManager());
   }
 
+  async onApplicationBootstrap() {
+    await this.createQueryBuilder()
+    .update(User)
+    .set({ status: UserStatus.OFFLINE })
+    .where({})
+    .execute();
+  }
+  
   async createUser(createUserDto: CreateUserDto): Promise<User> {
     const newUser = await this.create({
       user_id: createUserDto.user_id,
