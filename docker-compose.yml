@@ -6,12 +6,6 @@ services:
     image: postgres:15.4
     container_name: postgres
     restart: always
-    healthcheck:
-      test: ["CMD", "systemctl", "status", "postgresql-15.4"]
-      interval: 15s
-      timeout: 15s
-      retries: 5
-      start_period: 5s
     env_file:
       - .env
     volumes:
@@ -28,14 +22,7 @@ services:
     image: backend:tsen-1.0
     restart: always
     depends_on:
-      db:
-        condition: service_healthy
-    healthcheck: 
-      test: ["CMD", "nc", localhost, "${BACKEND_PORT}"]
-      interval: 15s
-      timeout: 15s
-      retries: 5
-      start_period: 5s
+      - db
     env_file:
       - .env
     ports:
@@ -52,12 +39,13 @@ services:
     image: frontend:tsen-1.0
     restart: always
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
     env_file:
       - .env
     ports:
       - ${FRONTEND_PORT}:${FRONTEND_PORT}
+    networks:
+      - tsen-net
 
 networks:
   tsen-net:

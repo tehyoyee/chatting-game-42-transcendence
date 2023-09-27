@@ -1,3 +1,3 @@
-envsubst < .env > resource/.env
+envsubst < .env_temp > .env
 cd resource
-exec npm run start -- -H ${SERVICE_ADDR} -p ${FRONTEND_PORT}
+exec npm run dev -- -H "0.0.0.0" -p ${FRONTEND_PORT}

@@ -3,7 +3,8 @@ ARG NODE_VERSION
 FROM node:$NODE_VERSION
 
 RUN apt-get update && apt-get install -y \
-	gettext
+	gettext \
+	vim
 
 RUN mkdir /usr/frontend/
 RUN mkdir /usr/frontend/node_modules/
