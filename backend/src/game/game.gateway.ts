@@ -334,8 +334,8 @@ export class GameGateway
     };
 
     if (gameMode === 'ADVANCED') {
-      ball.dx += this.SPEED * (1 + (speedPlus / 1000));
-      ball.dy += this.SPEED * (1 + (speedPlus++ / 1000));
+      ball.dx += (this.SPEED * (1 + (speedPlus / 1000)));
+      ball.dy += (this.SPEED * (1 + (speedPlus++ / 1000)));
     }
     if (Math.random() >= 0.5) {
       ball.dx = -ball.dx;
