@@ -10,65 +10,20 @@ services:
       - .env
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
-    expose:
-      - "5432"
+    networks:
+      - tsen-net
 
-  pgadmin:
-    image: dpage/pgadmin4
-    restart: always
-    env_file:
-      - .env
-    ports:
-      - 8080:80
+  backend:
+    build: ./backend
+    container_name: backend
+    image: backend
     depends_on:
       - db
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "200k"
-        max-file: "10"
-
-  next-app:
-    build: 
-      context: frontend/
-    env_file:
-      - .env
-    ports:
-      - 4000:4000
-    volumes:
-      - ./frontend/app/:/app/
-      - ./frontend/lib:/lib
-      - ./frontend/components:/components
-    depends_on:
-      - nest-app
-
-  nest-app:
-    build: 
-      context: backend/
-    env_file:
-      - .env
     ports:
       - 3000:3000
-      - 3001:3001
-    volumes:
-      - ./backend/src:/app/src
-      - ./backend/uploads/:/uploads
-    depends_on:
-      - db
-
-  nginx:
-    build:
-      context: src/file-service/
     restart: always
-    ports:
-      - 7000:7000
-    volumes:
-      - ./src/file-service/conf/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./frontend/public/avatar/:/usr/share/nginx/uploads
-    depends_on:
-      - next-app
-
-volumes:
-  pgadmin_data:
+    networks:
+      - tsen-net
+networks:
+  tsen-net:
+    driver: bridge
