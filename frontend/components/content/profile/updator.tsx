@@ -27,11 +27,9 @@ function UploadBtn({ onClick, title }: { onClick: Function; title: string }) {
 
 export default function ProfileUpdator({
   uid,
-  name,
   update,
 }: {
   uid: number;
-  name: string;
   update: {
     setUpdate: React.Dispatch<SetStateAction<Object>>;
   };
@@ -49,7 +47,6 @@ export default function ProfileUpdator({
           <NameUpdator
             setUpdate={update.setUpdate}
             uid={uid}
-            name={name}
           ></NameUpdator>
         </li>
         <li>
@@ -117,14 +114,11 @@ function TfaUpdator({ uid }: { uid: number }) {
 
 function NameUpdator({
   uid,
-  name,
   setUpdate,
 }: {
   uid: number;
-  name: string;
   setUpdate: React.Dispatch<SetStateAction<Object>>;
 }) {
-  const [newName, setNewName] = useState(name);
   const [showModal, setShowModal] = useState(false);
 
   const requestNameUpdate = async (uid: number) => {
@@ -138,7 +132,6 @@ function NameUpdator({
     })
       .then((res) => {
         if (!res.ok) throw new Error(`invalid response: ${res.status}`);
-        setNewName(field.value);
         setShowModal(false);
         setUpdate({});
       })

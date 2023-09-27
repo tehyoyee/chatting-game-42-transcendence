@@ -7,6 +7,8 @@ import ProfileUpdator from "@/components/content/profile/updator";
 import ExpandableButtons from "@/components/content/expandableButtons";
 import BackToTop from "@/components/content/backToTop";
 import usePlayerContext, { EPlayerState } from "../player_state";
+import { useRouter, useSearchParams } from "next/navigation";
+import Modal from "@/components/structure/modal";
 
 // incomplete
 export interface IProfileType {
@@ -53,11 +55,15 @@ export default function Profile({
     email: "",
   });
 
-  const [update, setUpdate] = useState<Object | null>(null);
+  const [ update, setUpdate ] = useState<Object | null>(null);
   const { setPlayerState } = usePlayerContext();
+	const [ firstLogin, setFirstLogin ] = useState<boolean>(false);
+	const router = useRouter();
+	const searchParams = useSearchParams();
 
   useEffect(() => {
     isMyProfile && setPlayerState(EPlayerState.PROFILE);
+		searchParams.get('firstLogin') === "true" && setFirstLogin(true);
   }, []);
 
   useEffect(() => {
@@ -75,6 +81,7 @@ export default function Profile({
         });
     })();
   }, [update]);
+
   useEffect(() => {
     console.log(profile);
   }, [profile]);
@@ -100,6 +107,7 @@ export default function Profile({
     point: 0,
     achievement: UserAchievement.A0,
   });
+
   useEffect(() => {
     (async () => {
       await fetch(`${profileUrl}/${uid}`, {
@@ -157,10 +165,14 @@ export default function Profile({
 
   return (
     <div className={styles.profile}>
+			{firstLogin &&
+				<Modal
+					onClose={() => {setFirstLogin(false)}}>
+				</Modal>
+			}
       {isMyProfile && (
         <ProfileUpdator
           uid={uid}
-          name={profile.nickname}
           update={{ setUpdate }}
         ></ProfileUpdator>
       )}
@@ -169,12 +181,15 @@ export default function Profile({
           styles.profileImage
         }`}
       >
+			{
+				profile.user_id &&
         <Image
           src={`${profileUrl}/avatar/${profile.user_id}`}
           height={128}
           width={128}
           alt={"profile image"}
         />
+			}
       </div>
       <br></br>
       <ul>

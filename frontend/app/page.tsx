@@ -11,18 +11,17 @@ export default function Page() {
 
   console.log(`rendering loginpage: updated=${updated} loggedIn=${loggedIn}`);
 // TODO: buggy
-  useEffect(() => {
-		updateLoginState();
-  }, []);
-
 	useEffect(() => {
-		if (loggedIn === true) {
-			router.push('/profile');
+	(async() => {
+		const loggedInRet = await updateLoginState();
+		if (loggedInRet === true) {
+			router.replace('/profile');
 		}
+	})();
 	}, [loggedIn]);
   return (
     <>
-      { updated && !loggedIn && <Login></Login> }
+      { !loggedIn && <Login></Login> }
     </>
   );
 }

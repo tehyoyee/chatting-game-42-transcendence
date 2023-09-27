@@ -11,12 +11,12 @@ export default function ComponentProtector({ children }: { children: ReactNode }
 
   useEffect(() => {
 		(async() => {
-			await updateLoginState();
-			if (loggedIn == false) {
+			const loggedInRet = await updateLoginState();
+			if (loggedInRet == false) {
 				router.push('/');
 			}
 		})()
-  }, []);
+  }, [loggedIn]);
 
-  return ((loggedIn && <>{children}</>) || <></>);
+  return (<>{children}</>);
 }
