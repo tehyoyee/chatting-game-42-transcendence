@@ -540,6 +540,10 @@ export class GameGateway
     playerRightSocket.join(newRoomName);
     this.gameRoomMap.set(playerLeft.user_id, newRoomName);
     this.gameRoomMap.set(playerRight.user_id, newRoomName);
+	await this.userService.updateStatus(playerLeft.user_id, UserStatus.PLAYING);
+	await this.userService.updateStatus(playerRight.user_id, UserStatus.PLAYING);
+	this.server.emit('refreshGameStatus', playerLeft.user_id);
+	this.server.emit('refreshGameStatus', playerRight.user_id);
     console.log(`[Game] Game room ${newRoomName} created.`);
     this.server.to(newRoomName).emit('gameStart', {
       leftUserName: playerLeft.nickname,
@@ -641,6 +645,7 @@ async handleConnection(client: Socket) {
     console.log(`[Game] ${client.id} has left.`);
     const user = await this.socketToUser(client);
 	if (user && this.userSocketMap.has(user.user_id)) {
+
 		this.server.to(client.id).emit('forceLogout');
         this.userSocketMap.delete(user.user_id);
         this.gameRoomMap.delete(user.user_id);
