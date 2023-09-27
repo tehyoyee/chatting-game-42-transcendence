@@ -712,6 +712,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.emit('usermod-fail', 'Unidentified User Error in onSetAdmin');
       return;
     }
+    
     const targetUser = await this.userService.getProfileByUserId(
       updateUserInfoDto.targetUserId,
     );
@@ -727,6 +728,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
+
     const bridge = await this.chatService.checkUserInThisChannel(
       user.user_id,
       updateUserInfoDto.channelId,
@@ -735,11 +737,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.emit('usermod-fail', 'Unidentified User Error in onSetAdmin');
       return;
     }
-    if (bridge.user_type !== UserType.OWNER) {
+    if (bridge.user_type !== UserType.OWNER &&
+        bridge.user_type !== UserType.ADMIN) {
       client.emit(
         'usermod-fail',
-        'Cannot Set Owner As Admin Error in onSetAdmin',
+        'Member Cannot Set Admin Error in onSetAdmin',
       );
+      return;
+    }
+
+    const targetBridge = await this.chatService.checkUserInThisChannel(
+      updateUserInfoDto.targetUserId,
+      updateUserInfoDto.channelId,
+    );
+    if (!targetBridge) {
+      client.emit('usermod-fail', 'Unexist Target Bridge Error in onSetAdmin');
+      return;
+    }
+    if (targetBridge.user_type === UserType.OWNER) {
+      client.emit('usermod-fail', 'Cannot Set Owner Error in onSetAdmin');
       return;
     }
 
@@ -785,11 +801,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.emit('setpwd-fail', 'Wrong Input in onSetPassword');
       return;
     }
-
-    // if (updatePasswordDto.password === '') {
-    //   client.emit('setpwd-fail', 'Empty Password Error in onSetPassword');
-    //   return ;
-    // }
 
     const bridge = await this.chatService.checkUserInThisChannel(
       user.user_id,
@@ -1341,18 +1352,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   //==========================================================================================
 
   private async emitUserStatus(userId: number) {
-    let listOfWhoFriendedMe: FriendDto[] = [];
-    listOfWhoFriendedMe =
-      await this.relationServie.getEveryoneWhoFriendedMe(userId);
+    //let listOfWhoFriendedMe: FriendDto[] = [];
+    //listOfWhoFriendedMe =
+     // await this.relationServie.getEveryoneWhoFriendedMe(userId);
 
-    const currentStatus =
-      await this.userService.getCurrentUserStatusByUserId(userId);
+    //const currentStatus =
+    //  await this.userService.getCurrentUserStatusByUserId(userId);
 
-    for (const who of listOfWhoFriendedMe) {
-      const whoFriendedMeSocket = this.userIdToSocket(who.userId);
-      if (whoFriendedMeSocket) {
-        whoFriendedMeSocket.emit('refreshStatus');
-      }
-    }
-  }
+		this.server.emit('refreshStatus');
+    //for (const who of listOfWhoFriendedMe) {
+    //  const whoFriendedMeSocket = this.userIdToSocket(who.userId);
+    //  if (whoFriendedMeSocket) {
+    //    whoFriendedMeSocket.emit('refreshStatus');
+    //  }
 }

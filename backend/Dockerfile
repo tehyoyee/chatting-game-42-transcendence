@@ -12,6 +12,7 @@ COPY ./tsconfig.json .
 RUN mkdir src && mkdir config
 COPY ./src ./src
 COPY ./config ./config_temp
+COPY ./uploads ./uploads
 COPY ./tools/entrypoint.sh .
 
 EXPOSE 3000

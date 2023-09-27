@@ -117,6 +117,7 @@ function requestUser(type: ControlType, user: IChatUser, socket: Socket) {
 	socket.on('usermod-success', (msg) => {
 		console.log(`usermod-success: ${msg}`);
 		socket.off('usermod-success');
+		alert('적용되었습니다.');
 	});
 	socket.on('usermod-fail', (msg) => {
 		console.log(`usermod-fail: ${msg}`);
@@ -133,6 +134,7 @@ function removePwd(user: IChatUser, socket: Socket) {
 	socket.on('removepwd-success', (msg) => {
 		console.log(`removepwd-success: ${msg}`);
 		socket.off('removepwd-success');
+		alert('비밀번호를 제거했습니다.');
 	});
 	socket.on('removepwd-fail', (msg) => {
 		console.log(`removepwd-fail: ${msg}`);
@@ -147,6 +149,7 @@ function setPwd(user: IChatUser, socket: Socket) {
 	socket.on('setpwd-success', (msg) => {
 		console.log(`setpwd-success: ${msg}`);
 		socket.off('setpwd-success');
+		alert('비밀번호를 설정했습니다.');
 	});
 	socket.on('setpwd-fail', (msg) => {
 		console.log(`setpwd-fail: ${msg}`);

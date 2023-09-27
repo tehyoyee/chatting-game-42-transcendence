@@ -98,8 +98,8 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 			},
 		}
 		console.log("socket connection request");
-		const chatSocket = io(chatUrl, socketOpt);
-		const gameSocket = io(gameUrl, socketOpt);
+		const chatSocket: Socket = io(chatUrl, socketOpt);
+		const gameSocket: Socket = io(gameUrl, socketOpt);
 
 		initChatSocket(chatSocket);
 		initGameSocket(gameSocket);
