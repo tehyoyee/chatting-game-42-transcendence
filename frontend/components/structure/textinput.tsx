@@ -45,7 +45,7 @@ export default function TextInputForm({
         }}
         required
       />
-      <button
+      <button 
         style={{
           padding: "10px",
           fontSize: "16px",
@@ -53,7 +53,6 @@ export default function TextInputForm({
           marginBottom: "10px",
           border: "1px solid #252525",
           borderRadius: "12px",
-		  backgroundColor: "#007bff",
 		  color: 'white',
         }}
         className={modalStyles.normalButton}
