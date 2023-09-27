@@ -1,16 +1,15 @@
 FROM node:18-alpine
 
-RUN apk update && apk upgrade && apk add sh --no-cache --quiet
+WORKDIR /usr/src/app
 
-WORKDIR /app
+COPY ./package*.json .
+COPY ./tsconfig.json .
+RUN mkdir src && mkdir config
+COPY ./src ./src
+COPY ./config ./config
+COPY ./tools/entrypoint.sh .
 
-RUN mkdir config/
+RUN npm install
+EXPOSE 3000
 
-# COPY ./package*.json ./config
-COPY ./ .
-
-RUN cd ./config && npm i -g @nestjs/cli
-RUN npm i
-
-CMD npm run start
-# CMD npm run start:prod
+ENTRYPOINT ["sh", "entrypoint.sh"]
