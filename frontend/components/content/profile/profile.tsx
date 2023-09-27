@@ -3,12 +3,13 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import styles from "/styles/profile.module.css";
-import ProfileUpdator from "@/components/content/profile/updator";
+import ProfileUpdator, { ImgUpdator, NameUpdator, TfaUpdator } from "@/components/content/profile/updator";
 import ExpandableButtons from "@/components/content/expandableButtons";
 import BackToTop from "@/components/content/backToTop";
 import usePlayerContext, { EPlayerState } from "../player_state";
 import { useRouter, useSearchParams } from "next/navigation";
 import Modal from "@/components/structure/modal";
+import { useFetch } from '@/lib/hook';
 
 // incomplete
 export interface IProfileType {
@@ -47,8 +48,17 @@ export default function Profile({
   uid: number;
   isMyProfile: boolean;
 }) {
-  const [profile, setProfile] = useState<IProfileType>({
+	/*
+  const [profile, setProfile] = use<IProfileType>({
     user_id: 0,
+    username: "",
+    nickname: "",
+    //		avartar: '/default.png',
+    email: "",
+  });
+	*/
+  const [profile, setProfile] = useFetch<IProfileType>(`${profileUrl}/${uid}`, {
+    user_id: uid,
     username: "",
     nickname: "",
     //		avartar: '/default.png',
@@ -72,7 +82,10 @@ export default function Profile({
         method: "GET",
         credentials: "include",
       })
-        .then((res) => res.json())
+        .then((res) => {
+					if (!res.ok) throw new Error(`invalid response: ${res.status}`);
+					return res.json();
+				})
         .then((data) => {
           setProfile(data);
         })
@@ -167,7 +180,43 @@ export default function Profile({
     <div className={styles.profile}>
 			{firstLogin &&
 				<Modal
+					backDrop={false}
 					onClose={() => {setFirstLogin(false)}}>
+					<div
+						className={"centerItemFlex"}>
+						<ul>
+							<li>
+								<h1>환영합니다! 닉네임과 아바타를 설정하세요.</h1>
+							</li>
+							<li
+								style={{
+									margin: '5px',
+									padding: '10px',
+								}}>
+								<Image
+									style={{
+										margin: '10px',
+									}}
+									src={`${profileUrl}/avatar/${uid}`}
+									height={128}
+									width={128}
+									alt={"profile image"}
+								/>
+								<ImgUpdator uid={uid} setUpdate={{update: setUpdate}}></ImgUpdator>
+							</li>
+							<li
+								style={{
+									margin: '5px',
+									padding: '10px',
+								}}>
+								<p>{`닉네임: ${profile.nickname}`}</p>
+								<NameUpdator uid={uid} setUpdate={{update: setUpdate}}></NameUpdator>
+							</li>
+							<li>
+								<TfaUpdator uid={uid}></TfaUpdator>
+							</li>
+						</ul>
+					</div>
 				</Modal>
 			}
       {isMyProfile && (
@@ -181,15 +230,12 @@ export default function Profile({
           styles.profileImage
         }`}
       >
-			{
-				profile.user_id &&
-        <Image
-          src={`${profileUrl}/avatar/${profile.user_id}`}
-          height={128}
-          width={128}
-          alt={"profile image"}
-        />
-			}
+			<Image
+				src={`${profileUrl}/avatar/${uid}`}
+				height={128}
+				width={128}
+				alt={"profile image"}
+			/>
       </div>
       <br></br>
       <ul>
