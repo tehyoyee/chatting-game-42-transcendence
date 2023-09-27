@@ -39,13 +39,13 @@ export default function ProfileUpdator({
       <ul>
         <li>
           <ImgUpdator
-            setUpdate={update.setUpdate}
+            setUpdate={{update: update.setUpdate}}
             uid={uid}
           ></ImgUpdator>
         </li>
         <li>
           <NameUpdator
-            setUpdate={update.setUpdate}
+            setUpdate={{update: update.setUpdate}}
             uid={uid}
           ></NameUpdator>
         </li>
@@ -57,7 +57,7 @@ export default function ProfileUpdator({
   );
 }
 
-function TfaUpdator({ uid }: { uid: number }) {
+export function TfaUpdator({ uid }: { uid: number }) {
   const tfaUpdateUrl = `${serverUrl}/updateTFA/${uid}`;
   const [state, setState] = useState<boolean | null>(
     sessionStorage.getItem("tfa") === "true"
@@ -112,12 +112,14 @@ function TfaUpdator({ uid }: { uid: number }) {
   );
 }
 
-function NameUpdator({
+export function NameUpdator({
   uid,
   setUpdate,
 }: {
   uid: number;
-  setUpdate: React.Dispatch<SetStateAction<Object>>;
+  setUpdate: {
+		update: React.Dispatch<SetStateAction<Object>>;
+	}
 }) {
   const [showModal, setShowModal] = useState(false);
 
@@ -133,7 +135,7 @@ function NameUpdator({
       .then((res) => {
         if (!res.ok) throw new Error(`invalid response: ${res.status}`);
         setShowModal(false);
-        setUpdate({});
+        setUpdate.update({});
       })
       .catch((err) => {
         console.log(`${updateUrl}: fetch error: ${err}`);
@@ -170,12 +172,14 @@ function NameUpdator({
   );
 }
 
-function ImgUpdator({
+export function ImgUpdator({
   uid,
   setUpdate,
 }: {
   uid: number;
-  setUpdate: React.Dispatch<SetStateAction<Object>>;
+  setUpdate: {
+		update: React.Dispatch<SetStateAction<Object>>;
+	}
 }) {
   const [showModal, setShowModal] = useState(false);
 	const [imageFile, setImageFile] = useState<File | null>(null);
@@ -211,7 +215,7 @@ function ImgUpdator({
         const result = await response.json();
         console.log('성공:', result);
         setShowModal(false);
-        setUpdate({});
+        setUpdate.update({});
       } else {
         console.error('업로드 실패:', response.statusText);
 				alert('업로드 실패');

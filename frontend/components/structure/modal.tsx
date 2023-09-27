@@ -23,18 +23,20 @@ export default function Modal({
 	children, 
 	id = "modal-root", 
 	title = "", 
-	style = {} 
+	style = {},
+	backDrop = true,
 }: { 
 	onClose: Function, 
 	children: React.ReactNode, 
 	id?: string, 
 	title?: string | null, 
-	style?: CSSRuleObject 
+	style?: CSSRuleObject ,
+	backDrop?: boolean,
 }) {
 	const wrapperRef = useRef<HTMLDivElement | null>(null);
 
 	const backDropHandler = (e: MouseEvent) => {
-		if (e.target instanceof Node && !wrapperRef.current?.contains(e.target)) {
+		if (backDrop && e.target instanceof Node && !wrapperRef.current?.contains(e.target)) {
 			onClose();
 		}
 	};

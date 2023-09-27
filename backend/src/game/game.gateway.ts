@@ -62,6 +62,11 @@ export class GameGateway
       return;
     }
     if (gameMode === 'NORMAL') {
+		for (const idObject of this.gameNormalQueue) {
+		  if (idObject === user.user_id) {
+			  return;
+		  }
+		}
       this.gameNormalQueue.push(user.user_id);
       console.log(`[Game] added normalQueue user : ${user.username}`);
       if (this.gameNormalQueue.length >= 2) {
@@ -114,6 +119,11 @@ export class GameGateway
         );
       }
     } else if (gameMode === 'ADVANCED') {
+	  for (const idObject of this.gameAdvancedQueue) {
+		if (idObject === user.user_id) {
+			return;
+		}
+	  }
       this.gameAdvancedQueue.push(user.user_id);
       console.log(`added advancedQueue user : ${user.username}`);
       if (this.gameAdvancedQueue.length >= 2) {
