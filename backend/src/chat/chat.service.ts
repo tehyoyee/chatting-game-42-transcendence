@@ -266,7 +266,8 @@ export class ChatService {
     channel: Channel,
     inputPwd: string,
   ): Promise<boolean> {
-    if (await bcrypt.compare(inputPwd, channel.channel_pwd)) return true;
+    const channelPwd: string = channel.channel_pwd;
+    if (await bcrypt.compare(inputPwd, channelPwd)) return true;
 
     return false;
   }
