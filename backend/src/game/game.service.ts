@@ -12,7 +12,6 @@ const logisticFunction = (p1: number, p2: number): number => {
 @Injectable()
 export class GameService {
   constructor(
-    @InjectRepository(User)
     private userService: UserService,
     private gameRepository: GameRepository,
   ) {}

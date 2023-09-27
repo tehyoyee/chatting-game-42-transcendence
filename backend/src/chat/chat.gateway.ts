@@ -181,6 +181,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
+    const regex = /^.{2,16}$/;
+    if (groupChannelDto.channelName !== '' && !regex.test(groupChannelDto.channelName)) {
+      client.emit('creation-fail', 'Wrong Input in onCreateGroupChanne');
+      return;
+    }
+
     const duplicate = await this.chatService.getChannelByName(
       groupChannelDto.channelName,
     );
@@ -416,6 +422,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.emit('post-fail', 'Empty Content Error in onPostGroupMessage');
       return;
     }
+    const regex = /^.{1,256}$/;
+    if (groupMessageDto.content !== '' && !regex.test(groupMessageDto.content)) {
+      client.emit('post-fail', 'Wrong Input in onPostGroupMessage');
+      return;
+    }
+    
     const channel = await this.chatService.getChannelById(
       groupMessageDto.channel_id,
     );
@@ -765,6 +777,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = await this.socketToUser(client);
     if (!user) {
       client.emit('setpwd-fail', 'Unidentified User Error in onSetPassword');
+      return;
+    }
+
+    const regex = /^[a-zA-Z0-9]{4,16}$/;
+    if (updatePasswordDto.password !== '' && !regex.test(updatePasswordDto.password)) {
+      client.emit('setpwd-fail', 'Wrong Input in onSetPassword');
       return;
     }
 
