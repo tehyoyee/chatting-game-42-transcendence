@@ -25,7 +25,7 @@ export class GameGateway
   private readonly MAP_X = 1800;
   private readonly MAP_Y = 1300;
   private readonly SPEED = 20;
-  private readonly paddleSpeed = 15;
+  private readonly paddleSpeed = 25;
   private readonly PADDLE_SIZE = 150;
   private readonly paddleGap = 20;
   private readonly DELAY = 22;
@@ -317,7 +317,6 @@ export class GameGateway
       this.server.emit('refreshGameStatus', user2.user_id);
       return;
     }
-	let speedPlus = 0;
     const ball = {
       x: this.MAP_X / 2,
       y: this.MAP_Y / 2,
@@ -333,10 +332,6 @@ export class GameGateway
       y: (this.MAP_Y - this.PADDLE_SIZE) / 2,
     };
 
-    if (gameMode === 'ADVANCED') {
-      ball.dx += (this.SPEED * (0.5 + (speedPlus / 1000)));
-      ball.dy += (this.SPEED * (0.5 + ((speedPlus++) / 1000)));
-    }
     if (Math.random() >= 0.5) {
       ball.dx = -ball.dx;
     }
@@ -345,12 +340,17 @@ export class GameGateway
     }
 
     let winFlag = 0;
+		let speedPlus = 0;
 
     const render = async () => {
       // Update Paddle Position
       const user1paddleDir = this.userKeyMap.get(user1.user_id);
       const user2paddleDir = this.userKeyMap.get(user2.user_id);
 
+			if (gameMode === 'ADVANCED') {
+				ball.dx += (this.SPEED * (0.5 + (speedPlus / 1000)));
+				ball.dy += (this.SPEED * (0.5 + ((speedPlus++) / 1000)));
+			}
       if (user1paddleDir === KeyStatus.UP) {
         if (paddle1.y - this.paddleSpeed >= 0) {
           paddle1.y -= this.paddleSpeed;
