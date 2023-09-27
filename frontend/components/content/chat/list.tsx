@@ -103,11 +103,7 @@ export default function ChatList() {
 					onClick={event => {event.preventDefault(); joinChat(info)}}
 					className={`${styles.chatRoomButton} ${className}`}
 					data-key={info.channel_id}
-					style={{
-					display: 'flex',
-					justifyContent: 'center',
-					alignItems: 'center',
-				}}>
+				>
 					{`${info.channel_name}`}
 					{
 						info.channel_type == ChatType.protected &&

@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { IChatUser, ISocial } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 import useAuthContext from '../user/auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import usePlayerContext, { EPlayerState } from '../content/player_state';
+import Image from 'next/image';
+import styles from "/styles/profile.module.css";
+import modalStyles from "/styles/modal.module.css";
+
 
 enum ERelationType {
 	FRIEND = "friend",
@@ -23,8 +30,29 @@ interface IRelationDto {
 	receiverId: number,
 };
 
+export interface IProfileType {
+	user_id: number;
+	username: string;
+	nickname: string;
+	//	avartar: string, // path to profile image stored in frontend server local directory
+	email: string;
+  }
+  
+  export enum UserAchievement {
+	A0 = "",
+	A1 = "WIN 1",
+	A2 = "WIN 3",
+	A3 = "WIN 5",
+  }
+
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`;
 const relationUrl = `${serverUrl}/relation`;
+const profileUrl = `${serverUrl}/profile`;
+
+
+
+	//////////////////////////////
+  
 
 const UserModal = ({ 
 	targetUser,
@@ -41,6 +69,17 @@ const UserModal = ({
 	const { user } = useAuthContext();
 	const router = useRouter();
 
+	const [profile, setProfile] = useFetch<IProfileType>(`${profileUrl}/${user.id}`, {
+		user_id: user.id,
+		username: "",
+		nickname: "",
+		//		avartar: '/default.png',
+		email: "",
+	  });
+
+
+
+	
 	const relContent: IRelationDto = {
 		senderId: user.id,
 		receiverId: targetUser.userId,
@@ -160,59 +199,87 @@ const UserModal = ({
 		);
 	}
 	*/
+	const userProps = [
+		{
+		  prop: "username",
+		  value: profile.username,
+		},
+		{
+		  prop: "nickname",
+		  value: profile.nickname,
+		},
+		{
+		  prop: "email",
+		  value: profile.email,
+		},
+	  ];
 
   return (
-		<ul>
-			<li>
-				<p>{targetUser.userNickName}</p>
-			</li>
-			<li>
+  <>
+<div className={styles.profile}>
+      <div
+        className={`${"centerItemBlock gridRow1_2 gridCol1_2"} ${
+          styles.profileImage
+        }`}
+      >
+			<Image
+				src={`${profileUrl}/avatar/${user.id}`}
+				height={128}
+				width={128}
+				alt={"profile image"}
+			/>
+      </div>
+      <br></br>
+      <ul>
+        {userProps.map(({ prop, value }) => {
+          return (
+            <li className={styles.userProps} key={prop}>
+              {prop}: {value}
+            </li>
+          );
+        })}
+        <br />
+      </ul>
+      <hr></hr>
+	  <br></br>
+    </div>
+			<div style={{textAlign: 'center',}}>
 				<button 
-					className='normalButton'
+					className={modalStyles.customButton}
 					onClick={handleFriend}
 					>{targetUser.isFriend ? 'unfollow' : 'follow'}</button>
-			</li>
-			<li>
 				<button 
-					className='normalButton'
+					className={modalStyles.customButton}
 					onClick={handleBlock}
 					>{targetUser.isBlocked ? 'unblock' : 'block'}</button>
-			</li>
-			<li>
 				<button 
-					className='normalButton'
+					className={modalStyles.customButton}
 					onClick={handleProfile}
-					>{'see profile'}</button>
-			</li>
-			<li>
+					>{'game history'}</button>
 				<button 
-					className='normalButton'
+					className={modalStyles.customButton}
 					onClick={handleDm}
 					>{'dm'}</button>
-			</li>
-			<li>
 				<button 
-					className='normalButton'
+					className={modalStyles.customButton}
 					onClick={handleGameNormal}
 					>{'game normal'}</button>
-			</li>
-			<li>
 				<button 
-					className='normalButton'
+					className={modalStyles.customButton}
 					onClick={handleGameFast}
 					>{'game fast'}</button>
-			</li>
-		</ul>
+			</div>
 
-		/*
-    <div className="modal">
-      <div className="modal-content">
-        <h3>유저 정보</h3>
-        <p>유저 이름: {user.userNickName}</p>
-        <button onClick={onClose}>닫기</button>
-      </div>
-    </div>
-		*/
+    
+	</>
   );
 };
 export default UserModal;
+
+// <div className="modal">
+    //   <div className="modal-content">
+    //     <h3>유저 정보</h3>
+    //     <p>유저 이름: {user.userNickName}</p>
+    //     <button onClick={onClose}>닫기</button>
+    //   </div>
+    // </div> */}

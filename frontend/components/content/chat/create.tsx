@@ -97,7 +97,7 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 	}
 
 	return (
-		<div className={styles.chatMenu}>
+		<div>
 			<form id='chatCreateForm' onSubmit={e => {e.preventDefault(); handleCreation();}}>
 				<label 
 					htmlFor="nameField">채팅방 이름</label>
@@ -105,8 +105,14 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 					id='chatNameField'
 					name='name'
 					style={{
-						margin: "6px",
-						border: "solid 1px black",
+						padding: "10px",
+          fontSize: "16px",
+          outline: "none",
+          marginBottom: "10px",
+          margin: "0px 0px 0px 15px",
+          border: "1px solid #252525",
+          borderRadius: "12px",
+          width: "14rem",
 					}}
 					type="text"
 					pattern="{2,16}"
@@ -141,9 +147,14 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 								id='chatPwd'
 								name='pwd'
 								style={{
-									margin: "6px",
-									border: "solid 1px black",
-									marginBottom: "16px", /* to align bottom button */
+									padding: "10px",
+								fontSize: "16px",
+								outline: "none",
+								marginBottom: "10px",
+								margin: "8px 0px 15px 35px",
+								border: "1px solid #252525",
+								borderRadius: "12px",
+								width: "14rem",
 								}}
 								type="text"
 								pattern="[a-zA-Z0-9]{4,16}"
@@ -156,18 +167,20 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 							<br />
 						</>
 				}
-				<button
+				<div style={{textAlign: 'center'}}>
+				<button className={styles.button}
 					id='chatCreateButton'
 					type='submit'
 					style={{
+						color: 'white',
+						width: "300px",
 						position: "relative",
-						top: "200px",
 						padding: "2px",
-						border: "solid 1px black",
-						backgroundColor: "lightgray",
+						// border: "solid 1px black",
 						borderRadius: "0.3rem",
 					}}
 					>생성하기</button>
+				</div>
 			</form>
 		</div>
 	);

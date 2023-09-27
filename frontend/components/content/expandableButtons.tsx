@@ -99,7 +99,7 @@ const ExpandableButtons = ({
   };
 
   return (
-    <div>
+    <div style={{textAlign: 'center',}}>
       {buttonData.map((button, index) => (
         <div key={index} className={styles.buttonWrapper}>
           <button

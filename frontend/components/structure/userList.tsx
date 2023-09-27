@@ -28,12 +28,16 @@ const UserList = ({
 		updateUserList();
 	}, [showModal]);
   return (
-    <div>
+    <div style={{textAlign: 'center',}}>
 			{
 				showProfile &&
 					<Modal
 						style={{
+							borderRadius: '30px',
+							height: '600px',
+							width: '900px',
 							overflow: 'scroll',
+							transform: `translate(${-169}px, ${0}px)`,
 						}}
 						onClose={() => {setShowProfile(false)}}
 						>
@@ -44,9 +48,9 @@ const UserList = ({
 				showModal && 
 					<Modal
 						style={{
-							borderRadius: '0',
-							height: '300px',
-							width: '200px',
+							borderRadius: '30px',
+							height: '455px',
+							width: '550px',
 						}}
 						onClose={() => {setShowModal(false)}}>
 						<UserModal 

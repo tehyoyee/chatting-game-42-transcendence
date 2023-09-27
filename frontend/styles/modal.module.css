@@ -13,8 +13,8 @@
 .modalWrapper {
 	min-height: 200px;
 	min-width: 300px;
-	height: 500px;
-	width: 400px;
+	height: 440px;
+	width: 375px;
 }
 
 .modal {
@@ -34,4 +34,119 @@
 .modalBody {
 	padding-top: 10px;
 	height: 100%;
+}
+
+
+
+
+
+
+.modal-container {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	align-items: center;
+	z-index: 999;
+  }
+  
+
+  .modal-content {
+	background-color: white;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+	max-width: 400px;
+  }
+  
+
+  .modal-content h3 {
+	font-size: 1.5rem;
+	margin-bottom: 20px;
+  }
+  
+
+  .modalContentButton {
+	background-color: #007BFF;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 4px;
+	cursor: pointer;
+	margin-right: 10px;
+	font-size: 1rem;
+  }
+  
+
+  .modalContent button.close-button {
+	background-color: #dc3545;
+  }
+  
+
+  .modalContent button:hover {
+	opacity: 0.8;
+  }
+  
+
+.customButton {
+	background-color: #007bff;
+	color: white;
+	border: none;
+	margin: 1px;
+	padding: 3px 6px;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 1rem;
+	transition: background-color 0.3s ease-in-out;
+  }
+  
+
+.customButton:hover {
+	background-color: r#0056b3;
+  }
+  
+
+  /* .redButton {
+	background-color: #f44336;
+  }
+  
+
+  .blueButton {
+	background-color: #007BFF;
+  }
+  
+
+  .grayButton {
+	background-color: #808080;
+  } */
+  
+
+  /* .roundedButton {
+	border-radius: 25px;
+  } */
+  
+/* .modal {
+
+	opacity: 1;
+	transform: scale(0.9);
+	transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+
+  .modal.active {
+	opacity: 1;
+	transform: scale(1);
+  } */
+
+.gameHistory {
+	border-radius: 30px;
+	height: 600px;
+	width: 900px;
+	overflow: scroll;
+	transform: translate(-169, 0);
 }

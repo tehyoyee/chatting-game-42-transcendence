@@ -1,5 +1,3 @@
-.profile {
-}
 
 .profileContainer {
 	display: flex;
@@ -200,8 +198,8 @@
 	position: fixed;
 	bottom: 20px;
 	right: 20px;
-	background-color: rgb(211, 211, 211);
-	color: #fff;
+	background-color: rgb(255, 255, 255);
+	color: #000000;
 	border: none;
 	border-radius: 50%;
 	padding: 2px;
@@ -215,8 +213,8 @@
 }
 
 .backToTop:hover {
-	color: #5aaaff;
-	background-color: rgb(211, 211, 211);
+	color: #dfdfdf;
+	background-color: rgb(255, 255, 255);
 	border-color: #5aaaff;
 	cursor: pointer;
 	transition: all .2s ease;
@@ -224,7 +222,7 @@
   }
 
 .backToTop:active {
-	color: rgb(0, 16, 242);
+	color: rgb(177, 0, 242);
 	/* background-color: #fff;
 	border-color: #5aaaff; */
 	cursor: pointer;

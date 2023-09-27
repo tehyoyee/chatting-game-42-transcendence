@@ -84,7 +84,7 @@ export default function Matching() {
     user_id: 0,
     username: "",
     nickname: "",
-    //		avartar: '/default.png',
+    		// avatar: '/default.png',
     email: "",
   });
 

@@ -182,15 +182,15 @@ export default function Profile({
 				<Modal
 					backDrop={false}
 					onClose={() => {setFirstLogin(false)}}>
-					<div
-						className={"centerItemFlex"}>
+					<div style={{textAlign: 'center'}}
+						className={"centerItemBlock"}>
 						<ul>
 							<li>
 								<h1>환영합니다! 닉네임과 아바타를 설정하세요.</h1>
 							</li>
 							<li
 								style={{
-									margin: '5px',
+                  margin: '0px 0px 0px 85px',
 									padding: '10px',
 								}}>
 								<Image
@@ -202,17 +202,19 @@ export default function Profile({
 									width={128}
 									alt={"profile image"}
 								/>
-								<ImgUpdator uid={uid} setUpdate={{update: setUpdate}}></ImgUpdator>
+                <div style={{margin: '0px 85px 0px 0px',}}>
+                  <ImgUpdator uid={uid} setUpdate={{update: setUpdate}}></ImgUpdator>
+                </div>
 							</li>
 							<li
 								style={{
-									margin: '5px',
+									margin: '10px',
 									padding: '10px',
 								}}>
 								<p>{`닉네임: ${profile.nickname}`}</p>
 								<NameUpdator uid={uid} setUpdate={{update: setUpdate}}></NameUpdator>
 							</li>
-							<li>
+							<li style={{margin: '25px 0px 0px 0px'}}>
 								<TfaUpdator uid={uid}></TfaUpdator>
 							</li>
 						</ul>

@@ -1,5 +1,5 @@
 .chatList {
-	
+	text-align: center;
 	width: 230px;
 	background-color: #333333;
 	color: #fff;
@@ -8,10 +8,10 @@
   
   .createChannelButton {
 	width: 200px;
-	background-color: #00cc99;
+	background-color: #00cc41;
 	color: #fff;
 	border: none;
-	margin: 6px 0px 0px 8px;
+	margin: 6px 0px 0px 0px;
 	padding: 10px;
 	border-radius: 5px;
 	cursor: pointer;
@@ -45,11 +45,10 @@
 	margin-left: 10px;
   }
   
-  
   .chatRoomButton {
 	width: 200px;
 	height: 50px;
-	margin: 6px 0px 0px 9px;
+	margin: 6px 0px 0px 0px;
 	padding: 2px;
 	border-radius: 0.2rem;
 	border-color: black;
@@ -107,10 +106,22 @@
 }
 
 .normalButton {
-	width: 4rem;
+	color: white;
+	background-color: #007bff;
+	/* width: 8rem; */
+	display: inline-block; /* 인라인 블록 요소로 설정 */
+	/* max-width: auto; */
 	margin: 3px;
-	padding: 1px;
-	border: solid 1px black;
+
+	outline: "none";
+	border: 1px solid #252525;
+
+
+	padding: 15px;
 	border-radius: 0.3rem;
-	background-color: lightgray;
+	display: inline-block;
+}
+
+.normalButton:hover {
+	background-color: #0056b3;	
 }

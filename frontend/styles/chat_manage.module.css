@@ -5,3 +5,11 @@
 .radioLabel {
 	margin: 4px;
 }
+
+.button {
+	background-color: #007bff;
+}
+
+.button:hover {
+	background-color: #0056b3;
+}
