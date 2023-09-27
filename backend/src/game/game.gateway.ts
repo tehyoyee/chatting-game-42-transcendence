@@ -110,7 +110,7 @@ export class GameGateway
               0,
               0,
             ),
-          3000,
+          4000,
         );
       }
     } else if (gameMode === 'ADVANCED') {
@@ -157,7 +157,7 @@ export class GameGateway
               0,
               0,
             ),
-          3000,
+          4000,
         );
       }
     }
@@ -548,7 +548,7 @@ export class GameGateway
           0,
           0,
         ),
-      3000,
+      4000,
     );
   }
 
@@ -608,27 +608,30 @@ export class GameGateway
     }
   }
 
-  async handleConnection(client: Socket) {
+async handleConnection(client: Socket) {
     const user = await this.socketToUser(client);
-    const token: any = client.handshake.query.token;
     if (!user) {
       this.server.to(client.id).emit('forceLogout');
       return;
     } else if (this.userSocketMap.has(user.user_id)) {
-      console.log('forcelogout');
-      this.server.to(client.id).emit('forceLogout');
-    } else {
-      await this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
-      this.userSocketMap.set(user.user_id, client);
-      this.userKeyMap.set(user.user_id, KeyStatus.NONE);
-    }
-  }
+		const userPrevSocket = this.userSocketMap.get(user.user_id);
+		if (userPrevSocket) {
+			this.server.to(userPrevSocket.id).emit('forceLogout');
+		}
+		console.log('forcelogout');
+		this.server.to(client.id).emit('forceLogout');
+		} else {
+		await this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
+		this.userSocketMap.set(user.user_id, client);
+		this.userKeyMap.set(user.user_id, KeyStatus.NONE);
+		}
+	}
 
   async handleDisconnect(client: Socket) {
     console.log(`[Game] ${client.id} has left.`);
     const user = await this.socketToUser(client);
-    if (user && this.userSocketMap.has(user.user_id)) {
-      if (this.userSocketMap.get(user.user_id).id === client.id) {
+	if (user && this.userSocketMap.has(user.user_id)) {
+		this.server.to(client.id).emit('forceLogout');
         this.userSocketMap.delete(user.user_id);
         this.gameRoomMap.delete(user.user_id);
         this.userKeyMap.delete(user.user_id);
@@ -645,7 +648,7 @@ export class GameGateway
           }
         }
         await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
-      }
+    //   }
     } else if (!user) {
       const userId = Number(this.getKeyByValue(this.userSocketMap, client));
       if (userId) {
