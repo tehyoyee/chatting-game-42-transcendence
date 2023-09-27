@@ -1,0 +1,14 @@
+.logoutBtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-radius: 0.3rem;
+  background-color: rgb(20, 194, 107);
+  margin: 3px;
+  padding: 1.5px;
+}
+
+.logoutBtn:hover {
+	transform: scale(1.027);
+  background-color: rgb(16, 166, 91);
+}

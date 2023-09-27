@@ -1,0 +1,12 @@
+.loginButton {
+  padding: 10px;
+  background-color: red;
+  text-align: center;
+  border-radius: 0.3rem;
+}
+
+.loginButton:hover {
+  background-color: rgb(226, 0, 0);
+	transform: scale(1.027);
+  filter: contrast(0.8);
+}
