@@ -1,0 +1,107 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: postgres:${POSTGRES_VERSION}
+    restart: always
+    healthcheck:
+      test: ["CMD", "service", "postgres", "status"]
+      interval: 15s
+      timeout: 15s
+      retries: 5
+      start_period: 5s
+    volumes:
+      - db_volume:${DB_VOLUME_PATH}
+    networks:
+      - db-net
+    env_file:
+      - .env
+
+#  pgadmin:
+#    image: dpage/pgadmin4
+#    restart: always
+#    env_file:
+#      - .env
+#    ports:
+#      - 8080:80
+#    depends_on:
+#      - db
+#    volumes:
+#      - pgadmin_data:/var/lib/pgadmin
+#    logging:
+#      driver: "json-file"
+#      options:
+#        max-size: "200k"
+#        max-file: "10"
+
+  nest-app:
+    build: 
+      context: backend/
+      args:
+        - NODE_VERSION=${NODE_VERSION}
+        - BACKEND_PORT=${BACKEND_PORT}
+        - BACKEND_ADDR=${BACKEND_ADDR}
+    depends_on:
+      - db
+    healthcheck: 
+      test: ["CMD", "nc", "${BACKEND_ADDR}", "${BACKEND_PORT}"]
+      interval: 15s
+      timeout: 15s
+      retries: 5
+      start_period: 5s
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/uploads/:/app/uploads
+    networks:
+      - db-net
+    ports:
+      - ${BACKEND_PORT}:${BACKEND_PORT}
+    env_file:
+      - .env
+
+  next-app:
+    build: 
+      context: frontend/
+      args:
+        - NODE_VERSION=${NODE_VERSION}
+        - FRONTEND_PORT=${FRONTEND_PORT}
+        - FRONTEND_ADDR=${FRONTEND_ADDR}
+    #depends_on:
+# - nest-app
+    volumes:
+      - front_volume:/next-app/
+    ports:
+      - ${FRONTEND_PORT}:${FRONTEND_PORT}
+    env_file:
+      - .env
+
+volumes:
+  front_volume:
+    driver: local
+    driver_opts:
+      o: "bind"
+      type: "none"
+      device: "${PWD}/frontend/"
+    name: "front_vol"
+#
+#  back_volume:
+#    driver: local
+#    driver_opts:
+#      o: "bind"
+#      type: "none"
+#      device: "./backend/"
+#    name: "back_vol"
+
+  db_volume:
+    driver: local
+    driver_opts:
+      o: "bind"
+      type: "none"
+      device: "${PWD}/postgres/"
+    name: "db_volume"
+
+networks:
+  db-net:
+    driver: "bridge"
+    name: "db-net"
