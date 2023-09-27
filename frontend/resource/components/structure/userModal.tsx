@@ -69,7 +69,7 @@ const UserModal = ({
 	const { user } = useAuthContext();
 	const router = useRouter();
 
-	const [profile, setProfile] = useFetch<IProfileType>(`${profileUrl}/${user.id}`, {
+	const [profile, setProfile] = useFetch<IProfileType>(`${profileUrl}/${targetUser.userId}`, {
 		user_id: user.id,
 		username: "",
 		nickname: "",
@@ -216,14 +216,14 @@ const UserModal = ({
 
   return (
   <>
-<div className={styles.profile}>
+		<div className={styles.profile}>
       <div
         className={`${"centerItemBlock gridRow1_2 gridCol1_2"} ${
           styles.profileImage
         }`}
       >
 			<Image
-				src={`${profileUrl}/avatar/${user.id}`}
+				src={`${profileUrl}/avatar/${targetUser.userId}`}
 				height={128}
 				width={128}
 				alt={"profile image"}
@@ -255,7 +255,7 @@ const UserModal = ({
 				<button 
 					className={modalStyles.customButton}
 					onClick={handleProfile}
-					>{'game history'}</button>
+					>{'game record'}</button>
 				<button 
 					className={modalStyles.customButton}
 					onClick={handleDm}

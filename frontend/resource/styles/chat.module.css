@@ -42,7 +42,7 @@
   .lockIcon {
 	width: 20px;
 	height: 20px;
-	margin-left: 10px;
+	transform: translate(-4px, -18px);
   }
   
   .chatRoomButton {

@@ -155,7 +155,7 @@ export function NameUpdator({
         <Modal
           style={{
             height: "200px",
-            width: "400px",
+            width: "450px",
           }}
           onClose={() => setShowModal(false)}
         >
