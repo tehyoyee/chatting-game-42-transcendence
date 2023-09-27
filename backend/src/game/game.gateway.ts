@@ -28,7 +28,7 @@ export class GameGateway
   private readonly paddleSpeed = 20;
   private readonly PADDLE_SIZE = 150;
   private readonly paddleGap = 20;
-  private readonly DELAY = 20;
+  private readonly DELAY = 22;
   private readonly MAXPOINT = 5;
 
   constructor(
@@ -317,7 +317,7 @@ export class GameGateway
       this.server.emit('refreshGameStatus', user2.user_id);
       return;
     }
-
+	let speedPlus = 0;
     const ball = {
       x: this.MAP_X / 2,
       y: this.MAP_Y / 2,
@@ -334,11 +334,14 @@ export class GameGateway
     };
 
     if (gameMode === 'ADVANCED') {
-      ball.dx += this.SPEED * (((point1 + point2) * 1.5) / this.MAXPOINT);
-      ball.dy += this.SPEED * (((point1 + point2) * 1.5) / this.MAXPOINT);
+      ball.dx += this.SPEED * (1 + (speedPlus / 1000));
+      ball.dy += this.SPEED * (1 + (speedPlus++ / 1000));
     }
     if (Math.random() >= 0.5) {
       ball.dx = -ball.dx;
+    }
+    if (Math.random() >= 0.5) {
+      ball.dy = -ball.dy;
     }
 
     let winFlag = 0;
@@ -540,6 +543,10 @@ export class GameGateway
     playerRightSocket.join(newRoomName);
     this.gameRoomMap.set(playerLeft.user_id, newRoomName);
     this.gameRoomMap.set(playerRight.user_id, newRoomName);
+	await this.userService.updateStatus(playerLeft.user_id, UserStatus.PLAYING);
+	await this.userService.updateStatus(playerRight.user_id, UserStatus.PLAYING);
+	this.server.emit('refreshGameStatus', playerLeft.user_id);
+	this.server.emit('refreshGameStatus', playerRight.user_id);
     console.log(`[Game] Game room ${newRoomName} created.`);
     this.server.to(newRoomName).emit('gameStart', {
       leftUserName: playerLeft.nickname,
@@ -641,6 +648,7 @@ async handleConnection(client: Socket) {
     console.log(`[Game] ${client.id} has left.`);
     const user = await this.socketToUser(client);
 	if (user && this.userSocketMap.has(user.user_id)) {
+
 		this.server.to(client.id).emit('forceLogout');
         this.userSocketMap.delete(user.user_id);
         this.gameRoomMap.delete(user.user_id);
