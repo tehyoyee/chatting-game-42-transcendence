@@ -25,14 +25,17 @@ export class ChannelRepository extends Repository<Channel> {
     const newChannel = new Channel();
     newChannel.channel_name = channelName;
     newChannel.channel_type = channelType;
-    if (channelType === ChannelType.PROTECTED && password) {
-      newChannel.salt = await bcrypt.genSalt();
-      newChannel.channel_pwd = await bcrypt.hash(password, newChannel.salt);
+    
+    if (channelType === ChannelType.PROTECTED) {
+      let salt = await bcrypt.genSalt();
+      newChannel.channel_pwd = await bcrypt.hash(password, salt);
+      newChannel.salt = salt;
     }
-    if (channelType === ChannelType.PUBLIC) {
+    else if (channelType === ChannelType.PUBLIC) {
       newChannel.salt = '';
       newChannel.channel_pwd = '';
     }
+    
     await newChannel.save();
 
     return newChannel;
@@ -107,9 +110,9 @@ export class ChannelRepository extends Repository<Channel> {
     if (channel.channel_type === ChannelType.PUBLIC) {
       channel.channel_type = ChannelType.PROTECTED;
     }
-    channel.salt = await bcrypt.genSalt();
-    channel.channel_pwd = await bcrypt.hash(newPassword, channel.salt);
-
+    let salt = await bcrypt.genSalt();
+    channel.channel_pwd = await bcrypt.hash(newPassword, salt);
+    channel.salt = salt;
     await channel.save();
   }
 
