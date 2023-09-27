@@ -1,3 +1,3 @@
-npm install
-npm run build
-npm run start -- -H ${FRONTEND_ADDR} -p ${FRONTEND_PORT}
+envsubst < .env > resource/.env
+cd resource
+exec npm run start -- -H ${SERVICE_ADDR} -p ${FRONTEND_PORT}

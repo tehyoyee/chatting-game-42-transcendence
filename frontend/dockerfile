@@ -1,13 +1,19 @@
 ARG NODE_VERSION
-ARG FRONTEND_PORT
 
 FROM node:$NODE_VERSION
 
-RUN mkdir /next-app/
-RUN mkdir /next-app/node_modules/
+RUN apt-get update && apt-get install -y \
+	gettext
 
-WORKDIR /next-app/
+RUN mkdir /usr/frontend/
+RUN mkdir /usr/frontend/node_modules/
 
-COPY ./package*.json ./
+WORKDIR /usr/frontend/
+
+COPY ./resource ./
+COPY ./entrypoint.sh ./
+
+RUN npm install
+RUN npm run build
 
 ENTRYPOINT ["bash", "entrypoint.sh"]
