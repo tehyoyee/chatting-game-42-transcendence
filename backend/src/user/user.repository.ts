@@ -1,6 +1,7 @@
 import { DataSource, Not, Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import {
+  OnApplicationBootstrap,
   ConflictException,
   ForbiddenException,
   HttpException,
@@ -16,7 +17,7 @@ import { verify } from 'crypto';
 import { GameHistory } from 'src/game/game.history.entity';
 
 @Injectable()
-export class UserRepository extends Repository<User> {
+export class UserRepository extends Repository<User> implements OnApplicationBootstrap {
   constructor(dataSource: DataSource) {
     super(User, dataSource.createEntityManager());
   }

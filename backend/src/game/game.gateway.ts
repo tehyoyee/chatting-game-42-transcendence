@@ -647,14 +647,13 @@ async handleConnection(client: Socket) {
   async handleDisconnect(client: Socket) {
     console.log(`[Game] ${client.id} has left.`);
     const user = await this.socketToUser(client);
+    console.log(`'game' ${user.user_id} left`);
 	if (user && this.userSocketMap.has(user.user_id)) {
 
 		this.server.to(client.id).emit('forceLogout');
         this.userSocketMap.delete(user.user_id);
         this.gameRoomMap.delete(user.user_id);
         this.userKeyMap.delete(user.user_id);
-        await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
-        this.server.emit('refresh');
         for (let i = 0; i < this.gameNormalQueue.length; i++) {
           if (this.gameNormalQueue[i] === user.user_id) {
             this.gameNormalQueue.splice(i, 1);
@@ -665,7 +664,8 @@ async handleConnection(client: Socket) {
             this.gameAdvancedQueue.splice(i, 1);
           }
         }
-        await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
+      console.log('[Game] handleDisconnect1');
+      await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
     //   }
     } else if (!user) {
       const userId = Number(this.getKeyByValue(this.userSocketMap, client));
@@ -673,7 +673,8 @@ async handleConnection(client: Socket) {
         this.userSocketMap.delete(userId);
         this.gameRoomMap.delete(userId);
         this.userKeyMap.delete(userId);
-        await this.userService.updateStatus(userId, UserStatus.OFFLINE);
+      console.log('[Game] handleDisconnect2');
+      await this.userService.updateStatus(userId, UserStatus.OFFLINE);
         this.server.emit('refresh');
         for (let i = 0; i < this.gameNormalQueue.length; i++) {
           if (this.gameNormalQueue[i] === userId) {
@@ -685,7 +686,8 @@ async handleConnection(client: Socket) {
             this.gameAdvancedQueue.splice(i, 1);
           }
         }
-        await this.userService.updateStatus(userId, UserStatus.OFFLINE);
+      console.log('[Game] handleDisconnect4');
+      await this.userService.updateStatus(userId, UserStatus.OFFLINE);
       }
     }
     client.disconnect();
