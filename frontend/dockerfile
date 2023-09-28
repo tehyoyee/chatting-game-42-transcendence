@@ -12,10 +12,14 @@ RUN mkdir /usr/frontend/node_modules/
 
 WORKDIR /usr/frontend/
 
-COPY ./resource ./
-COPY ./entrypoint.sh ./
+COPY ./package*.json ./
+COPY ./tsconfig.json ./
+COPY ./next.config.js ./
+COPY ./*config* ./
+COPY ./.env_temp ./
 
 RUN npm install
-RUN npm run build
+
+COPY ./entrypoint.sh ./
 
 ENTRYPOINT ["bash", "entrypoint.sh"]

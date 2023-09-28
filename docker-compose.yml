@@ -47,7 +47,11 @@ services:
     env_file:
       - .env
     volumes:
-      - ./frontend/resource:/usr/frontend/resource
+      - ./frontend/resource/app:/usr/frontend/app
+      - ./frontend/resource/lib:/usr/frontend/lib
+      - ./frontend/resource/components:/usr/frontend/components
+      - ./frontend/resource/public:/usr/frontend/public
+      - ./frontend/resource/styles:/usr/frontend/styles
     ports:
       - ${FRONTEND_PORT}:${FRONTEND_PORT}
       - ${FRONTEND_DEBUG_PORT}:22

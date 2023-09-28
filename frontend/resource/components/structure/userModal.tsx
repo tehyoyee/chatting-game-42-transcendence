@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
-import { IChatUser, ISocial } from '../content/chat/context';
+import useChatContext, { IChatUser, ISocial } from '../content/chat/context';
 import useSocketContext from '@/lib/socket';
 import { useFetch } from '@/lib/hook';
 import useAuthContext from '../user/auth';
@@ -69,6 +69,7 @@ const UserModal = ({
 	const { user } = useAuthContext();
 	const router = useRouter();
 	const { playerState } = usePlayerContext();
+	const { user: chatUser } = useChatContext();
 
 	const [profile, setProfile] = useFetch<IProfileType>(`${profileUrl}/${targetUser.userId}`, {
 		user_id: user.id,
@@ -163,11 +164,33 @@ const UserModal = ({
 	}
 
 	function handleDm() {
+		console.log('enter dm emitted');
+		chatSocket?.emit('enter-dm-channel', {receiverId: targetUser.userId});
+		onClose();
+		/*
 		handleEvent('enter-dm-channel', 'enter-dm-success', 'enter-dm-fail', 
 			{receiverId: targetUser.userId}, 
-			(data: IChatUser) => {console.log('dm: ', data);setUser(data)},
+			(data: IChatUser) => {
+				if (!chatSocket) {
+					alert('오류: DM을 보낼 수 없습니다.');
+					return;
+				}
+				chatSocket.on('close-fail', (msg) => {
+					alert('오류: DM을 보낼 수 없습니다.');
+					console.log(`close-fail error: ${msg}`)
+				})
+				chatSocket.on('close-success', (msg) => {
+					console.log(`close-success: ${msg}`)
+					setUser(data);
+					chatSocket.off('close-success');
+					chatSocket.off('close-fail');
+				});
+				chatSocket.emit('close-channel-window', chatUser.channel_id);
+				console.log('dm: ', data);
+			},
 			(msg: any) => {console.log(`enter-dm fail: ${msg}`); alert('오류: DM을 보낼 수 없습니다.');},
 		)
+		*/
 	}
 
 	function handleGameNormal() {
@@ -179,6 +202,7 @@ const UserModal = ({
 		console.log('handleGameFast emitted');
 		gameSocket?.emit('inviteGame', {targetUserId: targetUser.userId , gameMode: "ADVANCED" ,});
 	}
+
 	/*
 	// NOTE WARNING
 	// TODO waiting page?
@@ -198,6 +222,7 @@ const UserModal = ({
 		);
 	}
 	*/
+
 	const userProps = [
 		{
 		  prop: "username",
