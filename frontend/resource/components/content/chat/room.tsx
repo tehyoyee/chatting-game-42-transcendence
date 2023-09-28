@@ -53,6 +53,7 @@ function ChatBox() {
 	};
 
 	useEffect(() => {
+		console.log('chatlog flush');
 		setChatLog([]);
 	}, [user]);
 

@@ -8,6 +8,8 @@ RUN apk add --update gettext openrc openssh \
 WORKDIR /usr/src/app
 
 COPY ./package*.json .
+COPY ./tsconfig.json .
+COPY ./tools/entrypoint.sh .
 RUN npm install
 
 #RUN mkdir src		volume mount
@@ -17,8 +19,6 @@ RUN npm install
 RUN mkdir config
 COPY ./config ./config_temp
 
-COPY ./tsconfig.json .
-COPY ./tools/entrypoint.sh .
 
 EXPOSE 3000
 
