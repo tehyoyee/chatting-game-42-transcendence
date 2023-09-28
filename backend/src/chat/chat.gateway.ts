@@ -121,7 +121,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (user && this.userSocketMap.has(user.user_id)) {
       this.userSocketMap.delete(user.user_id);
     console.log(`'chat' ${user.user_id} left`);
-    console.log('[Chat] handleDisconnect1');
       await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
       await this.emitUserStatus(user.user_id);
     } else if (!user) {
@@ -129,8 +128,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (userId) {
         this.userSocketMap.delete(userId);
         await this.userService.updateStatus(userId, UserStatus.OFFLINE);
-       console.log('[Chat] handleDisconnect2');
-
         await this.emitUserStatus(userId);
       }
     }
