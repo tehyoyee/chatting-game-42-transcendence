@@ -349,16 +349,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     if (channel.channel_type === ChannelType.PROTECTED) {
-      if (
-        !(await this.chatService.checkChannelPassword(
-          channel,
-          joinGroupChannelDto.password,
-        ))
-      ) {
-        client.emit(
-          'join-fail',
-          'Incorrect Password Error in onJoinGroupChannel',
-        );
+      if (!joinGroupChannelDto.password || joinGroupChannelDto.password === '') {
+        client.emit('join-fail', 'Empty Password Error in onJoinGroupChannel');
+        return;
+      }
+      if (!(await this.chatService.checkChannelPassword(channel, joinGroupChannelDto.password))) {
+        client.emit('join-fail', 'Incorrect Password Error in onJoinGroupChannel');
         return;
       }
     }
