@@ -153,6 +153,7 @@ function socketOff(chatSocket: Socket) {
 	chatSocket.off('mute');
 	chatSocket.off('leave');
 	chatSocket.off('join');
+	chatSocket.off('admin');
 }
 
 function socketInit(
@@ -240,6 +241,11 @@ function socketInit(
 		console.log(`got-mutted: ${msg}`)
 	});
 	*/
+
+	chatSocket.on('admin', () => {
+		console.log("new admin");
+		updateUserList();
+	});
 
 	chatSocket.on('kick', () => {
 		console.log("an user got kicked");
