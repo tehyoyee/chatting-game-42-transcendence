@@ -485,6 +485,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // }
     
     //현재 user를 block한 사람들에게는 메세지가 가지 않도록
+		console.log('listOfBlock: ', listOfWhoBlockedMe);
+		console.log('render id: ', user.user_id);
     this.server.to(channel.channel_name).fetchSockets()
       .then((innerSockets) => {
         innerSockets.forEach(async (innerSocket) => {
@@ -493,14 +495,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           let innerDecoded = await this.authService.verifyToken(innerToken);
           let inner = await this.userService.getProfileByUserId(innerDecoded.id);
 
+					if (inner.user_id === user.user_id) return;
+
+					console.log('inner.user_id', inner.user_id);
           for (let l of listOfWhoBlockedMe) {
             if (inner.user_id === l.userId) {
-              console.log('userIdWhoBlockeMe: ', inner.user_id);
-              continue;
+							return;
             }
-            else
-              innerSocket.emit("message", {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
           }
+          innerSocket.emit("message", {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
         })
       });
 
