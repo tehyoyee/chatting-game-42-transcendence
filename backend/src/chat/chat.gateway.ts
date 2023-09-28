@@ -495,8 +495,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           let innerDecoded = await this.authService.verifyToken(innerToken);
           let inner = await this.userService.getProfileByUserId(innerDecoded.id);
 
-					if (inner.user_id === user.user_id) return;
-
 					console.log('inner.user_id', inner.user_id);
           for (let l of listOfWhoBlockedMe) {
             if (inner.user_id === l.userId) {
