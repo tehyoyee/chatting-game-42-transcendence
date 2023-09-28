@@ -41,6 +41,9 @@ export default function ChatMenu() {
 	useEffect(() => {
 		if (!chatSocket) return;
 		socketInit(chatSocket, chatContext, playerContext, updateUserList);
+		return () => {
+			socketOff(chatSocket);
+		};
 	}, [chatSocket, user]);
 
 	useEffect(() => {
@@ -135,6 +138,20 @@ function closeChat(user: IChatUser, socket: Socket) {
 	socket.emit('close-channel-window', user.channel_id);
 }
 
+function socketOff(chatSocket: Socket) {
+	chatSocket.off('leave-fail')
+	chatSocket.off('leave-success')
+	chatSocket.off('close-fail')
+	chatSocket.off('close-success')
+	chatSocket.off('got-kicked');
+	chatSocket.off('got-banned');
+	chatSocket.off('kick');
+	chatSocket.off('ban');
+	chatSocket.off('mute');
+	chatSocket.off('leave');
+	chatSocket.off('join');
+}
+
 function socketInit(
 	chatSocket: Socket,
 	chatContext: TChatContext,
@@ -153,21 +170,7 @@ function socketInit(
 		setPlayerData(null);
 	}
 
-	function socketOff() {
-		chatSocket.off('leave-fail')
-		chatSocket.off('leave-success')
-		chatSocket.off('close-fail')
-		chatSocket.off('close-success')
-		chatSocket.off('got-kicked');
-		chatSocket.off('got-banned');
-		chatSocket.off('kick');
-		chatSocket.off('ban');
-		chatSocket.off('mute');
-		chatSocket.off('leave');
-		chatSocket.off('join');
-	}
-
-	socketOff();
+	socketOff(chatSocket);
 
 	chatSocket.on('leave-fail', (msg) => {console.log(`leave-fail error: ${msg}`)})
 
