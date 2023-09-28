@@ -214,9 +214,6 @@ export default function Profile({
 								<p>{`닉네임: ${profile.nickname}`}</p>
 								<NameUpdator uid={uid} setUpdate={{update: setUpdate}}></NameUpdator>
 							</li>
-							<li style={{margin: '25px 0px 0px 0px'}}>
-								<TfaUpdator uid={uid}></TfaUpdator>
-							</li>
 						</ul>
 					</div>
 				</Modal>

@@ -204,12 +204,26 @@ function socketInit(
 				alert('오류: DM을 보낼 수 없습니다.');
 				setUser(user);
 				console.log(`close-fail error: ${msg}`)
+				chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
+
+				chatSocket.on('close-success', (msg) => {
+					console.log(`close-success: ${msg}`)
+					close();
+					socketOff(chatSocket);
+				});
 			})
 			chatSocket.on('close-success', (msg) => {
 				console.log(`close-success: ${msg}`)
 				setUser(data);
 				setPlayerData(data);
 				setIsDm(true);
+				chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
+
+				chatSocket.on('close-success', (msg) => {
+					console.log(`close-success: ${msg}`)
+					close();
+					socketOff(chatSocket);
+				});
 			});
 			chatSocket.emit('close-channel-window', user.channel_id);
 			console.log('dm-enter-success: ', data);

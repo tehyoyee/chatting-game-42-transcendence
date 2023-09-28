@@ -42,27 +42,29 @@ export function PlayerContextProvider({ children }: { children: React.ReactNode 
 	useEffect(() => {
 		console.log(`playerState [${prevState} -> ${state}], playerData=${JSON.stringify(data)}`);
 
+		if (!gameSocket || !chatSocket) return;
+
 		updateLoginState();
 		switch (prevState) {
 			case EPlayerState.GAME_PLAYING:
-				gameSocket?.emit('exitGame',);
+				gameSocket.emit('exitGame',);
 				console.log('exitGame');
 				break;
 			case EPlayerState.GAME_MATCHING:
 				if (state === EPlayerState.GAME) break;
-				gameSocket?.emit('exitQueue',);
+				gameSocket.emit('exitQueue',);
 				console.log('exitQueue');
 				break;
 			case EPlayerState.CHAT_JOINING:
 				if (state === EPlayerState.CHAT) break;
-				chatSocket?.emit('close-channel-window', data?.channel_id);
-				console.log('close-channel-window');
+				chatSocket.emit('close-channel-window', data.channel_id);
+				console.log('close-channel-window: ', data);
 				break;
 			default:
 				break;
 		}
 		setPrevState(state);
-	}, [state]);
+	}, [state, chatSocket, gameSocket]);
 
 	return (
 		<PlayerContext.Provider value={{
