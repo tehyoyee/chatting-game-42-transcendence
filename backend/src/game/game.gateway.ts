@@ -24,8 +24,8 @@ export class GameGateway
 {
   private readonly MAP_X = 1800;
   private readonly MAP_Y = 1300;
-  private readonly SPEED = 30;
-  private readonly paddleSpeed = 25;
+  private readonly SPEED = 25;
+  private readonly paddleSpeed = 30;
   private readonly PADDLE_SIZE = 130;
   private readonly paddleGap = 20;
   private readonly DELAY = 22;
