@@ -41,7 +41,7 @@ export default function ChatMenu() {
 	useEffect(() => {
 		if (!chatSocket) return;
 		socketInit(chatSocket, chatContext, playerContext, updateUserList);
-	}, [chatSocket]);
+	}, [chatSocket, user]);
 
 	useEffect(() => {
 		if (!chatSocket || !gameSocket) return;

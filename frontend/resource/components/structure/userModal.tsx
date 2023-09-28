@@ -68,6 +68,7 @@ const UserModal = ({
 	const { chatSocket, gameSocket } = useSocketContext();
 	const { user } = useAuthContext();
 	const router = useRouter();
+	const { playerState } = usePlayerContext();
 
 	const [profile, setProfile] = useFetch<IProfileType>(`${profileUrl}/${targetUser.userId}`, {
 		user_id: user.id,
@@ -76,8 +77,6 @@ const UserModal = ({
 		//		avartar: '/default.png',
 		email: "",
 	  });
-
-
 
 	
 	const relContent: IRelationDto = {
@@ -256,10 +255,12 @@ const UserModal = ({
 					className={modalStyles.customButton}
 					onClick={handleProfile}
 					>{'game record'}</button>
-				<button 
-					className={modalStyles.customButton}
-					onClick={handleDm}
-					>{'dm'}</button>
+				{playerState === EPlayerState.CHAT_JOINING && 
+					<button 
+						className={modalStyles.customButton}
+						onClick={handleDm}
+						>{'dm'}</button>
+				}
 				<button 
 					className={modalStyles.customButton}
 					onClick={handleGameNormal}
