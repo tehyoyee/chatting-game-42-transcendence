@@ -97,20 +97,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // }
     // client.join(privateChannelName);
 
-    const joinedGroupChannels =
-      await this.chatService.getJoinedGroupChannelsByUserId(user.user_id);
-    for (const c of joinedGroupChannels) {
-      client.join(c.channel_name);
-    }
+    // const joinedGroupChannels =
+    //   await this.chatService.getJoinedGroupChannelsByUserId(user.user_id);
+    // for (const c of joinedGroupChannels) {
+    //   client.join(c.channel_name);
+    // }
 
-    const joinedDmChannels = await this.chatService.getJoinedDmChannelsByUserId(
-      user.user_id,
-    );
-    for (const c of joinedDmChannels) {
-      client.join(c.channel_name);
-    }
+    // const joinedDmChannels = await this.chatService.getJoinedDmChannelsByUserId(
+    //   user.user_id,
+    // );
+    // for (const c of joinedDmChannels) {
+    //   client.join(c.channel_name);
+    // }
 
-    await this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
+    // await this.userService.updateStatus(user.user_id, UserStatus.ONLINE);
     await this.emitUserStatus(user.user_id);
   }
 
@@ -120,6 +120,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = await this.socketToUser(client);
     if (user && this.userSocketMap.has(user.user_id)) {
       this.userSocketMap.delete(user.user_id);
+    console.log(`'chat' ${user.user_id} left`);
       await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
       await this.emitUserStatus(user.user_id);
     } else if (!user) {

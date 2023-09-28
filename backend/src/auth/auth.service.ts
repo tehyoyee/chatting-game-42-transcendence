@@ -165,7 +165,7 @@ export class AuthService {
   async signOut(req: Request, res: Response) {
     const token = req.cookies['token'];
     const payload = await this.verifyToken(token);
-    const user = await this.userService.getProfileByUserId(payload.user_id);
+    const user = await this.userService.getProfileByUserId(payload.id);
     this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
     res.clearCookie('token').json({ status: 200, message: 'Signned Out' });
   }

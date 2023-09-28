@@ -24,9 +24,9 @@ export class GameGateway
 {
   private readonly MAP_X = 1800;
   private readonly MAP_Y = 1300;
-  private readonly SPEED = 20;
+  private readonly SPEED = 30;
   private readonly paddleSpeed = 25;
-  private readonly PADDLE_SIZE = 100;
+  private readonly PADDLE_SIZE = 130;
   private readonly paddleGap = 20;
   private readonly DELAY = 22;
   private readonly MAXPOINT = 5;
@@ -347,10 +347,6 @@ export class GameGateway
       const user1paddleDir = this.userKeyMap.get(user1.user_id);
       const user2paddleDir = this.userKeyMap.get(user2.user_id);
 
-			if (gameMode === 'ADVANCED') {
-				ball.dx += (this.SPEED + (speedPlus / 1000));
-				ball.dy += (this.SPEED + ((speedPlus++) / 1000));
-			}
       if (user1paddleDir === KeyStatus.UP) {
         if (paddle1.y - this.paddleSpeed >= 0) {
           paddle1.y -= this.paddleSpeed;
@@ -368,6 +364,19 @@ export class GameGateway
         if (paddle2.y + this.paddleSpeed <= this.MAP_Y - this.PADDLE_SIZE) {
           paddle2.y += this.paddleSpeed;
         }
+      }
+      if (gameMode === 'ADVANCED') {
+				speedPlus++;
+			}
+      if (ball.dx < 0) {
+        ball.dx = ball.dx - speedPlus / 1000;
+      } else {
+        ball.dx = ball.dx + speedPlus / 1000;
+      }
+      if (ball.dy < 0) {
+        ball.dy = ball.dy - speedPlus / 1000;
+      } else {
+        ball.dy = ball.dy + speedPlus / 1000;
       }
       // Ball Reflection at Bottom
       if (ball.dy > 0 && ball.y + ball.dy >= this.MAP_Y) {
@@ -645,16 +654,14 @@ async handleConnection(client: Socket) {
 	}
 
   async handleDisconnect(client: Socket) {
-    console.log(`[Game] ${client.id} has left.`);
     const user = await this.socketToUser(client);
+    console.log(`'game' ${user.user_id} left`);
 	if (user && this.userSocketMap.has(user.user_id)) {
 
 		this.server.to(client.id).emit('forceLogout');
         this.userSocketMap.delete(user.user_id);
         this.gameRoomMap.delete(user.user_id);
         this.userKeyMap.delete(user.user_id);
-        await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
-        this.server.emit('refresh');
         for (let i = 0; i < this.gameNormalQueue.length; i++) {
           if (this.gameNormalQueue[i] === user.user_id) {
             this.gameNormalQueue.splice(i, 1);
@@ -665,7 +672,7 @@ async handleConnection(client: Socket) {
             this.gameAdvancedQueue.splice(i, 1);
           }
         }
-        await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
+      await this.userService.updateStatus(user.user_id, UserStatus.OFFLINE);
     //   }
     } else if (!user) {
       const userId = Number(this.getKeyByValue(this.userSocketMap, client));
@@ -673,8 +680,7 @@ async handleConnection(client: Socket) {
         this.userSocketMap.delete(userId);
         this.gameRoomMap.delete(userId);
         this.userKeyMap.delete(userId);
-        await this.userService.updateStatus(userId, UserStatus.OFFLINE);
-        this.server.emit('refresh');
+      await this.userService.updateStatus(userId, UserStatus.OFFLINE);
         for (let i = 0; i < this.gameNormalQueue.length; i++) {
           if (this.gameNormalQueue[i] === userId) {
             this.gameNormalQueue.splice(i, 1);
@@ -685,7 +691,7 @@ async handleConnection(client: Socket) {
             this.gameAdvancedQueue.splice(i, 1);
           }
         }
-        await this.userService.updateStatus(userId, UserStatus.OFFLINE);
+      await this.userService.updateStatus(userId, UserStatus.OFFLINE);
       }
     }
     client.disconnect();
