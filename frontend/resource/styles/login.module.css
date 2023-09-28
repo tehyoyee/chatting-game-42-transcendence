@@ -7,6 +7,6 @@
 
 .loginButton:hover {
   background-color: rgb(226, 0, 0);
-	transform: scale(1.027);
+	transform: scale(1.05);
   filter: contrast(0.8);
 }

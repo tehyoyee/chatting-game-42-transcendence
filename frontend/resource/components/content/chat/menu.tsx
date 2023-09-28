@@ -41,7 +41,10 @@ export default function ChatMenu() {
 	useEffect(() => {
 		if (!chatSocket) return;
 		socketInit(chatSocket, chatContext, playerContext, updateUserList);
-	}, [chatSocket]);
+		return () => {
+			socketOff(chatSocket);
+		};
+	}, [chatSocket, user]);
 
 	useEffect(() => {
 		if (!chatSocket || !gameSocket) return;
@@ -135,6 +138,20 @@ function closeChat(user: IChatUser, socket: Socket) {
 	socket.emit('close-channel-window', user.channel_id);
 }
 
+function socketOff(chatSocket: Socket) {
+	chatSocket.off('leave-fail')
+	chatSocket.off('leave-success')
+	chatSocket.off('close-fail')
+	chatSocket.off('close-success')
+	chatSocket.off('got-kicked');
+	chatSocket.off('got-banned');
+	chatSocket.off('kick');
+	chatSocket.off('ban');
+	chatSocket.off('mute');
+	chatSocket.off('leave');
+	chatSocket.off('join');
+}
+
 function socketInit(
 	chatSocket: Socket,
 	chatContext: TChatContext,
@@ -153,28 +170,14 @@ function socketInit(
 		setPlayerData(null);
 	}
 
-	function socketOff() {
-		chatSocket.off('leave-fail')
-		chatSocket.off('leave-success')
-		chatSocket.off('close-fail')
-		chatSocket.off('close-success')
-		chatSocket.off('got-kicked');
-		chatSocket.off('got-banned');
-		chatSocket.off('kick');
-		chatSocket.off('ban');
-		chatSocket.off('mute');
-		chatSocket.off('leave');
-		chatSocket.off('join');
-	}
-
-	socketOff();
+	socketOff(chatSocket);
 
 	chatSocket.on('leave-fail', (msg) => {console.log(`leave-fail error: ${msg}`)})
 
 	chatSocket.on('leave-success', (msg) => {
 		console.log(`leave-success: ${msg}`)
 		close();
-		socketOff();
+		socketOff(chatSocket);
 	});
 
 	chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
@@ -182,21 +185,21 @@ function socketInit(
 	chatSocket.on('close-success', (msg) => {
 		console.log(`close-success: ${msg}`)
 		close();
-		socketOff();
+		socketOff(chatSocket);
 	});
 
 	chatSocket.on('got-kicked', (msg) => {
 		console.log(`got-kicked: ${msg}`)
 		close();
 		alert('채널에서 퇴장당했습니다.');
-		socketOff();
+		socketOff(chatSocket);
 	});
 
 	chatSocket.on('got-banned', (msg) => {
 		console.log(`got-banned: ${msg}`)
 		close();
 		alert('채널에서 영구 퇴장당했습니다.');
-		socketOff();
+		socketOff(chatSocket);
 	});
 
 	/*

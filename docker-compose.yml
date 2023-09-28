@@ -25,8 +25,12 @@ services:
       - db
     env_file:
       - .env
+    volumes:
+      - ./backend/src:/usr/src/app/src
+      - ./backend/uploads:/usr/src/app/uploads
     ports:
       - ${BACKEND_PORT}:${BACKEND_PORT}
+      - ${BACKEND_DEBUG_PORT}:22
     networks:
       - tsen-net
 
@@ -42,8 +46,11 @@ services:
       - backend
     env_file:
       - .env
+    volumes:
+      - ./frontend/resource:/usr/frontend/resource
     ports:
       - ${FRONTEND_PORT}:${FRONTEND_PORT}
+      - ${FRONTEND_DEBUG_PORT}:22
     networks:
       - tsen-net
 
