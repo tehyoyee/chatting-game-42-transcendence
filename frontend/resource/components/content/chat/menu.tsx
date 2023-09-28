@@ -177,7 +177,7 @@ function socketInit(
 	chatSocket.on('leave-success', (msg) => {
 		console.log(`leave-success: ${msg}`)
 		close();
-		socketOff();
+		socketOff(chatSocket);
 	});
 
 	chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
@@ -185,21 +185,21 @@ function socketInit(
 	chatSocket.on('close-success', (msg) => {
 		console.log(`close-success: ${msg}`)
 		close();
-		socketOff();
+		socketOff(chatSocket);
 	});
 
 	chatSocket.on('got-kicked', (msg) => {
 		console.log(`got-kicked: ${msg}`)
 		close();
 		alert('채널에서 퇴장당했습니다.');
-		socketOff();
+		socketOff(chatSocket);
 	});
 
 	chatSocket.on('got-banned', (msg) => {
 		console.log(`got-banned: ${msg}`)
 		close();
 		alert('채널에서 영구 퇴장당했습니다.');
-		socketOff();
+		socketOff(chatSocket);
 	});
 
 	/*

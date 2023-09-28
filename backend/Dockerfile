@@ -1,8 +1,11 @@
 FROM node:18-alpine
 
-WORKDIR /usr/src/app
+RUN apk add --update gettext openrc openssh \
+	&& ssh-keygen -A \
+	&& rc-status \
+	&& touch /run/openrc/softlevel
 
-RUN apk add --update gettext openssh
+WORKDIR /usr/src/app
 
 COPY ./package*.json .
 RUN npm install
