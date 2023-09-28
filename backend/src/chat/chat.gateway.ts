@@ -465,42 +465,44 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
     // console.log('listofwhoblockedme: ', listOfWhoBlockedMe);
 
-    for (const i of inners) {
-      const hasMatchingUser = listOfWhoBlockedMe.some(
-        (blockedUser) => blockedUser.userId === i.userId,
-      );
-      if (hasMatchingUser) {
-        continue;
-      } else {
-        const iSocket = this.userIdToSocket(i.userId);
-        if (iSocket) {
-          const writerToken: any = client.handshake.query.token;
-          const writerDecoded =
-            await this.authService.verifyTokenSocket(writerToken);
-          const writer = await this.userService.getProfileByUserId(
-            writerDecoded.id,
-          );
-          this.server.to(iSocket.id).emit('message', {
-            message: newMessage,
-            user_id: writer.user_id,
-            user_nickname: writer.nickname,
-          });
-        }
-      }
-    }
+    // for (const i of inners) {
+    //   const hasMatchingUser = listOfWhoBlockedMe.some((blockedUser) => blockedUser.userId === i.userId);
+    //   if (hasMatchingUser) {
+    //     continue;
+    //   } else {
+    //     const iSocket = this.userIdToSocket(i.userId);
+    //     if (iSocket) {
+    //       const writerToken: any = client.handshake.query.token;
+    //       const writerDecoded = await this.authService.verifyTokenSocket(writerToken);
+    //       const writer = await this.userService.getProfileByUserId(writerDecoded.id);
+    //       this.server.to(iSocket.id).emit('message', {
+    //         message: newMessage,
+    //         user_id: writer.user_id,
+    //         user_nickname: writer.nickname,
+    //       });
+    //     }
+    //   }
+    // }
+    
     //현재 user를 block한 사람들에게는 메세지가 가지 않도록
-    // this.server.to(channel.channel_name).fetchSockets()
-    //   .then((sockets) => {
-    //     sockets.forEach(async (socket) => {
-    //       let innerToken:any = client.handshake.query.token;
-    //       let innerDecoded = await this.authService.verifyToken(innerToken);
-    //       let inner = await this.userService.getProfileByUserId(innerDecoded.id);
+    this.server.to(channel.channel_name).fetchSockets()
+      .then((innerSockets) => {
+        innerSockets.forEach(async (innerSocket) => {
+          
+          let innerToken: any = innerSocket.handshake.query.token;
+          let innerDecoded = await this.authService.verifyToken(innerToken);
+          let inner = await this.userService.getProfileByUserId(innerDecoded.id);
 
-    //       if (!listOfWhoBlockedMe.includes({userId: inner.user_id})) {
-    //         socket.emit("message", {message: newMessage, user_id: inner.user_id, user_nickname: inner.nickname});
-    //       }
-    //     })
-    //   });
+          for (let l of listOfWhoBlockedMe) {
+            if (inner.user_id === l.userId) {
+              console.log('userIdWhoBlockeMe: ', inner.user_id);
+              continue;
+            }
+            else
+              innerSocket.emit("message", {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
+          }
+        })
+      });
 
     //채널 전체에 메세지 발송
     //this.server.to(channel.channel_name).emit('message', {message: newMessage, user_id: user.user_id, user_nickname: user.nickname});
