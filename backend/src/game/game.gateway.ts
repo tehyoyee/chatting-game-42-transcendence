@@ -26,7 +26,7 @@ export class GameGateway
   private readonly MAP_Y = 1300;
   private readonly SPEED = 20;
   private readonly paddleSpeed = 25;
-  private readonly PADDLE_SIZE = 150;
+  private readonly PADDLE_SIZE = 100;
   private readonly paddleGap = 20;
   private readonly DELAY = 22;
   private readonly MAXPOINT = 5;
@@ -348,8 +348,8 @@ export class GameGateway
       const user2paddleDir = this.userKeyMap.get(user2.user_id);
 
 			if (gameMode === 'ADVANCED') {
-				ball.dx += (this.SPEED * (0.5 + (speedPlus / 1000)));
-				ball.dy += (this.SPEED * (0.5 + ((speedPlus++) / 1000)));
+				ball.dx += (this.SPEED + (speedPlus / 1000));
+				ball.dy += (this.SPEED + ((speedPlus++) / 1000));
 			}
       if (user1paddleDir === KeyStatus.UP) {
         if (paddle1.y - this.paddleSpeed >= 0) {
