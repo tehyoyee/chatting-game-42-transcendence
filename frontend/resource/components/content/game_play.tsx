@@ -51,6 +51,7 @@ export default function GamePlay() {
   let Pong: GameType;
 
   useEffect(() => {
+		console.log('game started');
     setPlayerState(EPlayerState.GAME_PLAYING);
     const canvas = canvasRef.current as HTMLCanvasElement;
 
@@ -175,9 +176,9 @@ export default function GamePlay() {
 
       listen: function () {
         document.addEventListener("keydown", function (key) {
-          if (key.code === "KeyW") Sock.gameSocket?.emit("keyW", "DOWN");
+          if (key.code === "KeyW" || key.code === "ArrowUp") Sock.gameSocket?.emit("keyW", "DOWN");
 
-          if (key.code === "KeyS") Sock.gameSocket?.emit("keyS", "DOWN");
+          if (key.code === "KeyS" || key.code === "ArrowDown") Sock.gameSocket?.emit("keyS", "DOWN");
         });
 
         document.addEventListener("keyup", function (key) {
@@ -188,7 +189,7 @@ export default function GamePlay() {
     };
     Pong = Object.assign({}, Game);
     Pong.initialize();
-		let timeoutId: ReturnType<typeof setTimeout>| null = null;
+		let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     Sock.gameSocket?.on("gamingInfo", (gamingInfo: TGamingInfo) => {
       Pong.draw(gamingInfo);
@@ -196,11 +197,16 @@ export default function GamePlay() {
     Sock.gameSocket?.on("endGame", (endGameInfo: TEndGameInfo) => {
       Pong.drawEndGame(endGameInfo);
       timeoutId = setTimeout(() => {
+				console.log("game ended");
         router.push("/game");
       }, 3000);
     });
 		return () => {
+			Sock.gameSocket?.off("gamingInfo");
+			Sock.gameSocket?.off("endGame");
+			console.log('game closed');
 			if (timeoutId == null) return;
+			console.log('clearTimeout: ', timeoutId);
 			clearTimeout(timeoutId);
 		};
   }, []);

@@ -44,7 +44,7 @@ export default function ChatList() {
 		const intervalId = setInterval(() => {
 			updateProt();
 			updatePub();
-		}, 2000);
+		}, 2500);
 		return () => {
 			clearInterval(intervalId);
 		}
@@ -76,6 +76,9 @@ export default function ChatList() {
 			setPlayerData(msg);
 			socketOff();
 		});
+		return () => {
+			socketOff();
+		};
 	}, [chatSocket])
 
 	function joinChat(info: IChatRoom) {

@@ -38,6 +38,10 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 				setPlayerData(data);
 			});
 			chatSocket.on('creation-fail', (data) => {alert(`생성 실패: ${JSON.stringify(data)}`);});
+		return () => {
+			chatSocket.off('creation-success');
+			chatSocket.off('creation-fail');
+		};
 	}, [chatSocket]);
 
 	function handleTypeChange(e: any) {

@@ -14,6 +14,34 @@ import usePlayerContext, { EPlayerState, TPlayerContext } from '@/components/con
 import UserList from '@/components/structure/userList';
 import useAuthContext from '@/components/user/auth';
 
+enum EUserEventType {
+	KICK = 1,
+	BAN,
+	MUTE,
+	UNMUTE,
+	ADMIN,
+	JOIN,
+	CLOSE,
+	LEAVE,
+};
+
+const userEventTypeMap = {
+	kick: EUserEventType.KICK,
+	ban: EUserEventType.BAN,
+	mute: EUserEventType.MUTE,
+	unmute: EUserEventType.UNMUTE,
+	admin: EUserEventType.ADMIN,
+	join: EUserEventType.JOIN,
+	close: EUserEventType.CLOSE,
+	leave: EUserEventType.LEAVE,
+};
+
+type TUserEvent = {
+	event_type: string,
+	user_id: number,
+	user_nickname: string,
+};
+
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`
 const channelUrl = `${serverUrl}/chat/channel`;
 const chatInfoReqUrl = `${serverUrl}/chat/users-in-channel`;
@@ -34,12 +62,14 @@ export default function ChatMenu() {
 	const { user: userInfo } = useAuthContext();
 	const { chatSocket, gameSocket } = useSocketContext();
 	const chatContext = useChatContext();
+	const playerContext = usePlayerContext();
+
 	const { user, setUser, joined, setJoined } = chatContext;
 	const [userList, updateUserList] = useFetch<IChatMate[]>(`${chatInfoReqUrl}/${userInfo.id}/${user.channel_id}`, [], fetcher);
+
 	const [controlModal, setControlModal] = useState<boolean>(false);
-	const playerContext = usePlayerContext();
 	const [isDm, setIsDm] = useState<boolean>(false);
-    const [channelName, setChannelName] = useState('');
+  const [channelName, setChannelName] = useState('');
 
 	useEffect(() => {
 		if (!chatSocket) return;
@@ -50,12 +80,15 @@ export default function ChatMenu() {
               method: "GET",
               credentials: "include",
             })
-              .then((res) => res.json())
+              .then((res) => {
+								if (!res.ok) throw new Error(`invalid response: ${res.status}`);
+								return res.json()
+							})
               .then((data) => {
                 setChannelName(data.channel_name);
               })
               .catch((err) => {
-                  console.log(`${channelUrl}: fetch failed: ${err}`);
+                  console.log(`${channelUrl}/${user.channel_id}: fetch failed: ${err}`);
               });
           };
       getChannelName();
@@ -66,6 +99,7 @@ export default function ChatMenu() {
 	}, [chatSocket, user]);
 
 	useEffect(() => {
+		console.log(`chat joined: ${user.channel_id}`);
 		if (!chatSocket || !gameSocket) return;
 		chatSocket.on('refreshStatus', () => {
 			updateUserList();
@@ -167,12 +201,7 @@ function socketOff(chatSocket: Socket) {
 	chatSocket.off('close-success')
 	chatSocket.off('got-kicked');
 	chatSocket.off('got-banned');
-	chatSocket.off('kick');
-	chatSocket.off('ban');
-	chatSocket.off('mute');
-	chatSocket.off('leave');
-	chatSocket.off('join');
-	chatSocket.off('admin');
+	chatSocket.off('user-event');
 }
 
 function socketInit(
@@ -253,11 +282,11 @@ function socketInit(
 	});
 
 	chatSocket.on('close-fail', (msg) => {
-		//console.log(`close-fail error: ${msg}`)
+		console.log(`close-fail error: ${msg}`)
 	})
 
 	chatSocket.on('close-success', (msg) => {
-		//console.log(`close-success: ${msg}`)
+		console.log(`close-success: ${msg}`)
 		close();
 		socketOff(chatSocket);
 	});
@@ -283,35 +312,26 @@ function socketInit(
 	});
 	*/
 
-	chatSocket.on('admin', () => {
+	chatSocket.on('user-event', (msg: TUserEvent) => {
 		//console.log("new admin");
-		updateUserList();
-	});
-
-	chatSocket.on('kick', () => {
-		//console.log("an user got kicked");
-		updateUserList();
-	});
-
-	chatSocket.on('ban', () => {
-		//console.log("an user got banned");
-		updateUserList();
-	});
-
-	chatSocket.on('mute', () => {
-		//console.log("an user got muted");
-		updateUserList();
-	});
-
-	chatSocket.on('leave', (msg) => {
-		//console.log("an user exited");
-		//console.log(`exit: ${JSON.stringify(msg)}`)
-		updateUserList();
-	});
-
-	chatSocket.on('join', (msg) => {
-		//console.log("new user joined");
-		//console.log(`join: ${JSON.stringify(msg)}`)
+		switch (userEventTypeMap[msg.user_nickname as keyof typeof userEventTypeMap]) {
+			case EUserEventType.KICK:
+				break;
+			case EUserEventType.BAN:
+				break;
+			case EUserEventType.MUTE:
+				break;
+			case EUserEventType.UNMUTE:
+				break;
+			case EUserEventType.ADMIN:
+				break;
+			case EUserEventType.JOIN:
+				break;
+			case EUserEventType.CLOSE:
+				break;
+			case EUserEventType.LEAVE:
+				break;
+		};
 		updateUserList();
 	});
 }

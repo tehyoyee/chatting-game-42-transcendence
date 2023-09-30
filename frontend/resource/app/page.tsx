@@ -9,7 +9,7 @@ export default function Page() {
   const { loggedIn, updated, updateLoginState } = useAuthContext();
   const router = useRouter();
 
-  console.log(`rendering loginpage: updated=${updated} loggedIn=${loggedIn}`);
+  console.log(`routed to root. updated=${updated} loggedIn=${loggedIn}`);
 // TODO: buggy
 	useEffect(() => {
 	(async() => {

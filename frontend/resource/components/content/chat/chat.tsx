@@ -11,8 +11,6 @@ export default function ChatLobby() {
 	const { chatSocket } = useSocketContext();
 	const { joined } = useChatContext();
 
-	chatSocket?.on('get-user-channel', () => {});
-
 	useEffect(() => {
 		if (!chatSocket) {
 			// TODO: check it works?

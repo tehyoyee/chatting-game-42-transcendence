@@ -69,10 +69,16 @@ function ChatBox() {
 		chatSocket.off('messages');
 		chatSocket.on('messages', (data: TPrevMsg[]) => {
 			//console.log('messages: ', data);
+			setChatLog([]);
 			data.map(msg => {
 				addMsg(`${msg.writerNickname}: ${msg.content}`)
 			});
 		})
+		return () => {
+			chatSocket.off('got-mutted');
+			chatSocket.off('message');
+			chatSocket.off('messages');
+		}
 	}, [chatSocket]);
 
 	useEffect(() => {

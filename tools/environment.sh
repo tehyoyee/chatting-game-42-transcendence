@@ -19,7 +19,7 @@ RES="n"
 if [ $RET -eq 0 ]
 then
 	source .env
-	printf "${COLOR_RED}.env file exists.\n${COLOR_OFF}current content\n"
+	printf "\n${COLOR_RED}.env file exists.\n${COLOR_OFF}current content\n"
 	echo ""
 	printf "\"${COLOR_LGREEN}$SERVICE_ADDR${COLOR_OFF}\" - Address\n"
 	printf "\"${COLOR_LGREEN}$CLIENT_ID${COLOR_OFF}\" - Client ID\n"
