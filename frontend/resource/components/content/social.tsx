@@ -73,6 +73,7 @@ export default function Social() {
 		<div
 			style={{
 				display: "grid",
+				textAlign: "center",
 			}}>
 			<div>
 				<p style={{fontSize: '20px',}}>친구 목록</p>

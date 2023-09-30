@@ -111,14 +111,14 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
           marginBottom: "10px",
           margin: "0px 0px 0px 15px",
           border: "1px solid #252525",
-          borderRadius: "12px",
+          borderRadius: "15px",
           width: "14rem",
 					}}
 					type="text"
 					pattern="{2,16}"
 					required
 				/>
-				<fieldset onChange={handleTypeChange}>
+				<fieldset style={{borderRadius: "15px",}} onChange={handleTypeChange}>
 					<legend>채팅방 종류</legend>
 					<div>
 						<input type='radio' id='public' name='type' value={Type.Public} defaultChecked/>
