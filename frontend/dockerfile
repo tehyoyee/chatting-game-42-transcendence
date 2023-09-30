@@ -12,10 +12,7 @@ RUN mkdir /usr/frontend/node_modules/
 
 WORKDIR /usr/frontend/
 
-COPY ./package*.json ./
-COPY ./tsconfig.json ./
-COPY ./next.config.js ./
-COPY ./*config* ./
+COPY ./config/* ./
 COPY ./.env_temp ./
 
 RUN npm install
