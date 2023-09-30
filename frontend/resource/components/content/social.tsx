@@ -18,6 +18,9 @@ const friendFetcher = async (path: string) => {
 	.then(res => {
 			if (!res.ok) throw new Error(`invalid response: ${res.status}`);
 			return res.json();
+	})
+	.catch(err => {
+			console.log(`${path}: fetch error: ${err}`);
 	});
 };
 
@@ -29,6 +32,9 @@ const blockFetcher = (path: string) => {
 	.then(res => {
 			if (!res.ok) throw new Error(`invalid response: ${res.status}`);
 			return res.json();
+	})
+	.catch(err => {
+			console.log(`${path}: fetch error: ${err}`);
 	});
 };
 
@@ -65,8 +71,8 @@ export default function Social() {
 	}, []);
 
 	useEffect(() => {
-		console.log('blocksList: ', blocksList);
-		console.log('friendList: ', friendList);
+		//console.log('blocksList: ', blocksList);
+		//console.log('friendList: ', friendList);
 	}, [blocksList, friendList]);
 
   return (
@@ -75,11 +81,11 @@ export default function Social() {
 				display: "flex",
 				textAlign: "center",
 			}}>
-			<div style={{margin: "0px 0px 0px 60px",}}>
+			<div style={{margin: "0px 100px 0px 100px",}}>
 				<p style={{fontSize: '20px'}}>친구 목록</p>
 				<UserList userList={friendList} updateUserList={updateFriendList}></UserList>
 			</div>
-			<div style={{margin: "0px 0px 0px 210px", }}>
+			<div style={{margin: "0px 100px 0px 100px", }}>
 				<p style={{fontSize: '20px',}}>차단 목록</p>
 				<UserList userList={blocksList} updateUserList={updateBlocksList}></UserList>
 			</div>

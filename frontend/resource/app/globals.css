@@ -45,7 +45,7 @@ body {
 
 .contentBox {
   display: flex;
-  min-height: 100vh;
+  min-height: 80vh;
   width: auto;
   background-color: rgb(255, 255, 255);
   justify-content: center;

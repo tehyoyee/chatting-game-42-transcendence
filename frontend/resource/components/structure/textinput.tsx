@@ -41,7 +41,7 @@ export default function TextInputForm({
         id={`${id}`}
         pattern={pattern}
         onInvalid={() => {
-          console.log("invalid");
+          //console.log("invalid");
         }}
         required
       />

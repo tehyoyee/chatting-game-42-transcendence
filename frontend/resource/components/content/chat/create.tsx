@@ -23,7 +23,6 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 	const { user, setUser, setJoined } = useChatContext();
 	const [ chatType, setChatType ] = useState<Type>(Type.Public);
 	const { chatSocket } = useSocketContext();
-	const { setPlayerData } = usePlayerContext();
 
 	// NOTE: is it necessary to check socket established?
 	useEffect(() => {
@@ -31,13 +30,16 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 			chatSocket.off('creation-success');
 			chatSocket.off('creation-fail');
 			chatSocket.on('creation-success', (data: IChatUser) => {
-				console.log(`생성 성공: ${JSON.stringify(data)}`)
+				//console.log(`생성 성공: ${JSON.stringify(data)}`)
 				onClose();
 				setUser(data);
 				setJoined(true);
-				setPlayerData(data);
 			});
 			chatSocket.on('creation-fail', (data) => {alert(`생성 실패: ${JSON.stringify(data)}`);});
+		return () => {
+			chatSocket.off('creation-success');
+			chatSocket.off('creation-fail');
+		};
 	}, [chatSocket]);
 
 	function handleTypeChange(e: any) {
@@ -69,7 +71,7 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 
 		switch (chatType) {
 			case Type.Public:
-				console.log(TypeToString[chatType]);
+				//console.log(TypeToString[chatType]);
 				chatSocket.emit(evt_create_normal, {
 					channelName: name,
 					channelType: TypeToString[chatType],
@@ -91,7 +93,7 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 				});
 				break;
 		}
-		console.log(`${chatType}: chat creation request`);
+		//console.log(`${chatType}: chat creation request`);
 		if (!chatSocket) return;
 //		chatSocket.emit(evt_create_normal, formData);
 	}

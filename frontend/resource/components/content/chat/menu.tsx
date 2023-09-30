@@ -14,11 +14,52 @@ import usePlayerContext, { EPlayerState, TPlayerContext } from '@/components/con
 import UserList from '@/components/structure/userList';
 import useAuthContext from '@/components/user/auth';
 
+enum EUserEventType {
+	KICK = 1,
+	BAN,
+	MUTE,
+	UNMUTE,
+	ADMIN,
+	JOIN,
+	CLOSE,
+	LEAVE,
+};
+
+const userEventTypeMap = {
+	kick: EUserEventType.KICK,
+	ban: EUserEventType.BAN,
+	mute: EUserEventType.MUTE,
+	unmute: EUserEventType.UNMUTE,
+	admin: EUserEventType.ADMIN,
+	join: EUserEventType.JOIN,
+	close: EUserEventType.CLOSE,
+	leave: EUserEventType.LEAVE,
+};
+
+type TUserEvent = {
+	event_type: string,
+	user_id: number,
+	user_nickname: string,
+};
+
+enum EChannelType {
+	PUBLIC = "public",
+	PROTECTED = "protected",
+	PRIVATE = "private",
+	DM = "dm",
+}
+
+interface IChannelInfo {
+	channel_id: number,
+	channel_name: string,
+	channel_type: EChannelType,
+}
+
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`
 const channelUrl = `${serverUrl}/chat/channel`;
 const chatInfoReqUrl = `${serverUrl}/chat/users-in-channel`;
 
-const fetcher = async (path: string): Promise<IChatMate[]> => {
+const userListFetcher = async (path: string): Promise<IChatMate[]> => {
 	const res = await fetch(path, {
 		method: 'GET',
 		credentials: 'include',
@@ -34,38 +75,44 @@ export default function ChatMenu() {
 	const { user: userInfo } = useAuthContext();
 	const { chatSocket, gameSocket } = useSocketContext();
 	const chatContext = useChatContext();
-	const { user, setUser, joined, setJoined } = chatContext;
-	const [userList, updateUserList] = useFetch<IChatMate[]>(`${chatInfoReqUrl}/${userInfo.id}/${user.channel_id}`, [], fetcher);
-	const [controlModal, setControlModal] = useState<boolean>(false);
 	const playerContext = usePlayerContext();
+
+	const { user, setUser, joined, setJoined } = chatContext;
+	const [ userList, updateUserList ] = useFetch<IChatMate[]>(`${chatInfoReqUrl}/${userInfo.id}/${user.channel_id}`, [], userListFetcher);
+	const [ channelInfo, updateChannelInfo ] = useFetch<IChannelInfo>(`${channelUrl}/${user.channel_id}`,
+		{
+			channel_id: -1,
+			channel_name: '',
+			channel_type: EChannelType.PUBLIC,
+		});
+
+	const [controlModal, setControlModal] = useState<boolean>(false);
 	const [isDm, setIsDm] = useState<boolean>(false);
-    const [channelName, setChannelName] = useState('');
+  const [channelName, setChannelName] = useState('');
 
 	useEffect(() => {
 		if (!chatSocket) return;
 		socketInit(chatSocket, chatContext, playerContext, updateUserList, setIsDm);
-
-        const getChannelName = async () => {
-            await fetch(`${channelUrl}/${user.channel_id}`, {
-              method: "GET",
-              credentials: "include",
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                setChannelName(data.channel_name);
-              })
-              .catch((err) => {
-                  console.log(`${channelUrl}: fetch failed: ${err}`);
-              });
-          };
-      getChannelName();
-
 		return () => {
 			socketOff(chatSocket);
+			setJoined(false);
+			setUser({
+				...user,
+				channel_id: -1,
+			});
 		};
-	}, [chatSocket, user]);
+	}, [chatSocket]);
 
 	useEffect(() => {
+		updateChannelInfo();
+	}, [user]);
+
+	useEffect(() => {
+		setChannelName(isDm ? 'DM' : channelInfo.channel_name);
+	}, [channelInfo]);
+
+	useEffect(() => {
+		console.log(`chat joined: ${user.channel_id}`);
 		if (!chatSocket || !gameSocket) return;
 		chatSocket.on('refreshStatus', () => {
 			updateUserList();
@@ -84,11 +131,9 @@ export default function ChatMenu() {
 			className={`${styles.chatList} full-background-color overflow-y-scroll overflow-x-hidden"`}>
             <div style={{fontSize: '20px',}}>{channelName}</div>
 			<ul>
-				{!isDm &&
-					<div>
-						<UserList userList={userList} updateUserList={updateUserList}></UserList>
-					</div>
-				}
+				<div>
+					<UserList userList={userList} updateUserList={updateUserList}></UserList>
+				</div>
 				{
 					(user.user_type === EChatUserType.OWNER || user.user_type === EChatUserType.ADMIN) &&
 					<li>
@@ -149,12 +194,12 @@ export default function ChatMenu() {
 
 function exitChat(user: IChatUser, socket: Socket) {
 	if (!confirm("채널에서 탈퇴하시겠습니까?")) return;
-	console.log('exitChat request');
+	//console.log('exitChat request');
 	socket.emit('leave-channel', user.channel_id);
 }
 
 function closeChat(user: IChatUser, socket: Socket) {
-	console.log('closeChat request');
+	//console.log('closeChat request');
 	socket.emit('close-channel-window', user.channel_id);
 }
 
@@ -167,12 +212,7 @@ function socketOff(chatSocket: Socket) {
 	chatSocket.off('close-success')
 	chatSocket.off('got-kicked');
 	chatSocket.off('got-banned');
-	chatSocket.off('kick');
-	chatSocket.off('ban');
-	chatSocket.off('mute');
-	chatSocket.off('leave');
-	chatSocket.off('join');
-	chatSocket.off('admin');
+	chatSocket.off('user-event');
 }
 
 function socketInit(
@@ -183,7 +223,7 @@ function socketInit(
 	setIsDm: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
 	const { user, setUser, joined, setJoined } = chatContext;
-	const { setPlayerState, setPlayerData } = playerContext;
+	const { setPlayerState } = playerContext;
 
 	function close() {
 		setJoined(false);
@@ -191,62 +231,35 @@ function socketInit(
 			...user,
 			channel_id: -1,
 		});
-		setPlayerData(null);
 	}
 
 	socketOff(chatSocket);
 
 	chatSocket.on('enter-dm-success', 
 		(data: IChatUser) => {
-			chatSocket.off('close-fail');
-			chatSocket.off('close-success');
-			chatSocket.on('close-fail', (msg) => {
-				alert('오류: DM을 보낼 수 없습니다.');
-				setUser(user);
-				console.log(`close-fail error: ${msg}`)
-				chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
-
-				chatSocket.on('close-success', (msg) => {
-					console.log(`close-success: ${msg}`)
-					close();
-					socketOff(chatSocket);
-				});
-			})
-			chatSocket.on('close-success', (msg) => {
-				console.log(`close-success: ${msg}`)
-				setUser(data);
-				setPlayerData(data);
-				setIsDm(true);
-				chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
-
-				chatSocket.on('close-success', (msg) => {
-					console.log(`close-success: ${msg}`)
-					close();
-					socketOff(chatSocket);
-				});
-			});
-			chatSocket.emit('close-channel-window', user.channel_id);
+			setUser(data);
+			setIsDm(true);
 			console.log('dm-enter-success: ', data);
 	});
-	chatSocket.off('enter-dm-fail', () => {
-		alert('오류: DM을 보낼 수 없습니다.');
-	});
-
 
 	chatSocket.on('enter-dm-fail', (msg) => {
-		console.log(`enter-dm fail: ${msg}`); 
+		//console.log(`enter-dm fail: ${msg}`); 
 		alert('오류: DM을 보낼 수 없습니다.');
 	});
 
-	chatSocket.on('leave-fail', (msg) => {console.log(`leave-fail error: ${msg}`)})
+	chatSocket.on('leave-fail', (msg) => {
+		//console.log(`leave-fail error: ${msg}`)
+	})
 
 	chatSocket.on('leave-success', (msg) => {
-		console.log(`leave-success: ${msg}`)
+		//console.log(`leave-success: ${msg}`)
 		close();
 		socketOff(chatSocket);
 	});
 
-	chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
+	chatSocket.on('close-fail', (msg) => {
+		console.log(`close-fail error: ${msg}`)
+	})
 
 	chatSocket.on('close-success', (msg) => {
 		console.log(`close-success: ${msg}`)
@@ -255,14 +268,14 @@ function socketInit(
 	});
 
 	chatSocket.on('got-kicked', (msg) => {
-		console.log(`got-kicked: ${msg}`)
+		//console.log(`got-kicked: ${msg}`)
 		close();
 		alert('채널에서 퇴장당했습니다.');
 		socketOff(chatSocket);
 	});
 
 	chatSocket.on('got-banned', (msg) => {
-		console.log(`got-banned: ${msg}`)
+		//console.log(`got-banned: ${msg}`)
 		close();
 		alert('채널에서 영구 퇴장당했습니다.');
 		socketOff(chatSocket);
@@ -271,39 +284,30 @@ function socketInit(
 	/*
 	chatSocket.off('got-mutted');
 	chatSocket.on('got-mutted', (msg) => {
-		console.log(`got-mutted: ${msg}`)
+		//console.log(`got-mutted: ${msg}`)
 	});
 	*/
 
-	chatSocket.on('admin', () => {
-		console.log("new admin");
-		updateUserList();
-	});
-
-	chatSocket.on('kick', () => {
-		console.log("an user got kicked");
-		updateUserList();
-	});
-
-	chatSocket.on('ban', () => {
-		console.log("an user got banned");
-		updateUserList();
-	});
-
-	chatSocket.on('mute', () => {
-		console.log("an user got muted");
-		updateUserList();
-	});
-
-	chatSocket.on('leave', (msg) => {
-		console.log("an user exited");
-		console.log(`exit: ${JSON.stringify(msg)}`)
-		updateUserList();
-	});
-
-	chatSocket.on('join', (msg) => {
-		console.log("new user joined");
-		console.log(`join: ${JSON.stringify(msg)}`)
+	chatSocket.on('user-event', (msg: TUserEvent) => {
+		//console.log("new admin");
+		switch (userEventTypeMap[msg.user_nickname as keyof typeof userEventTypeMap]) {
+			case EUserEventType.KICK:
+				break;
+			case EUserEventType.BAN:
+				break;
+			case EUserEventType.MUTE:
+				break;
+			case EUserEventType.UNMUTE:
+				break;
+			case EUserEventType.ADMIN:
+				break;
+			case EUserEventType.JOIN:
+				break;
+			case EUserEventType.CLOSE:
+				break;
+			case EUserEventType.LEAVE:
+				break;
+		};
 		updateUserList();
 	});
 }

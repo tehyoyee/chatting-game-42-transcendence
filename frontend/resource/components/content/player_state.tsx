@@ -18,8 +18,6 @@ export enum EPlayerState {
 export type TPlayerContext = {
 	playerState: EPlayerState,
 	setPlayerState: React.Dispatch<React.SetStateAction<EPlayerState>>,
-	playerData: IChatUser,
-	setPlayerData: React.Dispatch<React.SetStateAction<any>>,
 };
 
 const PlayerContext = createContext<TPlayerContext | null>(null);
@@ -34,13 +32,12 @@ export default function usePlayerContext() {
 
 export function PlayerContextProvider({ children }: { children: React.ReactNode }) {
 	const [state, setState] = useState<EPlayerState>(EPlayerState.PROFILE);
-	const [data, setData] = useState<IChatUser>({user_type: EChatUserType.MEMBER, channel_id: -1});
 	const [prevState, setPrevState] = useState<EPlayerState>(state);
 	const { chatSocket, gameSocket } = useSocketContext();
 	const { updateLoginState } = useAuthContext();
 
 	useEffect(() => {
-		console.log(`playerState [${prevState} -> ${state}], playerData=${JSON.stringify(data)}`);
+		console.log(`playerState [${prevState} -> ${state}]`);
 
 		if (!gameSocket || !chatSocket) return;
 
@@ -48,17 +45,17 @@ export function PlayerContextProvider({ children }: { children: React.ReactNode 
 		switch (prevState) {
 			case EPlayerState.GAME_PLAYING:
 				gameSocket.emit('exitGame',);
-				console.log('exitGame');
+				//console.log('exitGame');
 				break;
 			case EPlayerState.GAME_MATCHING:
 				if (state === EPlayerState.GAME) break;
 				gameSocket.emit('exitQueue',);
-				console.log('exitQueue');
+				//console.log('exitQueue');
 				break;
 			case EPlayerState.CHAT_JOINING:
 				if (state === EPlayerState.CHAT) break;
-				chatSocket.emit('close-channel-window', data.channel_id);
-				console.log('close-channel-window: ', data);
+				//chatSocket.emit('close-channel-window', data.channel_id);
+				//console.log('close-channel-window: ', data);
 				break;
 			default:
 				break;
@@ -70,8 +67,6 @@ export function PlayerContextProvider({ children }: { children: React.ReactNode 
 		<PlayerContext.Provider value={{
 			playerState: state, 
 			setPlayerState: setState, 
-			playerData: data, 
-			setPlayerData: setData,
 		}}>
 			{ children }
 		</PlayerContext.Provider>

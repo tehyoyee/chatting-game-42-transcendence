@@ -16,7 +16,7 @@ export function useFetch<T>(path: string, init: T, fetcher?: TFetcher<T>): [T, F
 				credentials: 'include',
 			})
 			.then(res => {
-				if (!res.ok) throw new Error("invalid response");
+				if (!res.ok) throw new Error(`invalid response: ${res.status}`);
 				return res.json()
 			})
 			.then(data => {setItem(data)})

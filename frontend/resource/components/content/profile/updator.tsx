@@ -70,7 +70,7 @@ export function TfaUpdator({ uid }: { uid: number }) {
   const handleToggle = async () => {
     const checkBox = document.querySelector("#tfaCheckbox") as HTMLInputElement;
     const checkedTo: boolean = checkBox.checked;
-    console.log(`checked=${checkedTo}`);
+    //console.log(`checked=${checkedTo}`);
     if (!confirm(`2차 인증을 ${checkedTo ? "활성화" : "비활성화"}합니다.`)) {
       setState(!checkedTo);
       checkBox.checked = !checkedTo;
@@ -85,7 +85,6 @@ export function TfaUpdator({ uid }: { uid: number }) {
         sessionStorage.setItem("tfa", checkedTo ? "true" : "false");
         setState(!!checkedTo);
         checkBox.checked = !!checkedTo;
-        console.log(`tfa updated result=${checkedTo}`);
       })
       .catch((err) => {
         console.log(`${tfaUpdateUrl}: fetch error: ${err}`);
@@ -127,7 +126,7 @@ export function NameUpdator({
     const field = document.querySelector("#inputField") as HTMLInputElement;
     const updateUrl = `${serverUrl}/updateName/${uid}/${field.value}`;
 
-    console.log(`field.value=${field.value}`);
+    //console.log(`field.value=${field.value}`);
     await fetch(updateUrl, {
       method: "PATCH",
       credentials: "include",
@@ -186,13 +185,13 @@ export function ImgUpdator({
 
   const handleFileChange = (targetFile: File) => {
 		const kbytes = 200;
-		console.log(`input=${JSON.stringify(targetFile)}`);
+		//console.log(`input=${JSON.stringify(targetFile)}`);
     if (targetFile) {
 			if ((targetFile.type != 'image/png' && targetFile.type != 'image/jpg') || targetFile.size > (kbytes * 1024)) {
 				alert(`파일의 확장자명은 .png, 크기는 ${kbytes}kB 이하여야 합니다.`);
 				return;
 			}
-			console.log(`avatar image type=${targetFile.type}, size=${targetFile.size}`);
+			//console.log(`avatar image type=${targetFile.type}, size=${targetFile.size}`);
 			setImageFile(targetFile);
     }
   };
@@ -213,7 +212,7 @@ export function ImgUpdator({
       });
       if (response.ok) {
         const result = await response.json();
-        console.log('성공:', result);
+        //console.log('성공:', result);
         setShowModal(false);
         setUpdate.update({});
       } else {

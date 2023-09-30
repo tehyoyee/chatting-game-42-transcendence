@@ -105,7 +105,7 @@ export default function Matching() {
   }, []);
 
   const exitQueueHandler = () => {
-    console.log("exitQueue handler worked!");
+    //console.log("exitQueue handler worked!");
     SocketContext.gameSocket?.emit("exitQueue");
   };
 
@@ -140,7 +140,7 @@ export default function Matching() {
 			leftUserId:  lui,
 			rightUserId: rui,
 		};
-		console.log('game started: ', userData);
+		//console.log('game started: ', userData);
 		setUserObj(userData);
 		setReady(true);
 	}, [searchParams]);
@@ -286,7 +286,7 @@ export default function Matching() {
 
 // 	useEffect(() => {
 // 		const mouseMoveHandler = (event: MouseEvent) => {
-// 			console.log(event.clientY);
+// 			//console.log(event.clientY);
 // 			setPlayerPongPosition(pixelsToScreenPosition(event.clientY));
 // 			Socket.emit('events', { event: "pongGamePlayerUpdate", data: {
 // 				x: pixelsToScreenPosition(event.clientY),

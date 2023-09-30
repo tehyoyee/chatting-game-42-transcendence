@@ -96,7 +96,7 @@ export default function Profile({
   }, [update]);
 
   useEffect(() => {
-    console.log(profile);
+    //console.log(profile);
   }, [profile]);
   //////////////////////////////
   const userProps = [

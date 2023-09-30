@@ -25,7 +25,7 @@ export default function Tfa({
 
   const checkAuthCode = useCallback(async () => {
 		const inputField = document.querySelector("input")?.value;
-		console.log(`checkAuthCode=${inputField}`)
+		//console.log(`checkAuthCode=${inputField}`)
 		if (!inputField) return;
 		const code = inputField;
     try {
@@ -51,7 +51,7 @@ export default function Tfa({
 			setMessage("인증 성공");
 			return res.json();
 		});
-		console.log(`res=${res.state}`);
+		//console.log(`res=${res.state}`);
 		if (res.state !== true) {
 				setMessage('인증 실패!');
 				await sleep(280);

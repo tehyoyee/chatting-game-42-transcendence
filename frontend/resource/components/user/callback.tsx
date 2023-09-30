@@ -49,7 +49,7 @@ export default function Callback() {
 				return res.json()
 			})
 			.then(res => {
-				console.log('res: ', res);
+				//console.log('res: ', res);
 				if (res.two_factor === true) {
 					setFirstLogin(res.firstLogin);
 					setLoginData(res);

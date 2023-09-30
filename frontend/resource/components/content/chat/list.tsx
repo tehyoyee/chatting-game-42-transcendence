@@ -34,7 +34,7 @@ export default function ChatList() {
 	const [pubChatList, updatePub] = useFetch<IChatRoom[]>(pubChatReqUrl, []);
 	const [protChatList, updateProt] = useFetch<IChatRoom[]>(protChatReqUrl, []);
   const list = protChatList.concat(pubChatList);
-	const {setPlayerData, setPlayerState} = usePlayerContext();
+	const {setPlayerState} = usePlayerContext();
 
 	useEffect(() => {
 		setPlayerState(EPlayerState.CHAT);
@@ -44,7 +44,7 @@ export default function ChatList() {
 		const intervalId = setInterval(() => {
 			updateProt();
 			updatePub();
-		}, 2000);
+		}, 2500);
 		return () => {
 			clearInterval(intervalId);
 		}
@@ -64,18 +64,20 @@ export default function ChatList() {
 		if (!chatSocket) return;
 		socketOff();
 		chatSocket.on('join-fail', (msg) => {
-			console.log(`join-fail: ${msg}`)
+			//console.log(`join-fail: ${msg}`)
 			setJoined(false)
 			alert(msg);
 		});
 		chatSocket.on('join-success', (msg) => {
-			console.log(`join-success: ${JSON.stringify(msg)}`); 
+			//console.log(`join-success: ${JSON.stringify(msg)}`); 
 			setJoined(true)
 			setUser(msg);
 			setPlayerState(EPlayerState.CHAT_JOINING);
-			setPlayerData(msg);
 			socketOff();
 		});
+		return () => {
+			socketOff();
+		};
 	}, [chatSocket])
 
 	function joinChat(info: IChatRoom) {
