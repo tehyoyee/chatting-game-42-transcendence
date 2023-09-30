@@ -28,7 +28,6 @@ export default function ChatControl({ userList }: { userList: IChatMate[] }) {
   const { user } = useChatContext();
   const { chatSocket } = useSocketContext();
 
-  useEffect(() => {}, []);
   return (
     <div style={{textAlign: 'center',}}>
       <div

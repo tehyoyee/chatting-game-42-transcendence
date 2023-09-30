@@ -53,10 +53,6 @@ function ChatBox() {
 	};
 
 	useEffect(() => {
-		setChatLog([]);
-	}, [user]);
-
-	useEffect(() => {
 		if (!chatSocket) return;
 		chatSocket.off('got-mutted');
 		chatSocket.on('got-mutted', (msg) => {
@@ -67,9 +63,10 @@ function ChatBox() {
 			addMsg(`${data.user_nickname}: ${data.message}`)
 		})
 		chatSocket.off('messages');
-		chatSocket.on('messages', (data: TPrevMsg[]) => {
-			//console.log('messages: ', data);
-			setChatLog([]);
+		chatSocket.on('messages', (data: TPrevMsg[], callback) => {
+			callback('messages received');
+			console.log('messages: ', data);
+			setChatLog(() => []);
 			data.map(msg => {
 				addMsg(`${msg.writerNickname}: ${msg.content}`)
 			});
@@ -79,7 +76,7 @@ function ChatBox() {
 			chatSocket.off('message');
 			chatSocket.off('messages');
 		}
-	}, [chatSocket]);
+	}, [user, chatSocket]);
 
 	useEffect(() => {
 		logRef.current && (logRef.current.scrollTop = logRef.current.scrollHeight);

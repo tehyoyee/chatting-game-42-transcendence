@@ -54,7 +54,6 @@ export function PlayerContextProvider({ children }: { children: React.ReactNode 
 				break;
 			case EPlayerState.CHAT_JOINING:
 				if (state === EPlayerState.CHAT) break;
-				//chatSocket.emit('close-channel-window', data.channel_id);
 				//console.log('close-channel-window: ', data);
 				break;
 			default:
