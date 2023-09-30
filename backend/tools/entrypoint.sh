@@ -12,4 +12,4 @@ cp ./config_temp/production.yml ./config/production.yml
 rc-status
 rc-service sshd start
 
-exec npm run start;
+exec npm run ${BACKEND_RUN};

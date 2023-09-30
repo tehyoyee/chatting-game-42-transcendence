@@ -4,6 +4,13 @@ COLOR_RED='\033[0;31m'        # Red
 COLOR_GREEN='\033[0;32m'        # Green
 COLOR_LGREEN='\033[1;32m'        # Light Green
 
+RUN_MODE='start'
+read -p "run as development mode (y/n) " DEV_RES
+if [ "$DEV_RES" = "y" ]
+then
+RUN_MODE='dev'
+fi
+
 ls .env &> /dev/null
 RET=$?
 RES="n"
@@ -60,6 +67,10 @@ CLIENT_ID='$CLIENT_ID'
 CLIENT_SECRET='$CLIENT_SECRET'
 REDIRECT_URI='http://$SERVICE_ADDR:3001/auth'
 AUTH_URL='$AUTH_URL'
+
+# RUN MODE
+FRONTEND_RUN='$RUN_MODE'
+BACKEND_RUN='$RUN_MODE'
 
 # POSTGRESQL
 POSTGRES_VERSION=15.4
