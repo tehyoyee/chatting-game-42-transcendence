@@ -85,10 +85,9 @@ export function TfaUpdator({ uid }: { uid: number }) {
         sessionStorage.setItem("tfa", checkedTo ? "true" : "false");
         setState(!!checkedTo);
         checkBox.checked = !!checkedTo;
-        //console.log(`tfa updated result=${checkedTo}`);
       })
       .catch((err) => {
-        //console.log(`${tfaUpdateUrl}: fetch error: ${err}`);
+        console.log(`${tfaUpdateUrl}: fetch error: ${err}`);
         // rerender?
       });
   };
@@ -138,7 +137,7 @@ export function NameUpdator({
         setUpdate.update({});
       })
       .catch((err) => {
-        //console.log(`${updateUrl}: fetch error: ${err}`);
+        console.log(`${updateUrl}: fetch error: ${err}`);
         alert("닉네임 변경에 실패했습니다.");
       });
   };

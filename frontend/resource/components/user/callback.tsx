@@ -64,7 +64,7 @@ export default function Callback() {
 				router.push('/');
 			})
       .catch(reason => {
-        //console.log(`${tokenUrl}: fetch failed: ${JSON.stringify(reason)}`);
+        console.log(`${tokenUrl}: fetch failed: ${JSON.stringify(reason)}`);
 				router.push('/');
       });
 //      await updateLoginState();

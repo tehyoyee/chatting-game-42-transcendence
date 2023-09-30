@@ -90,7 +90,7 @@ export default function Profile({
           setProfile(data);
         })
         .catch((err) => {
-          //console.log(`${profileUrl}: fetch failed: ${err}`);
+          console.log(`${profileUrl}: fetch failed: ${err}`);
         });
     })();
   }, [update]);
@@ -132,7 +132,7 @@ export default function Profile({
           setGameProfile(data);
         })
         .catch((err) => {
-          //console.log(`${profileUrl}: fetch failed: ${err}`);
+          console.log(`${profileUrl}: fetch failed: ${err}`);
         });
     })();
   }, [update]);
@@ -152,7 +152,7 @@ export default function Profile({
           setGameHistories(data);
         })
         .catch((err) => {
-          //console.log(`${profileUrl}: fetch failed: ${err}`);
+          console.log(`${profileUrl}: fetch failed: ${err}`);
         });
     })();
   }, []);
@@ -171,7 +171,7 @@ export default function Profile({
           setRanking(data);
         })
         .catch((err) => {
-          //console.log(`${profileUrl}: fetch failed: ${err}`);
+          console.log(`${profileUrl}: fetch failed: ${err}`);
         });
     })();
   }, []);

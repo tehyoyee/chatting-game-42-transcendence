@@ -99,7 +99,7 @@ export default function Matching() {
           setProfile(data);
         })
         .catch((err) => {
-          //console.log(`${profileUrl}: fetch failed: ${err}`);
+          console.log(`${profileUrl}: fetch failed: ${err}`);
         });
     })();
   }, []);

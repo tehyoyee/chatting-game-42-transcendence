@@ -18,6 +18,9 @@ const friendFetcher = async (path: string) => {
 	.then(res => {
 			if (!res.ok) throw new Error(`invalid response: ${res.status}`);
 			return res.json();
+	})
+	.catch(err => {
+			console.log(`${path}: fetch error: ${err}`);
 	});
 };
 
@@ -29,6 +32,9 @@ const blockFetcher = (path: string) => {
 	.then(res => {
 			if (!res.ok) throw new Error(`invalid response: ${res.status}`);
 			return res.json();
+	})
+	.catch(err => {
+			console.log(`${path}: fetch error: ${err}`);
 	});
 };
 

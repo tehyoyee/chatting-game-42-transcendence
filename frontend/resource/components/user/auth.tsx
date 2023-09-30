@@ -54,7 +54,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
     })
     .catch(reason => {
 			setLoggedIn(false);
-      //console.log(`${stateUrl}: fecth failed: ${reason}`);
+      console.log(`${stateUrl}: fecth failed: ${reason}`);
     });
 		return loggedInRet;
   }, []);
