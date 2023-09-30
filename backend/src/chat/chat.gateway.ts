@@ -393,7 +393,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
     //client.emit('get-users-channel', inners);
 
-    this.server.to(client.id).emit('messages', previousMessages);
+    let acked;
+    do {
+      acked = true;
+      
+      try {
+        client.timeout(100).emitWithAck('messages', previousMessages);
+      } catch (error) {
+        acked = false;
+      }     
+    } while (!acked);
     
     this.server
       .to(channel.channel_name)
