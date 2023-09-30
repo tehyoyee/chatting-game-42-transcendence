@@ -72,14 +72,14 @@ export default function Social() {
   return (
 		<div
 			style={{
-				display: "grid",
+				display: "flex",
 				textAlign: "center",
 			}}>
-			<div>
-				<p style={{fontSize: '20px',}}>친구 목록</p>
+			<div style={{margin: "0px 0px 0px 60px",}}>
+				<p style={{fontSize: '20px'}}>친구 목록</p>
 				<UserList userList={friendList} updateUserList={updateFriendList}></UserList>
 			</div>
-			<div>
+			<div style={{margin: "0px 0px 0px 210px", }}>
 				<p style={{fontSize: '20px',}}>차단 목록</p>
 				<UserList userList={blocksList} updateUserList={updateBlocksList}></UserList>
 			</div>
