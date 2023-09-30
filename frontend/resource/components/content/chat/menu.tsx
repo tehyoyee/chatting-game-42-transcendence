@@ -93,7 +93,6 @@ export default function ChatMenu() {
 	useEffect(() => {
 		if (!chatSocket) return;
 		socketInit(chatSocket, chatContext, playerContext, updateUserList, setIsDm);
-		updateChannelInfo();
 		return () => {
 			socketOff(chatSocket);
 			setJoined(false);
@@ -102,10 +101,14 @@ export default function ChatMenu() {
 				channel_id: -1,
 			});
 		};
-	}, [chatSocket, user]);
+	}, [chatSocket]);
 
 	useEffect(() => {
-		setChannelName(channelInfo.channel_name);
+		updateChannelInfo();
+	}, [user]);
+
+	useEffect(() => {
+		setChannelName(isDm ? 'DM' : channelInfo.channel_name);
 	}, [channelInfo]);
 
 	useEffect(() => {
@@ -128,11 +131,9 @@ export default function ChatMenu() {
 			className={`${styles.chatList} full-background-color overflow-y-scroll overflow-x-hidden"`}>
             <div style={{fontSize: '20px',}}>{channelName}</div>
 			<ul>
-				{!isDm &&
-					<div>
-						<UserList userList={userList} updateUserList={updateUserList}></UserList>
-					</div>
-				}
+				<div>
+					<UserList userList={userList} updateUserList={updateUserList}></UserList>
+				</div>
 				{
 					(user.user_type === EChatUserType.OWNER || user.user_type === EChatUserType.ADMIN) &&
 					<li>
@@ -236,43 +237,10 @@ function socketInit(
 
 	chatSocket.on('enter-dm-success', 
 		(data: IChatUser) => {
-			chatSocket.off('close-fail');
-			chatSocket.off('close-success');
-			chatSocket.on('close-fail', (msg) => {
-				alert('오류: DM을 보낼 수 없습니다.');
-				setUser(user);
-				//console.log(`close-fail error: ${msg}`)
-				chatSocket.on('close-fail', (msg) => {
-				//console.log(`close-fail error: ${msg}`)
-				})
-
-				chatSocket.on('close-success', (msg) => {
-					//console.log(`close-success: ${msg}`)
-					close();
-					socketOff(chatSocket);
-				});
-			})
-			chatSocket.on('close-success', (msg) => {
-				//console.log(`close-success: ${msg}`)
-				setUser(data);
-				setIsDm(true);
-				chatSocket.on('close-fail', (msg) => {
-				//console.log(`close-fail error: ${msg}`)
-			})
-
-				chatSocket.on('close-success', (msg) => {
-					//console.log(`close-success: ${msg}`)
-					close();
-					socketOff(chatSocket);
-				});
-			});
-			chatSocket.emit('close-channel-window', user.channel_id);
-			//console.log('dm-enter-success: ', data);
+			setUser(data);
+			setIsDm(true);
+			console.log('dm-enter-success: ', data);
 	});
-	chatSocket.off('enter-dm-fail', () => {
-		alert('오류: DM을 보낼 수 없습니다.');
-	});
-
 
 	chatSocket.on('enter-dm-fail', (msg) => {
 		//console.log(`enter-dm fail: ${msg}`); 

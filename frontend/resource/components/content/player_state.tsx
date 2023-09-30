@@ -32,13 +32,12 @@ export default function usePlayerContext() {
 
 export function PlayerContextProvider({ children }: { children: React.ReactNode }) {
 	const [state, setState] = useState<EPlayerState>(EPlayerState.PROFILE);
-	const [data, setData] = useState<IChatUser>({user_type: EChatUserType.MEMBER, channel_id: -1});
 	const [prevState, setPrevState] = useState<EPlayerState>(state);
 	const { chatSocket, gameSocket } = useSocketContext();
 	const { updateLoginState } = useAuthContext();
 
 	useEffect(() => {
-		console.log(`playerState [${prevState} -> ${state}], playerData=${JSON.stringify(data)}`);
+		console.log(`playerState [${prevState} -> ${state}]`);
 
 		if (!gameSocket || !chatSocket) return;
 
