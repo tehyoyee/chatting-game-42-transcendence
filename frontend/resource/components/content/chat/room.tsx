@@ -68,7 +68,7 @@ function ChatBox() {
 		})
 		chatSocket.off('messages');
 		chatSocket.on('messages', (data: TPrevMsg[]) => {
-			console.log('messages: ', data);
+			//console.log('messages: ', data);
 			data.map(msg => {
 				addMsg(`${msg.writerNickname}: ${msg.content}`)
 			});

@@ -149,12 +149,12 @@ export default function ChatMenu() {
 
 function exitChat(user: IChatUser, socket: Socket) {
 	if (!confirm("채널에서 탈퇴하시겠습니까?")) return;
-	console.log('exitChat request');
+	//console.log('exitChat request');
 	socket.emit('leave-channel', user.channel_id);
 }
 
 function closeChat(user: IChatUser, socket: Socket) {
-	console.log('closeChat request');
+	//console.log('closeChat request');
 	socket.emit('close-channel-window', user.channel_id);
 }
 
@@ -203,30 +203,34 @@ function socketInit(
 			chatSocket.on('close-fail', (msg) => {
 				alert('오류: DM을 보낼 수 없습니다.');
 				setUser(user);
-				console.log(`close-fail error: ${msg}`)
-				chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
+				//console.log(`close-fail error: ${msg}`)
+				chatSocket.on('close-fail', (msg) => {
+				//console.log(`close-fail error: ${msg}`)
+				})
 
 				chatSocket.on('close-success', (msg) => {
-					console.log(`close-success: ${msg}`)
+					//console.log(`close-success: ${msg}`)
 					close();
 					socketOff(chatSocket);
 				});
 			})
 			chatSocket.on('close-success', (msg) => {
-				console.log(`close-success: ${msg}`)
+				//console.log(`close-success: ${msg}`)
 				setUser(data);
 				setPlayerData(data);
 				setIsDm(true);
-				chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
+				chatSocket.on('close-fail', (msg) => {
+				//console.log(`close-fail error: ${msg}`)
+			})
 
 				chatSocket.on('close-success', (msg) => {
-					console.log(`close-success: ${msg}`)
+					//console.log(`close-success: ${msg}`)
 					close();
 					socketOff(chatSocket);
 				});
 			});
 			chatSocket.emit('close-channel-window', user.channel_id);
-			console.log('dm-enter-success: ', data);
+			//console.log('dm-enter-success: ', data);
 	});
 	chatSocket.off('enter-dm-fail', () => {
 		alert('오류: DM을 보낼 수 없습니다.');
@@ -234,35 +238,39 @@ function socketInit(
 
 
 	chatSocket.on('enter-dm-fail', (msg) => {
-		console.log(`enter-dm fail: ${msg}`); 
+		//console.log(`enter-dm fail: ${msg}`); 
 		alert('오류: DM을 보낼 수 없습니다.');
 	});
 
-	chatSocket.on('leave-fail', (msg) => {console.log(`leave-fail error: ${msg}`)})
+	chatSocket.on('leave-fail', (msg) => {
+		//console.log(`leave-fail error: ${msg}`)
+	})
 
 	chatSocket.on('leave-success', (msg) => {
-		console.log(`leave-success: ${msg}`)
+		//console.log(`leave-success: ${msg}`)
 		close();
 		socketOff(chatSocket);
 	});
 
-	chatSocket.on('close-fail', (msg) => {console.log(`close-fail error: ${msg}`)})
+	chatSocket.on('close-fail', (msg) => {
+		//console.log(`close-fail error: ${msg}`)
+	})
 
 	chatSocket.on('close-success', (msg) => {
-		console.log(`close-success: ${msg}`)
+		//console.log(`close-success: ${msg}`)
 		close();
 		socketOff(chatSocket);
 	});
 
 	chatSocket.on('got-kicked', (msg) => {
-		console.log(`got-kicked: ${msg}`)
+		//console.log(`got-kicked: ${msg}`)
 		close();
 		alert('채널에서 퇴장당했습니다.');
 		socketOff(chatSocket);
 	});
 
 	chatSocket.on('got-banned', (msg) => {
-		console.log(`got-banned: ${msg}`)
+		//console.log(`got-banned: ${msg}`)
 		close();
 		alert('채널에서 영구 퇴장당했습니다.');
 		socketOff(chatSocket);
@@ -271,39 +279,39 @@ function socketInit(
 	/*
 	chatSocket.off('got-mutted');
 	chatSocket.on('got-mutted', (msg) => {
-		console.log(`got-mutted: ${msg}`)
+		//console.log(`got-mutted: ${msg}`)
 	});
 	*/
 
 	chatSocket.on('admin', () => {
-		console.log("new admin");
+		//console.log("new admin");
 		updateUserList();
 	});
 
 	chatSocket.on('kick', () => {
-		console.log("an user got kicked");
+		//console.log("an user got kicked");
 		updateUserList();
 	});
 
 	chatSocket.on('ban', () => {
-		console.log("an user got banned");
+		//console.log("an user got banned");
 		updateUserList();
 	});
 
 	chatSocket.on('mute', () => {
-		console.log("an user got muted");
+		//console.log("an user got muted");
 		updateUserList();
 	});
 
 	chatSocket.on('leave', (msg) => {
-		console.log("an user exited");
-		console.log(`exit: ${JSON.stringify(msg)}`)
+		//console.log("an user exited");
+		//console.log(`exit: ${JSON.stringify(msg)}`)
 		updateUserList();
 	});
 
 	chatSocket.on('join', (msg) => {
-		console.log("new user joined");
-		console.log(`join: ${JSON.stringify(msg)}`)
+		//console.log("new user joined");
+		//console.log(`join: ${JSON.stringify(msg)}`)
 		updateUserList();
 	});
 }

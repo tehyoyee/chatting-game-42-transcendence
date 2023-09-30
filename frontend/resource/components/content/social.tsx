@@ -65,8 +65,8 @@ export default function Social() {
 	}, []);
 
 	useEffect(() => {
-		console.log('blocksList: ', blocksList);
-		console.log('friendList: ', friendList);
+		//console.log('blocksList: ', blocksList);
+		//console.log('friendList: ', friendList);
 	}, [blocksList, friendList]);
 
   return (

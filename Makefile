@@ -2,8 +2,8 @@ COMPOSE	:=	docker-compose
 UP_FLAGS:= --build
 
 all:
-	@$(MAKE) down &> /dev/null
 	@$(MAKE) check
+	@$(MAKE) down
 	@$(MAKE) up
 
 up:

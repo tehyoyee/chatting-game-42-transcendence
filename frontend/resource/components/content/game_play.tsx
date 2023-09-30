@@ -188,16 +188,21 @@ export default function GamePlay() {
     };
     Pong = Object.assign({}, Game);
     Pong.initialize();
+		let timeoutId: ReturnType<typeof setTimeout>| null = null;
 
     Sock.gameSocket?.on("gamingInfo", (gamingInfo: TGamingInfo) => {
       Pong.draw(gamingInfo);
     });
     Sock.gameSocket?.on("endGame", (endGameInfo: TEndGameInfo) => {
       Pong.drawEndGame(endGameInfo);
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         router.push("/game");
       }, 3000);
     });
+		return () => {
+			if (timeoutId == null) return;
+			clearTimeout(timeoutId);
+		};
   }, []);
   return <canvas ref={canvasRef} width="1800" height="1300"></canvas>;
 }

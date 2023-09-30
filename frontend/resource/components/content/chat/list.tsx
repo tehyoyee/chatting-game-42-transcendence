@@ -64,12 +64,12 @@ export default function ChatList() {
 		if (!chatSocket) return;
 		socketOff();
 		chatSocket.on('join-fail', (msg) => {
-			console.log(`join-fail: ${msg}`)
+			//console.log(`join-fail: ${msg}`)
 			setJoined(false)
 			alert(msg);
 		});
 		chatSocket.on('join-success', (msg) => {
-			console.log(`join-success: ${JSON.stringify(msg)}`); 
+			//console.log(`join-success: ${JSON.stringify(msg)}`); 
 			setJoined(true)
 			setUser(msg);
 			setPlayerState(EPlayerState.CHAT_JOINING);

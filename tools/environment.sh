@@ -10,14 +10,14 @@ RES="n"
 if [ $RET -eq 0 ]
 then
 	source .env
-	printf "${COLOR_RED}.env file exists.\n${COLOR_OFF}"
+	printf "${COLOR_RED}.env file exists.\n${COLOR_OFF}current content\n"
 	echo ""
 	printf "\"${COLOR_LGREEN}$SERVICE_ADDR${COLOR_OFF}\" - Address\n"
 	printf "\"${COLOR_LGREEN}$CLIENT_ID${COLOR_OFF}\" - Client ID\n"
 	printf "\"${COLOR_LGREEN}$CLIENT_SECRET${COLOR_OFF}\" - Client Secret\n"
 	printf "\"${COLOR_LGREEN}$AUTH_URL${COLOR_OFF}\" - Authentication URL\n"
 	echo ""
-	read -p "Do you want to generate new .env? (y/n) " RES
+	read -p "Do you want to remove .env and generate new .env? (y/n) " RES
 else
 	echo "'.env' doesn't exists."
 	echo ""
@@ -26,7 +26,7 @@ fi
 
 
 
-if [ "$RES" = "" ] || [ "$RES" = "y" ]
+if [ "$RES" = "y" ]
 then
 	echo "prepare address, client id, client secret, authentication URL." 
 	read -p "Address: " SERVICE_ADDR

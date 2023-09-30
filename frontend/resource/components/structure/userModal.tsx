@@ -93,12 +93,12 @@ const UserModal = ({
 
 	function handleEvent(evt: string, success: string, fail: string, content: any, handleSuccess: Function, handleFail: Function) {
 		chatSocket?.on(success, (data: IChatUser) => {
-			console.log(`dm success: ${data}`);
+			//console.log(`dm success: ${data}`);
 			offEvent([success, fail]);
 			handleSuccess(data);
 		});
 		chatSocket?.on(fail, (msg) => {
-			console.log(`${evt}: ${msg}`);
+			//console.log(`${evt}: ${msg}`);
 			handleFail(msg);
 			offEvent([success, fail]);
 		});
@@ -107,7 +107,7 @@ const UserModal = ({
 
 	function handleFriend() {
 		const url = `${relationUrl}/${targetUser.isFriend ? 'remove' : 'add'}/friend`;
-		console.log('url=', url, ',content=', JSON.stringify(relContent));
+		//console.log('url=', url, ',content=', JSON.stringify(relContent));
 		fetch(url, {
 			method: targetUser.isFriend ? "DELETE" : "POST",
 			credentials: "include",
@@ -123,11 +123,11 @@ const UserModal = ({
 				return res.json();
 		})
 		.then(data => {
-			console.log(data);
+			//console.log(data);
 			onClose();
 		})
 		.catch(err => {
-			console.log(`${url}: handleFriend error: ${err}`);
+			//console.log(`${url}: handleFriend error: ${err}`);
 			alert('요청에 실패했습니다.');
 			onClose();
 		});
@@ -135,7 +135,7 @@ const UserModal = ({
 
 	function handleBlock() {
 		const url = `${relationUrl}/${targetUser.isBlocked ? 'remove' : 'add'}/block`;
-		console.log('url=', url, ',content=', JSON.stringify(relContent));
+		//console.log('url=', url, ',content=', JSON.stringify(relContent));
 		fetch(url, {
 			method: targetUser.isBlocked ? "DELETE" : "POST",
 			credentials: "include",
@@ -152,7 +152,7 @@ const UserModal = ({
 			onClose();
 		})
 		.catch(err => {
-			console.log(`${url}: handleFriend error: ${err}`);
+			//console.log(`${url}: handleFriend error: ${err}`);
 			alert('요청에 실패했습니다.');
 			onClose();
 		});
@@ -164,7 +164,7 @@ const UserModal = ({
 	}
 
 	function handleDm() {
-		console.log('enter dm emitted');
+		//console.log('enter dm emitted');
 		chatSocket?.emit('enter-dm-channel', {receiverId: targetUser.userId});
 		onClose();
 		/*
@@ -177,29 +177,29 @@ const UserModal = ({
 				}
 				chatSocket.on('close-fail', (msg) => {
 					alert('오류: DM을 보낼 수 없습니다.');
-					console.log(`close-fail error: ${msg}`)
+					//console.log(`close-fail error: ${msg}`)
 				})
 				chatSocket.on('close-success', (msg) => {
-					console.log(`close-success: ${msg}`)
+					//console.log(`close-success: ${msg}`)
 					setUser(data);
 					chatSocket.off('close-success');
 					chatSocket.off('close-fail');
 				});
 				chatSocket.emit('close-channel-window', chatUser.channel_id);
-				console.log('dm: ', data);
+				//console.log('dm: ', data);
 			},
-			(msg: any) => {console.log(`enter-dm fail: ${msg}`); alert('오류: DM을 보낼 수 없습니다.');},
+			(msg: any) => {//console.log(`enter-dm fail: ${msg}`); alert('오류: DM을 보낼 수 없습니다.');},
 		)
 		*/
 	}
 
 	function handleGameNormal() {
-		console.log('handleGameNormal emitted');
+		//console.log('handleGameNormal emitted');
 		gameSocket?.emit('inviteGame', {targetUserId: targetUser.userId , gameMode: "NORMAL" ,});
 	}
 
 	function handleGameFast() {
-		console.log('handleGameFast emitted');
+		//console.log('handleGameFast emitted');
 		gameSocket?.emit('inviteGame', {targetUserId: targetUser.userId , gameMode: "ADVANCED" ,});
 	}
 
@@ -209,16 +209,16 @@ const UserModal = ({
 	function handleGameNormal() {
 		handleEvent('inviteGame', 'invite-game-success', 'invite-game-fail',
 			{targetUserId: targetUser.userId , gameMode: "NORMAL" ,},
-			(data: any) => {console.log(`${data.user_nickname}에게 초대를 보냈습니다.`)},
-			(msg: any) => {console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},
+			(data: any) => {//console.log(`${data.user_nickname}에게 초대를 보냈습니다.`)},
+			(msg: any) => {//console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},
 		);
 	}
 
 	function handleGameFast() {
 		handleEvent('inviteGame', 'invite-game-success', 'invite-game-fail',
 			{targetUserId: targetUser.userId , gameMode: "ADVANCED" ,},
-			(data: any) => {console.log(`${data.user_nickname}에게 초대를 보냈습니다.`)},
-			(msg: any) => {console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},
+			(data: any) => {//console.log(`${data.user_nickname}에게 초대를 보냈습니다.`)},
+			(msg: any) => {//console.log(`invite-game fail: ${msg}`); alert('오류: 게임 초대를 보낼 수 없습니다.');},
 		);
 	}
 	*/

@@ -42,7 +42,7 @@ fi
 
 read -p "continue to .gitignore file generation to prevent uploading sensitive files. (y/n) " RES
 
-if [[ "$RES" != "" && $RES != "y" ]]
+if [ $RES != "y" ]
 then
 	exit 0
 fi
