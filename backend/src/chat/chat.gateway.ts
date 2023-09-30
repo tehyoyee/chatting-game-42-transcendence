@@ -212,10 +212,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       channel_id: newChannel.channel_id,
       user_type: newBridge.user_type,
     });
+
     client.join(newChannel.channel_name);
+
     this.server
       .to(newChannel.channel_name)
-      .emit('join', { user_id: user.user_id, user_nickname: user.nickname });
+      .emit('user-event', {
+        event_type: 'join',
+        user_id: user.user_id,
+        user_nickname: user.nickname });
   }
 
   //==========================================================================================
@@ -302,8 +307,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.server
       .to(channel.channel_name)
-      .emit('join', { user_id: user.user_id, user_nickname: user.nickname });
+      .emit('user-event', {
+        event_type: 'join',
+        user_id: user.user_id,
+        user_nickname: user.nickname });
     // this.server.to(channel.channel_name).emit("join", {user_id: receiver.user_id, user_nickname: receiver.nickname});
+    
     let previousMessages: PreviousMessageDto[] = [];
     previousMessages =
       await this.chatService.getAllMessagesExceptBlockByChannelId(
@@ -385,9 +394,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     //client.emit('get-users-channel', inners);
 
     this.server.to(client.id).emit('messages', previousMessages);
+    
     this.server
       .to(channel.channel_name)
-      .emit('join', { userId: user.user_id, userNickname: user.nickname });
+      .emit('user-event', {
+      event_type: 'join',
+      userId: user.user_id, 
+      userNickname: user.nickname });
   }
 
   //==========================================================================================
@@ -644,9 +657,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.chatService.deleteUCBridge(user.user_id, channelId);
     client.leave(channel.channel_name);
     client.emit('leave-success', channel.channel_id);
+    
     this.server
       .to(channel.channel_name)
-      .emit('leave', { user_id: user.user_id, user_nickname: user.nickname });
+      .emit('user-event', {
+        event_type: 'leave',
+        user_id: user.user_id,
+        user_nickname: user.nickname });
 
     try {
       await this.chatService.deleteChannelIfEmpty(channelId);
@@ -692,9 +709,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     //await this.chatService.deleteUCBridge(user.user_id, channelId);
     client.leave(channel.channel_name);
     client.emit('close-success', channel.channel_id);
+    
     this.server
       .to(channel.channel_name)
-      .emit('leave', { user_id: user.user_id, user_nickname: user.nickname });
+      .emit('user-event', {
+        event_type: 'close',
+        user_id: user.user_id,
+        user_nickname: user.nickname });
     //this.server.to(channel.channel_name).emit(`user ${user.nickname} has left`);
 
     //await this.chatService.deleteChannelIfEmpty(channelId);
@@ -774,10 +795,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     client.emit('usermod-success', channel.channel_id);
-    this.server.to(channel.channel_name).emit('admin', {
-      user_id: targetUser.user_id,
-      user_nickname: targetUser.nickname,
-    });
+    this.server
+      .to(channel.channel_name)
+      .emit('user-event', {
+        event_type: 'admin',
+        user_id: targetUser.user_id,
+        user_nickname: targetUser.nickname });
   }
 
   //==========================================================================================
@@ -1001,9 +1024,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.emit('usermod-success', channel.channel_id);
     targetUserSocket.emit('got-kicked', channel.channel_id);
 
-    this.server.to(channel.channel_name).emit('kick', {
-      user_id: targetUser.user_id,
-      user_nickname: targetUser.nickname,
+    this.server
+      .to(channel.channel_name)
+      .emit('user-event', {
+        event_type: 'kick',
+        user_id: targetUser.user_id,
+        user_nickname: targetUser.nickname,
     });
   }
 
@@ -1101,9 +1127,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.emit('usermod-success', channel.channel_id);
     targetUserSocket.emit('got-banned', channel.channel_id);
 
-    this.server.to(channel.channel_name).emit('ban', {
-      user_id: targetUser.user_id,
-      user_nickname: targetUser.nickname,
+    this.server
+      .to(channel.channel_name)
+      .emit('user-event', {
+        event_type: 'ban',
+        user_id: targetUser.user_id,
+        user_nickname: targetUser.nickname,
     });
   }
 
@@ -1200,10 +1229,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.emit('usermod-success', channel.channel_id);
     targetUserSocket.emit('got-mutted', channel.channel_id);
 
-    this.server.to(channel.channel_name).emit('mute', {
-      user_id: targetUser.user_id,
-      user_nickname: targetUser.nickname,
-    });
+    this.server
+      .to(channel.channel_name)
+      .emit('user-event', {
+        event_type: 'mute',
+        user_id: targetUser.user_id,
+        user_nickname: targetUser.nickname });
 
     setTimeout(() => {
       this.unmuteUser(user, channel, targetUser, targetBridge);
@@ -1220,10 +1251,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     await this.chatService.updateMuteStatus(targetBridge, false);
 
-    this.server.to(channel.channel_name).emit('unmute', {
-      user_id: targetUser.user_id,
-      user_nickname: targetUser.nickname,
-    });
+    this.server
+      .to(channel.channel_name)
+      .emit('user-event', {
+        event_type: 'unmute',
+        user_id: targetUser.user_id,
+        user_nickname: targetUser.nickname });
   }
 
   //==========================================================================================
