@@ -112,7 +112,7 @@ export default function ChatMenu() {
 	}, [channelInfo]);
 
 	useEffect(() => {
-		console.log(`chat joined: ${user.channel_id}`);
+		//console.log(`chat joined: ${user.channel_id}`);
 		if (!chatSocket || !gameSocket) return;
 		chatSocket.on('refreshStatus', () => {
 			updateUserList();
@@ -239,7 +239,7 @@ function socketInit(
 		(data: IChatUser) => {
 			setUser(data);
 			setIsDm(true);
-			console.log('dm-enter-success: ', data);
+			//console.log('dm-enter-success: ', data);
 	});
 
 	chatSocket.on('enter-dm-fail', (msg) => {
@@ -258,11 +258,11 @@ function socketInit(
 	});
 
 	chatSocket.on('close-fail', (msg) => {
-		console.log(`close-fail error: ${msg}`)
+		//console.log(`close-fail error: ${msg}`)
 	})
 
 	chatSocket.on('close-success', (msg) => {
-		console.log(`close-success: ${msg}`)
+		//console.log(`close-success: ${msg}`)
 		close();
 		socketOff(chatSocket);
 	});

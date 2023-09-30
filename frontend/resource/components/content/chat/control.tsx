@@ -136,7 +136,7 @@ function requestUser(type: ControlType, user: IChatUser, socket: Socket) {
 	socket.on('usermod-fail', (msg) => {
 		//console.log(`usermod-fail: ${msg}`);
 		socket.off('usermod-fail');
-		alert('요청에 실패했습니다.');
+		alert(`요청에 실패했습니다. ${msg}`);
 	});
 	socket.emit(`${controlTypeData[type].event}`, {
 		targetUserId: userid,
@@ -153,7 +153,7 @@ function removePwd(user: IChatUser, socket: Socket) {
 	socket.on('removepwd-fail', (msg) => {
 		//console.log(`removepwd-fail: ${msg}`);
 		socket.off('removepwd-fail');
-		alert('요청에 실패했습니다.');
+		alert(`요청에 실패했습니다. ${msg}`);
 	});
 	socket.emit('remove-password', user.channel_id);
 }
@@ -168,7 +168,7 @@ function setPwd(user: IChatUser, socket: Socket) {
 	socket.on('setpwd-fail', (msg) => {
 		//console.log(`setpwd-fail: ${msg}`);
 		socket.off('setpwd-fail');
-		alert('요청에 실패했습니다.');
+		alert(`요청에 실패했습니다. ${msg}`);
 	});
 	if (!input?.value) return;
 	socket.emit('set-password', {
