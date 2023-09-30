@@ -80,6 +80,7 @@
 	border-style: solid;
 	border-width: 1px;
 	background-color: lightgray;
+	transition: background-color 0.3s, transform 0.2s;
 }
 
 .curButton {
@@ -120,6 +121,7 @@
 	padding: 15px;
 	border-radius: 0.3rem;
 	display: inline-block;
+	transition: background-color 0.3s, transform 0.2s;
 }
 
 .normalButton:hover {

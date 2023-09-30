@@ -32,7 +32,7 @@ export default function TextInputForm({
           fontSize: "16px",
           outline: "none",
           marginBottom: "10px",
-          margin: "8px 0px 15px 35px",
+          margin: "8px 0px 15px 30px",
           border: "1px solid #252525",
           borderRadius: "12px",
           width: "14rem",
