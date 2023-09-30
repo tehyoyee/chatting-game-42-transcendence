@@ -68,7 +68,6 @@ export default function Profile({
   const [ update, setUpdate ] = useState<Object | null>(null);
   const { setPlayerState } = usePlayerContext();
 	const [ firstLogin, setFirstLogin ] = useState<boolean>(false);
-	const router = useRouter();
 	const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -95,9 +94,6 @@ export default function Profile({
     })();
   }, [update]);
 
-  useEffect(() => {
-    //console.log(profile);
-  }, [profile]);
   //////////////////////////////
   const userProps = [
     {
