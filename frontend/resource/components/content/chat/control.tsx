@@ -112,7 +112,7 @@ export default function ChatControl({ userList }: { userList: IChatMate[] }) {
 		color: 'white',
 	  }}
         type="button"
-        className="normalButton"
+        className={styles.normalButton}
         onClick={(e) => {
           e.preventDefault();
           chatSocket && removePwd(user, chatSocket);

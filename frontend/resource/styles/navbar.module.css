@@ -25,6 +25,7 @@
   
   .current {
     background-color: rgb(0, 197, 255);
+    transition: background-color 0.3s, transform 0.2s;
   }
   .current:hover {
     background-color: rgb(0, 179, 234);
@@ -33,6 +34,7 @@
     
     .rest {
       background-color: rgb(255, 183, 0);
+      transition: background-color 0.3s, transform 0.2s;
     }
     .rest:hover {
       background-color: rgb(226, 173, 0);

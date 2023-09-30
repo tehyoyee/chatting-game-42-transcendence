@@ -99,6 +99,7 @@ fieldset label {
 	border: solid 1px black;
 	border-radius: 0.3rem;
 	background-color: lightgray;
+	transition: background-color 0.3s, transform 0.2s;
 }
 
 .normalButton:hover {

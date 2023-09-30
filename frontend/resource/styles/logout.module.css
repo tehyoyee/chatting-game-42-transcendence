@@ -6,6 +6,7 @@
   background-color: rgb(20, 194, 107);
   margin: 3px;
   padding: 1.5px;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .logoutBtn:hover {
