@@ -30,7 +30,6 @@ services:
       - ./backend/uploads:/usr/src/app/uploads
     ports:
       - ${BACKEND_PORT}:${BACKEND_PORT}
-      - ${BACKEND_DEBUG_PORT}:22
     networks:
       - tsen-net
 
@@ -54,7 +53,6 @@ services:
       - ./frontend/resource/styles:/usr/frontend/styles
     ports:
       - ${FRONTEND_PORT}:${FRONTEND_PORT}
-      - ${FRONTEND_DEBUG_PORT}:22
     networks:
       - tsen-net
 

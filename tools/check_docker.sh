@@ -2,7 +2,7 @@ docker ps &> /dev/null
 RET=$?
 if [ $RET -eq 1 ]
 then
-	echo "started docker"
+	echo "docker is started."
 	bash tools/init_docker.sh
 	while [ $RET -ne 0 ]
 	do
@@ -12,4 +12,4 @@ then
 		echo "waiting for docker to boot..."
 	done
 fi
-echo "docker is running"
+echo "docker is running."
