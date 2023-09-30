@@ -396,10 +396,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     let acked;
     do {
       acked = true;
-      
       try {
-        client.timeout(100).emitWithAck('messages', previousMessages);
+        await client.timeout(100).emitWithAck('messages', previousMessages);
       } catch (error) {
+				console.log('re-sending');
         acked = false;
       }     
     } while (!acked);
