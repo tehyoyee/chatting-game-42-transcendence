@@ -18,8 +18,6 @@ export enum EPlayerState {
 export type TPlayerContext = {
 	playerState: EPlayerState,
 	setPlayerState: React.Dispatch<React.SetStateAction<EPlayerState>>,
-	playerData: IChatUser,
-	setPlayerData: React.Dispatch<React.SetStateAction<any>>,
 };
 
 const PlayerContext = createContext<TPlayerContext | null>(null);
@@ -70,8 +68,6 @@ export function PlayerContextProvider({ children }: { children: React.ReactNode 
 		<PlayerContext.Provider value={{
 			playerState: state, 
 			setPlayerState: setState, 
-			playerData: data, 
-			setPlayerData: setData,
 		}}>
 			{ children }
 		</PlayerContext.Provider>

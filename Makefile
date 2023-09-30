@@ -3,7 +3,6 @@ UP_FLAGS:= --build
 
 all:
 	@$(MAKE) check
-	@$(MAKE) down
 	@$(MAKE) up
 
 up:

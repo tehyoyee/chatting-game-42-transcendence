@@ -34,7 +34,7 @@ export default function ChatList() {
 	const [pubChatList, updatePub] = useFetch<IChatRoom[]>(pubChatReqUrl, []);
 	const [protChatList, updateProt] = useFetch<IChatRoom[]>(protChatReqUrl, []);
   const list = protChatList.concat(pubChatList);
-	const {setPlayerData, setPlayerState} = usePlayerContext();
+	const {setPlayerState} = usePlayerContext();
 
 	useEffect(() => {
 		setPlayerState(EPlayerState.CHAT);
@@ -73,7 +73,6 @@ export default function ChatList() {
 			setJoined(true)
 			setUser(msg);
 			setPlayerState(EPlayerState.CHAT_JOINING);
-			setPlayerData(msg);
 			socketOff();
 		});
 		return () => {

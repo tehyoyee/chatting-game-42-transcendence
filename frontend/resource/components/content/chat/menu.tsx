@@ -42,11 +42,24 @@ type TUserEvent = {
 	user_nickname: string,
 };
 
+enum EChannelType {
+	PUBLIC = "public",
+	PROTECTED = "protected",
+	PRIVATE = "private",
+	DM = "dm",
+}
+
+interface IChannelInfo {
+	channel_id: number,
+	channel_name: string,
+	channel_type: EChannelType,
+}
+
 const serverUrl = `${process.env.NEXT_PUBLIC_APP_SERVER_URL}`
 const channelUrl = `${serverUrl}/chat/channel`;
 const chatInfoReqUrl = `${serverUrl}/chat/users-in-channel`;
 
-const fetcher = async (path: string): Promise<IChatMate[]> => {
+const userListFetcher = async (path: string): Promise<IChatMate[]> => {
 	const res = await fetch(path, {
 		method: 'GET',
 		credentials: 'include',
@@ -65,7 +78,13 @@ export default function ChatMenu() {
 	const playerContext = usePlayerContext();
 
 	const { user, setUser, joined, setJoined } = chatContext;
-	const [userList, updateUserList] = useFetch<IChatMate[]>(`${chatInfoReqUrl}/${userInfo.id}/${user.channel_id}`, [], fetcher);
+	const [ userList, updateUserList ] = useFetch<IChatMate[]>(`${chatInfoReqUrl}/${userInfo.id}/${user.channel_id}`, [], userListFetcher);
+	const [ channelInfo, updateChannelInfo ] = useFetch<IChannelInfo>(`${channelUrl}/${user.channel_id}`,
+		{
+			channel_id: -1,
+			channel_name: '',
+			channel_type: EChannelType.PUBLIC,
+		});
 
 	const [controlModal, setControlModal] = useState<boolean>(false);
 	const [isDm, setIsDm] = useState<boolean>(false);
@@ -74,29 +93,20 @@ export default function ChatMenu() {
 	useEffect(() => {
 		if (!chatSocket) return;
 		socketInit(chatSocket, chatContext, playerContext, updateUserList, setIsDm);
-
-        const getChannelName = async () => {
-            await fetch(`${channelUrl}/${user.channel_id}`, {
-              method: "GET",
-              credentials: "include",
-            })
-              .then((res) => {
-								if (!res.ok) throw new Error(`invalid response: ${res.status}`);
-								return res.json()
-							})
-              .then((data) => {
-                setChannelName(data.channel_name);
-              })
-              .catch((err) => {
-                  console.log(`${channelUrl}/${user.channel_id}: fetch failed: ${err}`);
-              });
-          };
-      getChannelName();
-
+		updateChannelInfo();
 		return () => {
 			socketOff(chatSocket);
+			setJoined(false);
+			setUser({
+				...user,
+				channel_id: -1,
+			});
 		};
 	}, [chatSocket, user]);
+
+	useEffect(() => {
+		setChannelName(channelInfo.channel_name);
+	}, [channelInfo]);
 
 	useEffect(() => {
 		console.log(`chat joined: ${user.channel_id}`);
@@ -212,7 +222,7 @@ function socketInit(
 	setIsDm: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
 	const { user, setUser, joined, setJoined } = chatContext;
-	const { setPlayerState, setPlayerData } = playerContext;
+	const { setPlayerState } = playerContext;
 
 	function close() {
 		setJoined(false);
@@ -220,7 +230,6 @@ function socketInit(
 			...user,
 			channel_id: -1,
 		});
-		setPlayerData(null);
 	}
 
 	socketOff(chatSocket);
@@ -246,7 +255,6 @@ function socketInit(
 			chatSocket.on('close-success', (msg) => {
 				//console.log(`close-success: ${msg}`)
 				setUser(data);
-				setPlayerData(data);
 				setIsDm(true);
 				chatSocket.on('close-fail', (msg) => {
 				//console.log(`close-fail error: ${msg}`)

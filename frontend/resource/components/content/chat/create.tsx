@@ -23,7 +23,6 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 	const { user, setUser, setJoined } = useChatContext();
 	const [ chatType, setChatType ] = useState<Type>(Type.Public);
 	const { chatSocket } = useSocketContext();
-	const { setPlayerData } = usePlayerContext();
 
 	// NOTE: is it necessary to check socket established?
 	useEffect(() => {
@@ -35,7 +34,6 @@ export function ChatCreate({ onClose }: { onClose: Function }) {
 				onClose();
 				setUser(data);
 				setJoined(true);
-				setPlayerData(data);
 			});
 			chatSocket.on('creation-fail', (data) => {alert(`생성 실패: ${JSON.stringify(data)}`);});
 		return () => {
