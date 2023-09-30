@@ -6,7 +6,7 @@ db:
 
 mail:
   user: "$MAIL_USER"
-  pass: "$MAIL_PASS"
+  pass: "$MAIL_PASSWORD"
   
 jwt:
   secret: "$JWT_SECRET"

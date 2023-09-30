@@ -75,11 +75,11 @@ export default function Social() {
 				display: "grid",
 			}}>
 			<div>
-				<p>친구 목록</p>
+				<p style={{fontSize: '20px',}}>친구 목록</p>
 				<UserList userList={friendList} updateUserList={updateFriendList}></UserList>
 			</div>
 			<div>
-				<p>차단 목록</p>
+				<p style={{fontSize: '20px',}}>차단 목록</p>
 				<UserList userList={blocksList} updateUserList={updateBlocksList}></UserList>
 			</div>
 			<BackToTop></BackToTop>
