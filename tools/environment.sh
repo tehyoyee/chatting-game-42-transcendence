@@ -86,7 +86,7 @@ $> "
 			read -p "JWT Secret: " JWT_SECRET
 			read -p "JWT Expires in: " JWT_EXPIRES_IN
 		else
-			source $IMPORT_RES
+			source "$IMPORT_RES"
 		fi
 	else
 		if [ $RET -eq 0 ]
