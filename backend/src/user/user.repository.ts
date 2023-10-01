@@ -135,7 +135,7 @@ export class UserRepository extends Repository<User> implements OnApplicationBoo
     return found.gameHistories;
   }
 
-  async getCurrentUserStatusByUserId(userId: number) {
+  async getCurrentUserStatusByUserId(userId: number): Promise<UserStatus> {
     const found = await this.getProfileByUserId(userId);
 
     return found.status;
