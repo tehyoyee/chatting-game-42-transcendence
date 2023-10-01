@@ -1,8 +1,21 @@
+#!/bin/bash
+
 COLOR_OFF='\033[0m'       # Text Reset
 COLOR_BLACK='\033[0;30m'        # Black
 COLOR_RED='\033[0;31m'        # Red
 COLOR_GREEN='\033[0;32m'        # Green
 COLOR_LGREEN='\033[1;32m'        # Light Green
+
+check_ip_valid() {
+	RET=0
+	if [[ $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]];
+	then
+		RET=1
+	else
+		echo "invalid IP Address(e.g 127.0.0.1): \"$1\""
+	fi
+	return $RET
+}
 
 FRONTEND_RUN='start'
 BACKEND_RUN='start'
@@ -32,7 +45,7 @@ then
 	printf "\"${COLOR_LGREEN}$MAIL_PASSWORD${COLOR_OFF}\" - 2FA Password\n"
 	printf "\"${COLOR_LGREEN}$JWT_SECRET${COLOR_OFF}\" - JWT Secret\n"
 	echo ""
-	read -p "Do you want to remove .env and generate new .env? (y/n) " RES
+	read -p "Do you want to remove current .env and generate new .env? (y/n) " RES
 else
 	echo "'.env' doesn't exists."
 	echo ""
@@ -44,11 +57,20 @@ while [ $RETRY -eq 1 ]
 do
 	if [ "$RES" = "" ] || [ "$RES" = "y" ]
 	then
-		read -p "if you want to import .env, enter its path or just press enter to skip.: " IMPORT_RES
+		STR="1) enter path of new .env which will be imported.
+2) press enter to manually set .env
+$> "
+		read -p "$STR" IMPORT_RES
 		if [ "$IMPORT_RES" = "" ]
 		then
 			echo "prepare address, client id, client secret, authentication URL, Postgres User ID, Password, 2FA ID, Password, JWT Secret." 
-			read -p "Address: " SERVICE_ADDR
+			IP_VALID=0
+			while [ $IP_VALID -eq 0 ]
+			do
+				read -p "IP Address: " SERVICE_ADDR
+				check_ip_valid $SERVICE_ADDR
+				IP_VALID=$?
+			done
 			read -p "Client id: " CLIENT_ID
 			read -p "Client secret: " CLIENT_SECRET
 			read -p "Authentication URL: " AUTH_URL

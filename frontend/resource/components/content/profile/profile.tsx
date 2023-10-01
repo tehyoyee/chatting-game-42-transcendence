@@ -48,27 +48,30 @@ export default function Profile({
   uid: number;
   isMyProfile: boolean;
 }) {
-	/*
-  const [profile, setProfile] = use<IProfileType>({
-    user_id: 0,
-    username: "",
-    nickname: "",
-    //		avartar: '/default.png',
-    email: "",
-  });
-	*/
+  const { setPlayerState } = usePlayerContext();
   const [profile, setProfile] = useFetch<IProfileType>(`${profileUrl}/${uid}`, {
     user_id: uid,
     username: "",
     nickname: "",
-    //		avartar: '/default.png',
     email: "",
   });
 
   const [ update, setUpdate ] = useState<Object | null>(null);
-  const { setPlayerState } = usePlayerContext();
 	const [ firstLogin, setFirstLogin ] = useState<boolean>(false);
+  const [GameHistories, setGameHistories] = useState<IGameHistoriesType>({
+    gameHistories: [{}],
+  });
+  const [ranking, setRanking] = useState();
+  const [gameProfile, setGameProfile] = useState<IGameProfileType>({
+    win_count: 0,
+    lose_count: 0,
+    point: 0,
+    achievement: UserAchievement.A0,
+  });
+
+	const router = useRouter();
 	const searchParams = useSearchParams();
+
 
   useEffect(() => {
     isMyProfile && setPlayerState(EPlayerState.PROFILE);
@@ -110,12 +113,6 @@ export default function Profile({
     },
   ];
   //////////////////////////////
-  const [gameProfile, setGameProfile] = useState<IGameProfileType>({
-    win_count: 0,
-    lose_count: 0,
-    point: 0,
-    achievement: UserAchievement.A0,
-  });
 
   useEffect(() => {
     (async () => {
@@ -133,9 +130,6 @@ export default function Profile({
     })();
   }, [update]);
 
-  const [GameHistories, setGameHistories] = useState<IGameHistoriesType>({
-    gameHistories: [{}],
-  });
 
   useEffect(() => {
     (async () => {
@@ -153,8 +147,6 @@ export default function Profile({
     })();
   }, []);
 
-
-  const [ranking, setRanking] = useState();
 
   useEffect(() => {
     (async () => {
@@ -177,7 +169,10 @@ export default function Profile({
 			{firstLogin &&
 				<Modal
 					backDrop={false}
-					onClose={() => {setFirstLogin(false)}}>
+					onClose={() => {
+						setFirstLogin(false)
+						router.replace('/profile');
+					}}>
 					<div style={{textAlign: 'center'}}
 						className={"centerItemBlock"}>
 						<ul>
