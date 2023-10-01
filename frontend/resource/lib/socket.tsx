@@ -58,6 +58,8 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 	}
 
 	function initGameSocket(socket: Socket) {
+		let	invited: boolean = false;
+
 		socket.on('connect', () => {
 			console.log("gamesocket connected");
 		});
@@ -73,15 +75,21 @@ export function SocketContextProvider({ children }: { children: ReactNode }) {
 			router.push('/');
 		});
 		socket.on('gotInvited', (data: TGameInvite) => {
+			if (invited === true) return;
+			invited = true;
 			console.log('gotInvited');
 			if (!confirm(`${data.hostNickname} 님이 ${data.gameMode}에 초대하셨습니다. 수락하시겠습니까?`)) {
 //				socket.emit('declineGame', data.user_id);
+				invited = false;
 				return;
 			}
 			socket.emit('acceptGame', {
 				hostId: data.hostId,
 				gameMode: data.gameMode,
 			});
+			setTimeout(() => {
+				invited = false;
+			}, 1000);
 		});
 
 		socket.on("gameStart", (obj: TGameUsers) => {

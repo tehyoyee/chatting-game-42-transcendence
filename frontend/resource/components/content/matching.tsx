@@ -163,6 +163,9 @@ export default function Matching() {
         setCountdown((countdown) => countdown - 1);
       }, 1000);
     }
+		return () => {
+    	SocketContext.gameSocket?.emit("exitQueue");
+		};
   }, [ready, router]);
 
   useEffect(() => {

@@ -305,7 +305,6 @@ function socketInit(
 						user_type: EChatUserType.ADMIN,
 					});
 				}
-				
 				break;
 			case EUserEventType.JOIN:
 				break;
