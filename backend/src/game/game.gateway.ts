@@ -189,24 +189,32 @@ export class GameGateway
     /**
      * Game Terminating Condition Checking
      */
+
+		async function updateStatusOnline(user_id: number) {
+			const status = await this.userService.getUserStatusByUserId(user_id);
+      if (status !== UserStatus.OFFLINE) {
+				await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
+      	this.server.emit('refreshGameStatus', user_id);
+			}
+		}
+
     if (
       !this.gameRoomMap.has(user1.user_id) &&
       !this.gameRoomMap.has(user2.user_id)
     ) {
-      await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
-      await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-      this.server.emit('refreshGameStatus', user1.user_id);
-      this.server.emit('refreshGameStatus', user2.user_id);
+      updateStatusOnline(user1.user_id);
+      updateStatusOnline(user2.user_id);
       return; // CASE `1`: Both of them left.
     }
+
     if (!this.gameRoomMap.has(user1.user_id)) {
       // CASE `2` : User1 left
       console.log(`[Game] ${user2.nickname} winned !`);
       await this.gameService.updateGameHistory(
         user2.user_id,
         user1.user_id,
-        point1,
         point2,
+        point1,
       );
       this.server.to(roomName).emit('endGame', {
         canvasX: this.MAP_X,
@@ -215,16 +223,14 @@ export class GameGateway
         player2: user2.nickname,
         score1: point1,
         score2: point2,
-        winner: user1.nickname,
+        winner: user2.nickname,
       });
       player2.leave(roomName);
       console.log(`[Game] ${user2.nickname} has left the game.`);
       this.gameRoomMap.delete(user2.user_id);
       console.log(`[Game] room ${roomName} removed.`);
-      await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
-      await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-      this.server.emit('refreshGameStatus', user1.user_id);
-      this.server.emit('refreshGameStatus', user2.user_id);
+      updateStatusOnline(user1.user_id);
+      updateStatusOnline(user2.user_id);
       return;
     } else if (!this.gameRoomMap.has(user2.user_id)) {
       // CASE `3` : User2 left
@@ -248,10 +254,8 @@ export class GameGateway
       console.log(`[Game] ${user1.nickname} has left the game.`);
       this.gameRoomMap.delete(user1.user_id);
       console.log(`[Game] room ${roomName} removed.`);
-      await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
-      await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-      this.server.emit('refreshGameStatus', user1.user_id);
-      this.server.emit('refreshGameStatus', user2.user_id);
+      updateStatusOnline(user1.user_id);
+      updateStatusOnline(user2.user_id);
       return;
     }
     if (point1 == this.MAXPOINT) {
@@ -280,14 +284,12 @@ export class GameGateway
       this.gameRoomMap.delete(user1.user_id);
       this.gameRoomMap.delete(user2.user_id);
       console.log(`[Game] room ${roomName} removed.`);
-      await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
-      await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-      this.server.emit('refreshGameStatus', user1.user_id);
-      this.server.emit('refreshGameStatus', user2.user_id);
+      updateStatusOnline(user1.user_id);
+      updateStatusOnline(user2.user_id);
       return;
     } else if (point2 == this.MAXPOINT) {
       // CASE `5` : User 2 Win
-      console.log(`[Game] ${user1.username} winned !`);
+      console.log(`[Game] ${user2.nickname} winned !`);
       await this.gameService.updateGameHistory(
         user2.user_id,
         user1.user_id,
@@ -311,10 +313,8 @@ export class GameGateway
       this.gameRoomMap.delete(user1.user_id);
       this.gameRoomMap.delete(user2.user_id);
       console.log(`[Game] room ${roomName} removed.`);
-      await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
-      await this.userService.updateStatus(user2.user_id, UserStatus.ONLINE);
-      this.server.emit('refreshGameStatus', user1.user_id);
-      this.server.emit('refreshGameStatus', user2.user_id);
+      updateStatusOnline(user1.user_id);
+      updateStatusOnline(user2.user_id);
       return;
     }
     const ball = {
