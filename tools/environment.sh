@@ -57,7 +57,7 @@ while [ $RETRY -eq 1 ]
 do
 	if [ "$RES" = "" ] || [ "$RES" = "y" ]
 	then
-		STR="1) enter path of .env to be imported.
+		STR="1) enter absolute path of .env to be imported.
 2) press enter to manually set .env
 $> "
 		read -p "$STR" IMPORT_RES
