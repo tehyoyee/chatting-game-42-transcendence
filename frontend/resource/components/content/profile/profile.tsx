@@ -172,6 +172,7 @@ export default function Profile({
 					onClose={() => {
 						setFirstLogin(false)
 						router.replace('/profile');
+						setUpdate({});
 					}}>
 					<div style={{textAlign: 'center'}}
 						className={"centerItemBlock"}>

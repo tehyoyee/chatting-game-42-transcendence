@@ -167,30 +167,6 @@ const UserModal = ({
 		//console.log('enter dm emitted');
 		chatSocket?.emit('enter-dm-channel', {receiverId: targetUser.userId});
 		onClose();
-		/*
-		handleEvent('enter-dm-channel', 'enter-dm-success', 'enter-dm-fail', 
-			{receiverId: targetUser.userId}, 
-			(data: IChatUser) => {
-				if (!chatSocket) {
-					alert('오류: DM을 보낼 수 없습니다.');
-					return;
-				}
-				chatSocket.on('close-fail', (msg) => {
-					alert('오류: DM을 보낼 수 없습니다.');
-					//console.log(`close-fail error: ${msg}`)
-				})
-				chatSocket.on('close-success', (msg) => {
-					//console.log(`close-success: ${msg}`)
-					setUser(data);
-					chatSocket.off('close-success');
-					chatSocket.off('close-fail');
-				});
-				chatSocket.emit('close-channel-window', chatUser.channel_id);
-				//console.log('dm: ', data);
-			},
-			(msg: any) => {//console.log(`enter-dm fail: ${msg}`); alert('오류: DM을 보낼 수 없습니다.');},
-		)
-		*/
 	}
 
 	function handleGameNormal() {

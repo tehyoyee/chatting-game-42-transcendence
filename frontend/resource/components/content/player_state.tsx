@@ -44,12 +44,11 @@ export function PlayerContextProvider({ children }: { children: React.ReactNode 
 		updateLoginState();
 		switch (prevState) {
 			case EPlayerState.GAME_PLAYING:
-				gameSocket.emit('exitGame',);
+				gameSocket.emit('exitGame',); // useEffect return
 				//console.log('exitGame');
 				break;
 			case EPlayerState.GAME_MATCHING:
 				if (state === EPlayerState.GAME) break;
-				gameSocket.emit('exitQueue',);
 				//console.log('exitQueue');
 				break;
 			case EPlayerState.CHAT_JOINING:

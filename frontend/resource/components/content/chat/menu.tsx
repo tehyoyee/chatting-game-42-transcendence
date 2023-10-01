@@ -60,6 +60,7 @@ const channelUrl = `${serverUrl}/chat/channel`;
 const chatInfoReqUrl = `${serverUrl}/chat/users-in-channel`;
 
 const userListFetcher = async (path: string): Promise<IChatMate[]> => {
+	console.log('path:', path);
 	const res = await fetch(path, {
 		method: 'GET',
 		credentials: 'include',
@@ -78,7 +79,7 @@ export default function ChatMenu() {
 	const playerContext = usePlayerContext();
 
 	const { user, setUser, joined, setJoined } = chatContext;
-	const [ userList, updateUserList ] = useFetch<IChatMate[]>(`${chatInfoReqUrl}/${userInfo.id}/${user.channel_id}`, [], userListFetcher);
+	const [ userList, updateUserList ] = useFetch<IChatMate[]>(`${chatInfoReqUrl}/${userInfo.id}/${user.channel_id}`, []);
 	const [ channelInfo, updateChannelInfo ] = useFetch<IChannelInfo>(`${channelUrl}/${user.channel_id}`,
 		{
 			channel_id: -1,
@@ -105,6 +106,7 @@ export default function ChatMenu() {
 
 	useEffect(() => {
 		updateChannelInfo();
+		updateUserList();
 	}, [user]);
 
 	useEffect(() => {
@@ -236,8 +238,19 @@ function socketInit(
 
 	chatSocket.on('enter-dm-success', 
 		(data: IChatUser) => {
-			setUser(data);
-			setIsDm(true);
+			chatSocket.off('close-fail');
+			chatSocket.off('close-success');
+			chatSocket.on('close-fail', (msg) => {
+				closeHandle();
+			})
+
+			chatSocket.on('close-success', (msg) => {
+				console.log(`dm-enter close-success: ${msg}`)
+				setUser(data);
+				setIsDm(true);
+				closeHandle();
+			});
+			chatSocket.emit('close-channel-window', user.channel_id);
 			//console.log('dm-enter-success: ', data);
 	});
 
@@ -256,15 +269,20 @@ function socketInit(
 		socketOff(chatSocket);
 	});
 
-	chatSocket.on('close-fail', (msg) => {
-		//console.log(`close-fail error: ${msg}`)
-	})
+	function closeHandle() {
+		chatSocket.off('close-fail');
+		chatSocket.off('close-success');
+		chatSocket.on('close-fail', (msg) => {
+			//console.log(`close-fail error: ${msg}`)
+		})
 
-	chatSocket.on('close-success', (msg) => {
-		//console.log(`close-success: ${msg}`)
-		close();
-		socketOff(chatSocket);
-	});
+		chatSocket.on('close-success', (msg) => {
+			//console.log(`close-success: ${msg}`)
+			close();
+			socketOff(chatSocket);
+		});
+	}
+	closeHandle();
 
 	chatSocket.on('got-kicked', (msg) => {
 		//console.log(`got-kicked: ${msg}`)
@@ -288,7 +306,7 @@ function socketInit(
 	*/
 
 	chatSocket.on('user-event', (msg: TUserEvent) => {
-		//console.log("new admin");
+		console.log("user-event occured");
 		switch (userEventTypeMap[msg.user_nickname as keyof typeof userEventTypeMap]) {
 			case EUserEventType.KICK:
 				break;
