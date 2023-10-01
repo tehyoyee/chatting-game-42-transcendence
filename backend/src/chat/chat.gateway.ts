@@ -320,7 +320,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         channel.channel_id,
       );
 
-    this.server.to(client.id).emit('messages', previousMessages);
+    let acked;
+    do {
+      acked = true;
+      try {
+        await client.timeout(100).emitWithAck('messages', previousMessages);
+      } catch (error) {
+				console.log('re-sending');
+        acked = false;
+      }     
+    } while (!acked);
 
     // this.server.to(channel.channel_name).emit("join", {
     //   user_id: user.user_id, user_nickname: user.nickname,

@@ -128,7 +128,7 @@ const UserModal = ({
 		})
 		.catch(err => {
 			console.log(`${url}: handleFriend error: ${err}`);
-			alert('요청에 실패했습니다.');
+			alert(`요청에 실패했습니다.`);
 			onClose();
 		});
 	}
