@@ -52,6 +52,15 @@ export class GameGateway
     });
   }
 
+  private async updateStatusOnline(user_id: number) {
+    const status = await this.userService.getCurrentUserStatusByUserId(user_id);
+    
+    if (status !== UserStatus.OFFLINE) {
+      await this.userService.updateStatus(user_id, UserStatus.ONLINE);
+      this.server.emit('refreshGameStatus', user_id);
+    }
+  };
+
   @SubscribeMessage('joinQueue')
   async joinQueue(
     @ConnectedSocket() client: any,
@@ -190,20 +199,23 @@ export class GameGateway
      * Game Terminating Condition Checking
      */
 
-		async function updateStatusOnline(user_id: number) {
-			const status = await this.userService.getUserStatusByUserId(user_id);
-      if (status !== UserStatus.OFFLINE) {
-				await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
-      	this.server.emit('refreshGameStatus', user_id);
-			}
-		}
+		// async function updateStatusOnline(user_id: number) {
+    //   console.log('!!!!!!!userid: ', user_id);
+		// 	const status = await this.userService.getCurrentUserStatusByUserId(user_id);
+      
+    //   console.log('!!!!!!!status: ', status);
+    //   if (status !== UserStatus.OFFLINE) {
+		// 		await this.userService.updateStatus(user1.user_id, UserStatus.ONLINE);
+    //   	this.server.emit('refreshGameStatus', user_id);
+		// 	}
+		// };
 
     if (
       !this.gameRoomMap.has(user1.user_id) &&
       !this.gameRoomMap.has(user2.user_id)
     ) {
-      updateStatusOnline(user1.user_id);
-      updateStatusOnline(user2.user_id);
+      await this.updateStatusOnline(user1.user_id);
+      await this.updateStatusOnline(user2.user_id);
       return; // CASE `1`: Both of them left.
     }
 
@@ -229,8 +241,8 @@ export class GameGateway
       console.log(`[Game] ${user2.nickname} has left the game.`);
       this.gameRoomMap.delete(user2.user_id);
       console.log(`[Game] room ${roomName} removed.`);
-      updateStatusOnline(user1.user_id);
-      updateStatusOnline(user2.user_id);
+      await this.updateStatusOnline(user1.user_id);
+      await this.updateStatusOnline(user2.user_id);
       return;
     } else if (!this.gameRoomMap.has(user2.user_id)) {
       // CASE `3` : User2 left
@@ -254,8 +266,8 @@ export class GameGateway
       console.log(`[Game] ${user1.nickname} has left the game.`);
       this.gameRoomMap.delete(user1.user_id);
       console.log(`[Game] room ${roomName} removed.`);
-      updateStatusOnline(user1.user_id);
-      updateStatusOnline(user2.user_id);
+      await this.updateStatusOnline(user1.user_id);
+      await this.updateStatusOnline(user2.user_id);
       return;
     }
     if (point1 == this.MAXPOINT) {
@@ -284,8 +296,8 @@ export class GameGateway
       this.gameRoomMap.delete(user1.user_id);
       this.gameRoomMap.delete(user2.user_id);
       console.log(`[Game] room ${roomName} removed.`);
-      updateStatusOnline(user1.user_id);
-      updateStatusOnline(user2.user_id);
+      await this.updateStatusOnline(user1.user_id);
+      await this.updateStatusOnline(user2.user_id);
       return;
     } else if (point2 == this.MAXPOINT) {
       // CASE `5` : User 2 Win
@@ -313,8 +325,8 @@ export class GameGateway
       this.gameRoomMap.delete(user1.user_id);
       this.gameRoomMap.delete(user2.user_id);
       console.log(`[Game] room ${roomName} removed.`);
-      updateStatusOnline(user1.user_id);
-      updateStatusOnline(user2.user_id);
+      await this.updateStatusOnline(user1.user_id);
+      await this.updateStatusOnline(user2.user_id);
       return;
     }
     const ball = {

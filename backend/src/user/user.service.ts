@@ -68,7 +68,7 @@ export class UserService {
     return await this.userRepository.getAvatarByUserId(id);
   }
 
-  async getCurrentUserStatusByUserId(userId: number) {
+  async getCurrentUserStatusByUserId(userId: number): Promise<UserStatus> {
     return await this.userRepository.getCurrentUserStatusByUserId(userId);
   }
 
