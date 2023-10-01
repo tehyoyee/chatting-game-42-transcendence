@@ -198,7 +198,7 @@ export default function GamePlay() {
       Pong.drawEndGame(endGameInfo);
       timeoutId = setTimeout(() => {
 				console.log("game ended");
-        router.push("/game");
+        router.replace("/game");
       }, 3000);
     });
 		return () => {

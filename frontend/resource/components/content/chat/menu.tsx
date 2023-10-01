@@ -92,7 +92,7 @@ export default function ChatMenu() {
 
 	useEffect(() => {
 		if (!chatSocket) return;
-		socketInit(chatSocket, chatContext, playerContext, updateUserList, setIsDm);
+		socketInit(userInfo.id, chatSocket, chatContext, updateUserList, setIsDm);
 		return () => {
 			socketOff(chatSocket);
 			setJoined(false);
@@ -216,14 +216,13 @@ function socketOff(chatSocket: Socket) {
 }
 
 function socketInit(
+	userId: number,
 	chatSocket: Socket,
 	chatContext: TChatContext,
-	playerContext: TPlayerContext,
 	updateUserList: Function,
 	setIsDm: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
 	const { user, setUser, joined, setJoined } = chatContext;
-	const { setPlayerState } = playerContext;
 
 	function close() {
 		setJoined(false);
@@ -300,6 +299,13 @@ function socketInit(
 			case EUserEventType.UNMUTE:
 				break;
 			case EUserEventType.ADMIN:
+				if (msg.user_id === userId) {
+					setUser({
+						...user,
+						user_type: EChatUserType.ADMIN,
+					});
+				}
+				
 				break;
 			case EUserEventType.JOIN:
 				break;

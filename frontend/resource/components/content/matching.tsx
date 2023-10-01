@@ -168,7 +168,7 @@ export default function Matching() {
   useEffect(() => {
     if (countdown <= 0) {
       clearInterval(interval);
-      router.push("/game/play");
+      router.replace("/game/play");
     }
   }, [countdown]);
 
