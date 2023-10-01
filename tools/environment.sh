@@ -57,7 +57,7 @@ while [ $RETRY -eq 1 ]
 do
 	if [ "$RES" = "" ] || [ "$RES" = "y" ]
 	then
-		STR="1) enter path of new .env which will be imported.
+		STR="1) enter path of .env to be imported.
 2) press enter to manually set .env
 $> "
 		read -p "$STR" IMPORT_RES
@@ -75,11 +75,16 @@ $> "
 			read -p "Client secret: " CLIENT_SECRET
 			read -p "Authentication URL: " AUTH_URL
 
+			read -p "Postgres Host: " POSTGRES_HOST
+			read -p "Postgres Port: " POSTGRES_PORT
+			read -p "Postgres DB: " POSTGRES_DB
 			read -p "Postgres User ID: " POSTGRES_USER
 			read -p "Postgres User Password: " POSTGRES_PASSWORD
+
 			read -p "2FA ID: " MAIL_USER
 			read -p "2FA Password: " MAIL_PASSWORD
 			read -p "JWT Secret: " JWT_SECRET
+			read -p "JWT Expires in: " JWT_EXPIRES_IN
 		else
 			source $IMPORT_RES
 		fi
@@ -115,9 +120,9 @@ BACKEND_RUN='$BACKEND_RUN'
 
 # POSTGRESQL
 POSTGRES_VERSION=15.4
-POSTGRES_HOST=\"postgres\" # container service name
-POSTGRES_PORT=\"5432\"
-POSTGRES_DB=\"chat-app\"
+POSTGRES_HOST=\"$POSTGRES_HOST\" # container service name
+POSTGRES_PORT=\"$POSTGRES_PORT\"
+POSTGRES_DB=\"$POSTGRES_DB\"
 POSTGRES_USER=\"$POSTGRES_USER\"
 POSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\"
 
@@ -127,7 +132,7 @@ MAIL_PASSWORD='$MAIL_PASSWORD'
 
 # JWT
 JWT_SECRET=\"$JWT_SECRET\"
-JWT_EXPIRES_IN=\"1d\""
+JWT_EXPIRES_IN=\"$JWT_EXPIRES_IN\""
 
 	echo "$ENV_CONTENT" > .env
 	echo ""
