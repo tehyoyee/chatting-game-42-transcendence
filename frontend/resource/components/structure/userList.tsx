@@ -24,9 +24,6 @@ const UserList = ({
 	});
 	const [showProfile, setShowProfile] = useState<boolean>(false);
 
-	useEffect(() => {
-		updateUserList();
-	}, [showModal]);
   return (
     <div style={{textAlign: 'center',}}>
 			{

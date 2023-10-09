@@ -164,7 +164,7 @@ export default function Matching() {
       }, 1000);
     }
 		return () => {
-    	SocketContext.gameSocket?.emit("exitQueue");
+			exitQueueHandler();
 		};
   }, [ready, router]);
 

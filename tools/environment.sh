@@ -17,15 +17,6 @@ check_ip_valid() {
 	return $RET
 }
 
-FRONTEND_RUN='start'
-BACKEND_RUN='start'
-read -p "run as development mode (y/n) " DEV_RES
-if [ "$DEV_RES" = "y" ]
-then
-	FRONTEND_RUN='dev'
-	BACKEND_RUN='start:dev'
-fi
-
 ls .env &> /dev/null
 RET=$?
 RES="n"
@@ -57,7 +48,7 @@ while [ $RETRY -eq 1 ]
 do
 	if [ "$RES" = "" ] || [ "$RES" = "y" ]
 	then
-		STR="1) enter path of .env to be imported.
+		STR="1) enter absolute path of .env to be imported.
 2) press enter to manually set .env
 $> "
 		read -p "$STR" IMPORT_RES
@@ -99,6 +90,15 @@ $> "
 		fi
 	fi
 
+	FRONTEND_RUN_OPT='start'
+	BACKEND_RUN_OPT='start'
+	read -p "run as development mode (y/n) " DEV_RES
+	if [ "$DEV_RES" = "y" ]
+	then
+		FRONTEND_RUN_OPT='dev'
+		BACKEND_RUN_OPT='start:dev'
+	fi
+
 	ENV_CONTENT="
 NODE_VERSION=18.17.0
 
@@ -115,8 +115,8 @@ REDIRECT_URI='http://$SERVICE_ADDR:3001/auth'
 AUTH_URL='$AUTH_URL'
 
 # RUN MODE
-FRONTEND_RUN='$FRONTEND_RUN'
-BACKEND_RUN='$BACKEND_RUN'
+FRONTEND_RUN='$FRONTEND_RUN_OPT'
+BACKEND_RUN='$BACKEND_RUN_OPT'
 
 # POSTGRESQL
 POSTGRES_VERSION=15.4
