@@ -7,8 +7,8 @@
 |:-:|:-:|
 | 김태형 | Backend OAuth GameSocket |
 | 권지원 | Backend User Relation ChatSocket |
-| 성하림 | Frontend ...|
-| 신재훈 | Frontend ...|
+| 성하림 | Frontend ~|
+| 신재훈 | Frontend ~|
 
 <br><br>
 
