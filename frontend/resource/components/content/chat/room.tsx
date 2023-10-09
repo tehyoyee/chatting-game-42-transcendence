@@ -102,7 +102,7 @@ function ChatBox() {
 				ref={logRef}
 				id="chatLogList"
 				style={{
-					height: '96%',
+					height: '95%',
 					overflowY: 'scroll',
 				}}>
 				<ul>
