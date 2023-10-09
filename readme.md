@@ -5,7 +5,7 @@
 |:-:|:-:|
 | 김태형 | Backend OAuth GameSocket |
 | 권지원 | Backend User Relation ChatSocket |
-| 성하림 | Devops Frontend Routing |
+| 성하림 | Devops Frontend |
 | 신재훈 | Frontend (작성) |
 
 <br><br>
@@ -39,7 +39,7 @@ How to Deploy
 
 Prerequisite
 ------------
-versions specified in parenthesis are what we used for development.
+versions we used for development are specified in parenthesis.
 
 * Docker Desktop (4.10.1)   
 or   
