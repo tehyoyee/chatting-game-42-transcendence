@@ -28,6 +28,7 @@
   <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=PostgreSQL&logoColor=black">
   <br>
   <h3> DevOps </h3>
+  <img src="https://img.shields.io/badge/.env-ECD53F?style=for-the-badge&logo=.env&logoColor=white">
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=Docker&logoColor=white">
   <img src="https://img.shields.io/badge/makefile-A42E2B?style=for-the-badge&logo=GNU&logoColor=white">
   <br>
