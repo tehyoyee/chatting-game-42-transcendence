@@ -121,7 +121,7 @@ Debug
 
 <div align=left>
 <h1>ERD</h1>
-  <img src = "https://github.com/tehyoyee/42-transcendence/assets/91377377/b0943cc1-83f0-4014-b282-d6fba8f6b285">
+  <img src = "https://github.com/tehyoyee/42-transcendence/assets/91377377/fd3f2fd9-40aa-4038-98ec-e6f17662fa56">
 
 
 <br><br>
