@@ -6,8 +6,10 @@
 |이름|역할|
 |:-:|:-:|
 | 김태형 | Backend OAuth GameSocket |
+| 성하림 | Devops Frontend Routing |
 
 <br><br>
+<hr>
 
 <h1>Tech Stacks</h1>
 
@@ -31,4 +33,87 @@
   <img src="https://img.shields.io/badge/makefile-A42E2B?style=for-the-badge&logo=GNU&logoColor=white">
   <br>
   <hr>
+</div>
   
+How to Deploy
+================
+
+Prerequisite
+------------
+versions specified in parenthesis are what we used for development.
+
+* Docker Desktop (4.10.1)   
+or   
+* Docker Engine (20.10.17) and Docker Compose (2.6.1)
+
+#### Optional requirements for automated launch.
+* GNU Make (3.81)
+* GNU Bash (3.2.57)
+
+Procedures
+----------
+
+1. clone git repository to a location you want.
+    * ```git clone https://github.com/tehyoyee/42-transcendence.git && cd 42-transcendence```
+
+2. launch
+    * manual
+        1. copy ```$PWD/tools/.env_sample``` into ```$PWD/.env``` run ```cp $PWD/tools/.env_sample $PWD/.env```
+        2. substitute variables(e.g. {{IP ADDRESS}}) with value you want to use.
+        3. run ```docker compose up --build```
+    * automated
+        1. run ```make```
+        2. follow instructions about environment variable and development mode.
+
+Directory Structure
+-------------------
+
+```
+42-transcendence
+├── Makefile
+├── docker-compose.yml
+├── backend
+│   ├── Dockerfile
+│   ├── tools
+│   │   └── entrypoint.sh
+│   │
+│   │# configs for npm install
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── tsconfig.json
+│   │
+│   │# directory for configs containing environment variables
+│   ├── config
+│   │
+│   │# backend source code mount volume
+│   ├── src
+│   │
+│   │# directory for avatar image storage
+│   └── uploads
+│
+├── frontend
+│   ├── Dockerfile
+│   │
+│   │# configs for npm install and environment variables
+│   ├── config
+│   ├── entrypoint.sh
+│   │
+│   │# each child directories are seperate mount volume
+│   └── resource
+│       │# nextjs app router for routing, layout, pages, global css, fonts and etc.
+│       ├── app
+│       ├── components
+│       ├── lib # custom hooks
+│       ├── public # image resource
+│       └── styles # css
+│
+│# mount volume for DB
+├── postgres-data
+│
+│# setup automation script
+└── tools
+```
+Debug
+-----
+* You can change source code and reflect it immediately by using development mode which is provided by setup script or manually setting each ```FRONTEND_RUN```, ```BACKEND_RUN``` environment variables to ```'dev'```, ```'start:dev'```.
+<hr>

@@ -4,6 +4,10 @@ if [ $RET -eq 1 ]
 then
 	echo "docker is starting..."
 	bash tools/init_docker.sh
+	if [ $? -ne 0 ]
+	then
+		exit 1
+	fi
 	COUNT=0
 	while [ $RET -ne 0 ]
 	do
