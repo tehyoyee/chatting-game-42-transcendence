@@ -1,11 +1,11 @@
 
 
 
-<h1> team </h1>
+<h1> Team </h1>
 
-| Backend | Frontend |
+|이름|역할|
 |:-:|:-:|
-|taehykim jiwkwon | jshin hseong |
+| 김태형 | Backend OAuth GameSocket |
 
 <br><br>
 
