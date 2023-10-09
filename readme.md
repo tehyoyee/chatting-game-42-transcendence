@@ -126,5 +126,5 @@ Debug
 
 <br><br>
 
-<h1>API 설계서</h1>
+<h1>API Design Document</h1>
   <img src = "https://github.com/tehyoyee/42-transcendence/assets/91377377/ebd32a2e-c0f1-497a-a00b-0aeec54d83bb">
