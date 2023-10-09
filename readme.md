@@ -49,16 +49,16 @@ or
 * GNU Make (3.81)
 * GNU Bash (3.2.57)
 
-Procedures
-----------
+Procedure
+---------
 
 1. clone git repository to a location you want.
     * ```git clone https://github.com/tehyoyee/42-transcendence.git && cd 42-transcendence```
 
 2. launch
     * manual
-        1. copy ```$PWD/tools/.env_sample``` into ```$PWD/.env``` run ```cp $PWD/tools/.env_sample $PWD/.env```
-        2. substitute variables(e.g. {{IP ADDRESS}}) with value you want to use.
+        1. ```cp $PWD/tools/.env_sample $PWD/.env```
+        2. open .env with text editor and substitute variables(e.g. {{IP ADDRESS}}) with value you want to use.
         3. run ```docker compose up --build```
     * automated
         1. run ```make```
@@ -116,7 +116,7 @@ Debug
 -----
 * You can change source code and reflect it immediately by using development mode which is provided by setup script or manually setting each ```FRONTEND_RUN```, ```BACKEND_RUN``` environment variables to ```'dev'```, ```'start:dev'```.
 
-
+<hr>
 <br><br>
 
 <div align=left>
@@ -136,3 +136,7 @@ Debug
 [Figma Link](https://www.figma.com/file/aTE0GGxqCIvuHBAdNoUC7P/Transcendence?type=design&node-id=0-1&mode=design&t=R09IFUh4nnBjcFtY-0)
 
 ![ui](https://github.com/tehyoyee/42-transcendence/assets/89984263/9d0949c0-852c-4ed8-ae5b-a3075b8b7c55)
+
+<br><br>
+<h1>Deployment Architecture Diagram</h1>
+<img width="1060" alt="Screen Shot 2023-10-09 at 11 24 33 PM" src="https://github.com/tehyoyee/42-transcendence/assets/77538894/b5e4ca7e-31cb-43ff-96a7-b2f56ea51ebc">
