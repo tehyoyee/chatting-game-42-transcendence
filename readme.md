@@ -6,6 +6,7 @@
 |이름|역할|
 |:-:|:-:|
 | 김태형 | Backend OAuth GameSocket |
+| 권지원 | Backend User Relation ChatSocket |
 
 <br><br>
 
@@ -31,4 +32,13 @@
   <img src="https://img.shields.io/badge/makefile-A42E2B?style=for-the-badge&logo=GNU&logoColor=white">
   <br>
   <hr>
-  
+
+
+<br><br>
+
+<h1>ERD</h1>
+
+
+<br><br>
+
+<h1>API 설계서</h1>
