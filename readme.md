@@ -127,4 +127,4 @@ Debug
 <br><br>
 
 <h1>API Design Document</h1>
-  <img src = "https://github.com/tehyoyee/42-transcendence/assets/91377377/ebd32a2e-c0f1-497a-a00b-0aeec54d83bb">
+  <img src = "https://github.com/tehyoyee/42-transcendence/assets/91377377/9d814bb8-8de6-46f0-90b9-630ee413ed4a">
