@@ -6,7 +6,7 @@
 | 김태형 | Backend OAuth GameSocket |
 | 권지원 | Backend User Relation ChatSocket |
 | 성하림 | Devops Frontend |
-| 신재훈 | Frontend (작성) |
+| 신재훈 | Frontend Css |
 
 <br><br>
 
