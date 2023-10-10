@@ -62,7 +62,7 @@ Procedure
         3. run ```docker compose up --build```
     * automated
         1. run ```make```
-        2. follow instructions about environment variable and development mode.
+        2. follow instructions to set environment variables and development mode.
 
 Directory Structure
 -------------------
