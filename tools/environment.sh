@@ -26,9 +26,9 @@ then
 	printf "\n${COLOR_RED}.env file exists.\n${COLOR_OFF}current content\n"
 	echo ""
 	printf "\"${COLOR_LGREEN}$SERVICE_ADDR${COLOR_OFF}\" - Address\n"
-	printf "\"${COLOR_LGREEN}$CLIENT_ID${COLOR_OFF}\" - Client ID\n"
-	printf "\"${COLOR_LGREEN}$CLIENT_SECRET${COLOR_OFF}\" - Client Secret\n"
-	printf "\"${COLOR_LGREEN}$AUTH_URL${COLOR_OFF}\" - Authentication URL\n"
+	printf "\"${COLOR_LGREEN}$OAUTH_CID${COLOR_OFF}\" - OAuth Client ID\n"
+	printf "\"${COLOR_LGREEN}$OAUTH_SECRET${COLOR_OFF}\" - OAuth Client Secret\n"
+	printf "\"${COLOR_LGREEN}$OAUTH_URL${COLOR_OFF}\" - OAuth Authentication URL\n"
 	printf "\n";
 	printf "\"${COLOR_LGREEN}$POSTGRES_USER${COLOR_OFF}\" - Postgres User ID\n"
 	printf "\"${COLOR_LGREEN}$POSTGRES_PASSWORD${COLOR_OFF}\" - Postgre User Password\n"
@@ -62,9 +62,9 @@ $> "
 				check_ip_valid $SERVICE_ADDR
 				IP_VALID=$?
 			done
-			read -p "Client id: " CLIENT_ID
-			read -p "Client secret: " CLIENT_SECRET
-			read -p "Authentication URL: " AUTH_URL
+			read -p "OAuth Client id: " OAUTH_CID
+			read -p "OAuth Client secret: " OAUTH_SECRET
+			read -p "OAuth Authentication URL: " OAUTH_URL
 
 			read -p "Postgres Host: " POSTGRES_HOST
 			read -p "Postgres Port: " POSTGRES_PORT
@@ -109,10 +109,10 @@ FRONTEND_PORT=\"3001\"
 BACKEND_PORT=\"3000\"
 
 # certificates
-CLIENT_ID='$CLIENT_ID'
-CLIENT_SECRET='$CLIENT_SECRET'
+OAUTH_CID='$OAUTH_CID'
+OAUTH_SECRET='$OAUTH_SECRET'
 REDIRECT_URI='http://$SERVICE_ADDR:3001/auth'
-AUTH_URL='$AUTH_URL'
+OAUTH_URL='$AUTH_URL'
 
 # RUN MODE
 FRONTEND_RUN='$FRONTEND_RUN_OPT'
@@ -147,9 +147,9 @@ JWT_EXPIRES_IN=\"$JWT_EXPIRES_IN\""
 done
 
 #printf "\"${COLOR_LGREEN}$SERVICE_ADDR${COLOR_OFF}\" - Address\n"
-#printf "\"${COLOR_LGREEN}$CLIENT_ID${COLOR_OFF}\" - Client ID\n"
-#printf "\"${COLOR_LGREEN}$CLIENT_SECRET${COLOR_OFF}\" - Client Secret\n"
-#printf "\"${COLOR_LGREEN}$AUTH_URL${COLOR_OFF}\" - Authentication URL\n"
+#printf "\"${COLOR_LGREEN}$OAUTH_CID${COLOR_OFF}\" - Client ID\n"
+#printf "\"${COLOR_LGREEN}$OAUTH_SECRET${COLOR_OFF}\" - Client Secret\n"
+#printf "\"${COLOR_LGREEN}$OAUTH_URL${COLOR_OFF}\" - Authentication URL\n"
 #printf "\n"
 #printf "\"${COLOR_LGREEN}$POSTGRES_USER${COLOR_OFF}\" - Postgres User ID\n"
 #printf "\"${COLOR_LGREEN}$POSTGRES_PASSWORD${COLOR_OFF}\" - Postgre User Password\n"
