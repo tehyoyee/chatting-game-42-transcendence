@@ -52,7 +52,7 @@ or
 Procedure
 ---------
 
-1. clone git repository to a location you want.
+1. clone git repository into a location you want.
     * ```git clone https://github.com/tehyoyee/42-transcendence.git && cd 42-transcendence```
 
 2. launch
@@ -63,6 +63,15 @@ Procedure
     * automated
         1. run ```make```
         2. follow instructions to set environment variables and development mode.
+
+3. manage
+    * You can use below Makefile targets.
+      * ```make up``` executes ```docker-compose up --build```
+      * ```make down``` executes ```docker-compose down```.
+      * ```make stop``` stops every docker containers.
+      * ```make rmc``` tries to remove every docker containers.
+      * ```make rmi``` tries to remove every docker images.
+    * If you don't have Make, it's recommended to find necessary shell commands in Makefile and execute them manually in shell.
 
 Directory Structure
 -------------------
