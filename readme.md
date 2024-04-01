@@ -142,8 +142,6 @@ Debug
 <br><br>
 <h1>UI Design Document</h1>
 
-[Figma Link](https://www.figma.com/file/aTE0GGxqCIvuHBAdNoUC7P/Transcendence?type=design&node-id=0-1&mode=design&t=R09IFUh4nnBjcFtY-0)
-
 ![ui](https://github.com/tehyoyee/42-transcendence/assets/89984263/9d0949c0-852c-4ed8-ae5b-a3075b8b7c55)
 
 <br><br>
